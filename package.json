@@ -6,6 +6,7 @@
   "repository": "git@github.com:expo-starter/expo-template.git",
   "license": "Apache-2.0",
   "scripts": {
+    "start": "expo start --clear",
     "dev": "expo start --dev-client --clear",
     "dev:web": "expo start -c --web",
     "dev:android": "expo start -c --android",
