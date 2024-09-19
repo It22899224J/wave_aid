@@ -1,77 +1,50 @@
-# Expo Starter Template  [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/cloudposse.svg?style=social&label=Follow%20%40younes0x53)](https://twitter.com/y0x53)
+# Welcome to your Expo app 👋
 
-<p align="center">
-  <a href="https://expo-starter.com/"><img src="assets/github-banner.png?raw=true" alt="React Native Expo Starter Template"></a>
-</p>
+This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-The `Expo Starter Template` is a free project model with up-to-date frameworks and configurations for your new Expo project. It helps eliminate repetitive tasks when starting a project from scratch. This template integrates carefully selected libraries to help you bootstrap your new React Native and Expo app with the most effective frameworks and tools available in the market.
+## Get started
 
-The project integrates universal version of [shadcn-ui](https://ui.shadcn.com/) components, Tailwind styling, state management, and a local-first database strategy for universal mobile apps on Android, iOS, and Web.
+1. Install dependencies
 
+   ```bash
+   npm install
+   ```
 
-[Web App Demo](https://expo-starter.github.io/expo-template/)
+2. Start the app
 
-## 📚 What's inside
+   ```bash
+    npx expo start
+   ```
 
-- ⚡ [Expo v51](https://expo.dev) - Built with Expo for cross-platform support
-- ⚛️ [React Native v0.73.6](https://reactnative.dev) for building native apps using React
-- 💎 Integrate with [NativeWind v4](https://www.nativewind.dev), Tailwind CSS for React Native
-- 📁 Expo Router and Expo API
-- 📦 [zustand](docs.pmnd.rs/zustand) - State management solution.
-- 🎨 Common components from the [rn-reusables](https://github.com/mrzachnugent/react-native-reusables) library: Icons, ThemeToggle, Avatar, Button, Card, Progress, Text, Tooltip.
-- 🌗 Dark and light mode - Android Navigation Bar matches mode and Persistant mode
-- 💡 Absolute Imports using `@` prefix
-- 📏 Linter and Code Formatter with [biome](https://biomejs.dev/)
-- 🗂 VSCode recommended extensions, settings, and snippets to enhance the developer experience.
+In the output, you'll find options to open the app in a
 
-New :
-- 💽 Local-first based on [Expo SQLite for](https://docs.expo.dev/versions/latest/sdk/sqlite/) for native and [Sqlite.js](https://github.com/sql-js/sql.js) for Web
-- 💽 Full integrated with [DrizzleORM](https://drizzle.dev) including live query
+- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-In-progress :
-- [Cloudflare D1](https://developers.cloudflare.com/d1/) for data persistance on Web as well as offline mode
+You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-Planned: 
-- [OP-sqlite](https://github.com/OP-Engineering/op-sqlite) local-first database for mobile only
+## Get a fresh project
 
-### Requirements
+When you're ready, run:
 
-- Node.js 20+ and pnpm or bun
-- [iOS Simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Android Studio Emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-
-### Getting started
-
-Run the following command on your local environment:
-
-```shell
-bunx create-expo-app --template @expo-starter/template
+```bash
+npm run reset-project
 ```
 
-Then, you can run locally in development mode with live reload:
+This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-```shell
-bun run dev:ios
-# Or
-bun run dev:android
-```
+## Learn more
 
-<p align="center">
-  <a href="https://expostarter.dev/"><img src="assets/preview-banner.png?raw=true" alt="React Native Expo Starter Kit"></a>
-</p>
+To learn more about developing your project with Expo, look at the following resources:
 
-This will open the app in the iOS simulator or Android emulator.
+- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
+- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
-### Contributions
+## Join the community
 
-Everyone is welcome to contribute to this project. Feel free to open an issue if you have question or found a bug. Totally open to any suggestions and improvements.
+Join our community of developers creating universal apps.
 
-### License
-
-Licensed under the MIT License, Copyright © 2024
-
-See [LICENSE](LICENSE) for more information.
-
----
-
-Made with ♥ by [Expo starter](expostarter.com) [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/cloudposse.svg?style=social&label=Follow%20%40younes0x53)](https://twitter.com/younes0x53)
+- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
+- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
