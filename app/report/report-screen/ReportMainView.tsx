@@ -25,10 +25,11 @@ const communityReports = [
 const ReportMainView= () => {
 
     return (
-        <ScrollView style={styles.container}>
+      <View style={{ flex: 1 }}>
             <View>
                 <Text style={styles.topic}>Report</Text>
             </View>
+         <ScrollView style={styles.container}>
             <View style={styles.imageContainer}>
                 <Image
                     source={{ uri: 'https://img.freepik.com/free-photo/trash-sand-beach-showing-environmental-pollution-problem_1150-6645.jpg?t=st=1726859923~exp=1726863523~hmac=20cade8c537967c9331b7eaa36cca7455e68433c872622b1010235964093b627&w=1060' }}
@@ -40,7 +41,9 @@ const ReportMainView= () => {
                 <Text style={styles.cardDescription}>
                     Help us keep our beaches clean! Click the button below to report a cleanup area.
                 </Text>
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity 
+                  style={styles.button}
+                >
                     <Text style={styles.buttonText}>Report Now</Text>
                 </TouchableOpacity>
             </View>
@@ -70,6 +73,7 @@ const ReportMainView= () => {
                 </View>
             ))} */}
         </ScrollView>
+      </View>
     );
 }
 
