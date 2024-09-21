@@ -15,7 +15,54 @@ const Index = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Tab.Navigator>
-        <Tab.Screen name="Main" component={MainScreen} />
+
+
+      <Tab.Screen 
+          name="Home" 
+          component={MainScreen} 
+          options={{ 
+            headerShown: false, 
+            tabBarIcon: ({ color, size }) => (
+              <Icon name="home" color={color} size={size} />
+            ),
+          }} 
+        />
+
+
+        <Tab.Screen 
+          name="Analysis" 
+          component={AnalysisDashboard} 
+          options={{ 
+            headerShown: false,
+            tabBarIcon: ({ color, size }) => (
+              <Icon name="analytics" color={color} size={size} />
+            ),
+          }}
+        />
+
+
+        <Tab.Screen 
+          name="Report" 
+          component={ReportMainView} 
+          options={{ 
+            headerShown: false,
+            tabBarIcon: ({ color, size }) => (
+              <Icon name="document-text-outline" color={color} size={size} />
+            ),
+          }} 
+        />
+
+
+        <Tab.Screen 
+          name="Profile" 
+          component={Profile} 
+          options={{ 
+            headerShown: false,
+            tabBarIcon: ({ color, size }) => (
+              <Icon name="person" color={color} size={size} />
+            ),
+          }}
+        />
       </Tab.Navigator>
     </SafeAreaView>
   );
