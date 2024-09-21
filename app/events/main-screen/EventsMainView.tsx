@@ -122,13 +122,14 @@ const MainScreen = () => {
         />
       </View>
       <View style={styles.tabsContainer}>
-        {["All Events", "Upcoming", "Past"].map((tab) => (
+        {["All Events", "Upcoming", "Past"].map((tab, index) => (
           <TouchableOpacity
             style={[
               styles.tab,
               activeTab === tab.toLowerCase() && styles.activeTab,
             ]}
             onPress={() => setActiveTab(tab.toLowerCase())}
+            key={index}
           >
             <Text style={styles.tabText}>{tab}</Text>
           </TouchableOpacity>
@@ -144,11 +145,12 @@ const MainScreen = () => {
             longitudeDelta: 0.5,
           }}
         >
-          {beaches.map((beach) => (
+          {beaches.map((beach, index) => (
             <Marker
               coordinate={beach.coordinate}
               title={beach.title}
               pinColor={beach.color}
+              key={index}
             />
           ))}
         </MapView>

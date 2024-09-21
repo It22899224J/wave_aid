@@ -6,15 +6,18 @@ import Index from "./app/Index";
 import SignUp from "./app/SignUp";
 import SignIn from "./app/SignIn";
 import { AuthProvider, useAuth } from "./context/AuthContext"; // Import AuthContext
+import { AllUserProvider } from "./context/AllUserContext";
 
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
     <AuthProvider>
-      <NavigationContainer>
-        <RootLayout />
-      </NavigationContainer>
+      <AllUserProvider>
+        <NavigationContainer>
+          <RootLayout />
+        </NavigationContainer>
+      </AllUserProvider>
     </AuthProvider>
   );
 }

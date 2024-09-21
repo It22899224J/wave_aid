@@ -33,9 +33,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: "#ddd",
     paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingVertical: 20,
     alignItems: "center",
     justifyContent: "space-between",
+    borderRadius: 10
   },
 
   scrollViewCardCol1: {
