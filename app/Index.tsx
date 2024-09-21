@@ -1,18 +1,18 @@
-import { useAuth } from "@/context/AuthContext";
-import { Button, Text } from "react-native";
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MainScreen from "./events/main-screen/EventsMainView";
 
+
+const Tab = createBottomTabNavigator();
+
 const Index = () => {
-  const { signOut } = useAuth();
   return (
-    <>
-      <SafeAreaView>
-        {/* <Text>This is index</Text>
-        <Button title="Signout" onPress={signOut} /> */}
-        <MainScreen></MainScreen>
-      </SafeAreaView>
-    </>
+    <SafeAreaView style={{ flex: 1 }}>
+      <Tab.Navigator>
+        <Tab.Screen name="Main" component={MainScreen} />
+      </Tab.Navigator>
+    </SafeAreaView>
   );
 };
 
