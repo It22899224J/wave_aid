@@ -20,7 +20,13 @@ const Index = () => {
           key={1}
           options={{
             headerShown: false,
-            tabBarIcon: () => <Ionicons name="home" size={18} />,
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name="home"
+                size={18}
+                color={focused ? "blue" : "black"}
+              />
+            ),
           }}
         />
         <Tab.Screen
@@ -29,7 +35,13 @@ const Index = () => {
           key={2}
           options={{
             headerShown: false,
-            tabBarIcon: () => <Ionicons name="stats-chart" size={18} />,
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name="stats-chart"
+                size={18}
+                color={focused ? "blue" : "black"}
+              />
+            ),
           }}
         />
         <Tab.Screen
@@ -38,7 +50,13 @@ const Index = () => {
           key={3}
           options={{
             headerShown: false,
-            tabBarIcon: () => <Ionicons name="person" size={18} />,
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name="person"
+                size={18}
+                color={focused ? "blue" : "black"}
+              />
+            ),
           }}
         />
       </Tab.Navigator>
