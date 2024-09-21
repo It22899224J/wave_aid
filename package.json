@@ -14,6 +14,8 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@expo-google-fonts/quicksand": "^0.2.3",
+    "@expo-google-fonts/raleway": "^0.2.3",
     "@expo/vector-icons": "^14.0.2",
     "@mui/icons-material": "^6.0.2",
     "@mui/material": "^6.0.2",
@@ -41,6 +43,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.74.5",
+    "react-native-chart-kit": "^6.12.0",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-maps": "^1.18.0",
     "react-native-reanimated": "~3.10.1",
