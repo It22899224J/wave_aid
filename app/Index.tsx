@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MainScreen from "./events/main-screen/EventsMainView";
+import UpcommingEvents from "./events/main-screen/UpcommingEvents";
 import ReportMainView from "./report/report-screen/ReportMainView";
 import ReportAreaPage from "./report/report-area/ReportAreaPage";
 import Icon from "react-native-vector-icons/Ionicons";

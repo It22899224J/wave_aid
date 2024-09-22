@@ -129,7 +129,6 @@ const MainScreen = () => {
               activeTab === tab.toLowerCase() && styles.activeTab,
             ]}
             onPress={() => setActiveTab(tab.toLowerCase())}
-            key={index}
           >
             <Text style={styles.tabText}>{tab}</Text>
           </TouchableOpacity>
@@ -150,7 +149,6 @@ const MainScreen = () => {
               coordinate={beach.coordinate}
               title={beach.title}
               pinColor={beach.color}
-              key={index}
             />
           ))}
         </MapView>
