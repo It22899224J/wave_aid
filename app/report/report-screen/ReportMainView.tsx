@@ -22,7 +22,13 @@ const communityReports = [
     },
   ];
 
-const ReportMainView= () => {
+import { NavigationProp } from '@react-navigation/native';
+
+interface Props {
+  navigation: NavigationProp<any>;
+}
+
+const ReportMainView= ({navigation}: Props) => {
 
     return (
       <View style={{ flex: 1 }}>
@@ -43,6 +49,7 @@ const ReportMainView= () => {
                 </Text>
                 <TouchableOpacity 
                   style={styles.button}
+                  onPress={() => navigation.navigate('ReportAreaPage')}
                 >
                     <Text style={styles.buttonText}>Report Now</Text>
                 </TouchableOpacity>

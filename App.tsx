@@ -7,6 +7,8 @@ import SignUp from "./app/SignUp";
 import SignIn from "./app/SignIn";
 import { AuthProvider, useAuth } from "./context/AuthContext"; // Import AuthContext
 import { AllUserProvider } from "./context/AllUserContext";
+import ReportMainView from "./app/report/report-screen/ReportMainView";
+import ReportAreaPage from "./app/report/report-area/ReportAreaPage";
 
 const Stack = createStackNavigator();
 
@@ -38,11 +40,23 @@ function RootLayout() {
     <Stack.Navigator>
       {user ? (
         // If user is authenticated, show main app screen
-        <Stack.Screen
-          name="index"
-          component={Index}
-          options={{ headerShown: false }}
-        />
+        <>
+          <Stack.Screen
+            name="index"
+            component={Index}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ReportMainView"
+            component={ReportMainView}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ReportAreaPage"
+            component={ReportAreaPage}
+            options={{ headerShown: false }}    
+          />
+        </>
       ) : (
         // If user is not authenticated, show SignIn and SignUp screens
         <>
