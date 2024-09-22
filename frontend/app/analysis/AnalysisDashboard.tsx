@@ -6,7 +6,6 @@ import {
   Dimensions,
   ScrollView,
   Image,
-  ActivityIndicator,
   SafeAreaView
 } from "react-native";
 import {
@@ -31,6 +30,7 @@ import {
 import ScrollViewCard from "./components/ScrollViewCard";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect } from "react";
+import Loader from "@/components/loader/Loader";
 
 const AnalysisDashboard = () => {
   const navigate = useNavigation();
@@ -44,9 +44,7 @@ const AnalysisDashboard = () => {
   });
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
+      <Loader />
     );
   }
   return (

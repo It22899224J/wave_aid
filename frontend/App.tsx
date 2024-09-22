@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
-import { ActivityIndicator, View, Alert } from "react-native";
 import Index from "./app/Index";
 import SignUp from "./app/SignUp";
 import SignIn from "./app/SignIn";
@@ -12,6 +11,7 @@ import ReportAreaPage from "./app/report/report-area/ReportAreaPage";
 import ReportedAreasPage from "./app/report/reported-areas/ReportedAreasPage";
 import BusSetup from "./app/admin/admin-transporation/CreateBus";
 import SelectLocation from "./app/admin/admin-transporation/SelectLocation";
+import Loader from "./components/loader/Loader";
 
 const Stack = createStackNavigator();
 
@@ -33,9 +33,7 @@ function RootLayout() {
   if (loading) {
     // Show loading spinner while checking user authentication state
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
+      <Loader />
     );
   }
 

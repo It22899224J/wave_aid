@@ -4,7 +4,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
 } from "react-native";
 import {
   Quicksand_300Light,
@@ -16,6 +15,7 @@ import {
   Raleway_700Bold,
 } from "@expo-google-fonts/raleway";
 import { useFonts } from "expo-font";
+import Loader from "@/components/loader/Loader";
 
 const ScrollViewCard = ({
   CardTitle,
@@ -37,9 +37,7 @@ const ScrollViewCard = ({
   });
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
+      <Loader />
     );
   }
 

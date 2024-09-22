@@ -10,7 +10,6 @@ import {
   StyleSheet,
   Pressable,
   Alert,
-  ActivityIndicator,
 } from "react-native";
 
 const Profile = () => {

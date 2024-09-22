@@ -6,7 +6,6 @@ import {
   View,
   StyleSheet,
   Button,
-  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,6 +16,7 @@ import SelectDropdown from "react-native-select-dropdown";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
+import Loader from "@/components/loader/Loader";
 
 interface formData {
   username?: string | undefined;
@@ -73,9 +73,7 @@ const SignUp = () => {
   if (loading) {
     // Show loading spinner while checking user authentication state
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
+      <Loader />
     );
   }
 

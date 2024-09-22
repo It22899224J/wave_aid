@@ -1,3 +1,4 @@
+import Loader from "@/components/loader/Loader";
 import { useAuth } from "@/context/AuthContext";
 import { auth, db } from "@/service/firebase";
 import { useNavigation } from "@react-navigation/native";
@@ -11,7 +12,6 @@ import {
   TextInput,
   View,
   StyleSheet,
-  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -53,9 +53,7 @@ const SignIn = () => {
   if (loading) {
     // Show loading spinner while checking user authentication state
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
+      <Loader />
     );
   }
 
