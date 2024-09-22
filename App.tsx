@@ -9,6 +9,8 @@ import { AuthProvider, useAuth } from "./context/AuthContext"; // Import AuthCon
 import { AllUserProvider } from "./context/AllUserContext";
 import ReportMainView from "./app/report/report-screen/ReportMainView";
 import ReportAreaPage from "./app/report/report-area/ReportAreaPage";
+import BusSetup from "./app/admin/admin-transporation/CreateBus"
+import SelectLocation from "./app/admin/admin-transporation/SelectLocation";
 
 const Stack = createStackNavigator();
 
@@ -54,7 +56,17 @@ function RootLayout() {
           <Stack.Screen
             name="ReportAreaPage"
             component={ReportAreaPage}
-            options={{ headerShown: false }}    
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="BusSetup" // Add the CreateBus screen
+            component={BusSetup}
+            options={{ headerTitle: "Create Bus" }} // You can adjust header options
+          />
+          <Stack.Screen
+            name="SelectLocation"
+            component={SelectLocation}
+            options={{ title: 'Select Location' }}
           />
         </>
       ) : (
@@ -63,7 +75,7 @@ function RootLayout() {
           <Stack.Screen
             name="signin"
             component={SignIn}
-            options={{ headerTitle: "Sign In"  }}
+            options={{ headerTitle: "Sign In" }}
           />
           <Stack.Screen
             name="signup"
