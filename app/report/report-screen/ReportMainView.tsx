@@ -65,7 +65,10 @@ const ReportMainView= ({navigation}: Props) => {
                 <Text style={styles.cardDescription}>
                     Check the details and the state of your reported beach cleanup areas.
                 </Text>
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity 
+                  style={styles.button}
+                  onPress={() => navigation.navigate('ReportedAreasPage')}
+                >
                     <Text style={styles.buttonText}>Reported Areas</Text>
                 </TouchableOpacity>
             </View>

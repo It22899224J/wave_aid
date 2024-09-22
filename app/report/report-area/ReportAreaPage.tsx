@@ -36,7 +36,7 @@ const ReportAreaPage = () => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={{paddingTop: 50}}>
+      <View>
         <Text style={styles.topic}>Report Area</Text>
       </View>
     <ScrollView style={styles.container}>

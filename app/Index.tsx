@@ -12,8 +12,36 @@ import { useAuth } from "@/context/AuthContext";
 import { useAllUser } from "@/context/AllUserContext";
 import AdminProfile from "./admin/admin-profile/AdminProfile";
 import AdminHome from "./admin/admin-home/AdminHome";
+import { createStackNavigator } from "@react-navigation/stack";
+import ReportedAreasPage from "./report/reported-areas/ReportedAreasPage";
+
 
 const Tab = createBottomTabNavigator();
+
+const Stack = createStackNavigator();
+
+const ReportStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="ReportMainView"
+        component={ReportMainView}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ReportAreaPage"
+        component={ReportAreaPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ReportedAreasPage"
+        component={ReportedAreasPage}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+};
+
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
@@ -66,7 +94,7 @@ const Index = () => {
 
             <Tab.Screen
               name="Report"
-              component={ReportMainView}
+              component={ReportStack}
               options={{
                 headerShown: false,
                 tabBarIcon: ({ color, size }) => (
