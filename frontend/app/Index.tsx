@@ -14,31 +14,10 @@ import ReportedAreasPage from "./report/reported-areas/ReportedAreasPage";
 import { AnalysisStack } from "./analysis/AnalysisStack";
 import SelectBus from "./events/book-a-seat/SelectBus";
 import SeatBooking from "./events/book-a-seat/BusLayout";
+import { ReportStack } from "./report/ReportStack";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
-
-const ReportStack = () => {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="ReportMainView"
-        component={ReportMainView}
-        options={{ headerTitle: "Report", headerTitleAlign: "center" }}
-      />
-      <Stack.Screen
-        name="ReportAreaPage"
-        component={ReportAreaPage}
-        options={{ headerTitle: "Report Area", headerTitleAlign: "center" }}
-      />
-      <Stack.Screen
-        name="ReportedAreasPage"
-        component={ReportedAreasPage}
-        options={{ headerTitle: "Reported Areas", headerTitleAlign: "center" }}
-      />
-    </Stack.Navigator>
-  );
-};
 
 const Booking = () => {
   return (

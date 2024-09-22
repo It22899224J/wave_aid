@@ -16,10 +16,7 @@ const ReportAreaPage = () => {
       setPriorityLevel(level);
     };
 
-    const [images, setImages] = useState([
-        'https://img.freepik.com/free-photo/trash-sand-beach-showing-environmental-pollution-problem_1150-6523.jpg',
-        'https://img.freepik.com/free-photo/plastic-bottles-trash-sand-beach-environmental-pollution_1150-11114.jpg',
-    ]);
+    const [images, setImages] = useState<string[]>([]);
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
