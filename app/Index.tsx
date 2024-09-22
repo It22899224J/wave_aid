@@ -25,17 +25,17 @@ const ReportStack = () => {
       <Stack.Screen
         name="ReportMainView"
         component={ReportMainView}
-        options={{ headerTitle: "Report" }}
+        options={{ headerTitle: "Report", headerTitleAlign: "center" }}
       />
       <Stack.Screen
         name="ReportAreaPage"
         component={ReportAreaPage}
-        options={{ headerTitle: "Report Area" }}
+        options={{ headerTitle: "Report Area", headerTitleAlign: "center" }}
       />
       <Stack.Screen
         name="ReportedAreasPage"
         component={ReportedAreasPage}
-        options={{ headerTitle: "Reported Areas" }}
+        options={{ headerTitle: "Reported Areas", headerTitleAlign: "center" }}
       />
     </Stack.Navigator>
   );
@@ -47,17 +47,16 @@ const Booking = () => {
       <Stack.Screen
         name="SelectBus"
         component={SelectBus}
-        options={{ headerTitle: "SelectBus" }}
+        options={{ headerTitle: "Select Bus" }}
       />
       <Stack.Screen
         name="BusLayout"
         component={SeatBooking}
-        options={{ headerTitle: "BusLayout" }}
+        options={{ headerTitle: "Bus Layout" }}
       />
-
     </Stack.Navigator>
   );
-}
+};
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
@@ -118,6 +117,17 @@ const Index = () => {
           />
 
           <Tab.Screen
+            name="Booking"
+            component={Booking}
+            options={{
+              headerShown: false,
+              tabBarIcon: ({ color, size }) => (
+                <Icon name="bus" color={color} size={size} />
+              ),
+            }}
+          />
+
+          <Tab.Screen
             name="Profile"
             component={Profile}
             options={{
@@ -126,11 +136,6 @@ const Index = () => {
                 <Icon name="person" color={color} size={size} />
               ),
             }}
-          />
-          <Tab.Screen
-            name="Booking"
-            component={Booking}
-
           />
         </>
       ) : (
