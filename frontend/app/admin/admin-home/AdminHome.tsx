@@ -1,10 +1,12 @@
-import { Text, View } from "react-native";
+import { SafeAreaView, Text, View } from "react-native";
 
 const AdminHome = () => {
   return (
-    <View>
-      <Text>Admin Home</Text>
-    </View>
+    <SafeAreaView>
+      <View>
+        <Text>Admin Home</Text>
+      </View>
+    </SafeAreaView>
   );
 };
 

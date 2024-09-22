@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { SafeAreaView } from "react-native-safe-area-context";
 import MainScreen from "./events/main-screen/EventsMainView";
 import ReportMainView from "./report/report-screen/ReportMainView";
 import ReportAreaPage from "./report/report-area/ReportAreaPage";
@@ -145,7 +144,8 @@ const Index = () => {
             name="Admin Home"
             component={AdminHome}
             options={{
-              headerShown: false,
+              // headerShown: false,
+              headerTitle: "Admin Home",
               tabBarIcon: ({ color, size }) => (
                 <Icon name="person" color={color} size={size} />
               ),
@@ -155,7 +155,8 @@ const Index = () => {
             name="Admin Profile"
             component={AdminProfile}
             options={{
-              headerShown: false,
+              // headerShown: false,
+              headerTitle: "Admin Profile",
               tabBarIcon: ({ color, size }) => (
                 <Icon name="person" color={color} size={size} />
               ),
