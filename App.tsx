@@ -9,8 +9,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext"; // Import AuthCon
 import { AllUserProvider } from "./context/AllUserContext";
 import ReportMainView from "./app/report/report-screen/ReportMainView";
 import ReportAreaPage from "./app/report/report-area/ReportAreaPage";
-import BusSetup from "./app/admin/admin-transporation/CreateBus"
-import SelectLocation from "./app/admin/admin-transporation/SelectLocation";
+import ReportedAreasPage from "./app/report/reported-areas/ReportedAreasPage";
 
 const Stack = createStackNavigator();
 
@@ -56,6 +55,13 @@ function RootLayout() {
           <Stack.Screen
             name="ReportAreaPage"
             component={ReportAreaPage}
+            options={{ headerShown: false }}
+          />
+
+
+          <Stack.Screen
+            name="ReportedAreasPage"
+            component={ReportedAreasPage}
             options={{ headerShown: false }}
           />
           <Stack.Screen

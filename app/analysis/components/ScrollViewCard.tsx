@@ -21,10 +21,12 @@ const ScrollViewCard = ({
   CardTitle,
   CardIconName,
   CardIconSize,
+  onPress
 }: {
   CardTitle: string;
   CardIconName: string;
   CardIconSize?: number;
+  onPress: () => void
 }) => {
   const [fontsLoaded] = useFonts({
     Raleway_200ExtraLight,
@@ -42,7 +44,7 @@ const ScrollViewCard = ({
   }
 
   return (
-    <Pressable style={styles.scrollViewCard}>
+    <Pressable style={styles.scrollViewCard} onPress={onPress}>
       <View style={styles.scrollViewCardCol1}>
         <Ionicons name={CardIconName as any} size={CardIconSize ?? 35} />
       </View>

@@ -7,8 +7,8 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
+  SafeAreaView
 } from "react-native";
-import { SafeAreaView } from "react-native";
 import {
   Raleway_200ExtraLight,
   Raleway_700Bold,
@@ -29,8 +29,12 @@ import {
   StackedBarChart,
 } from "react-native-chart-kit";
 import ScrollViewCard from "./components/ScrollViewCard";
+import { useNavigation } from "@react-navigation/native";
+import { useEffect } from "react";
 
 const AnalysisDashboard = () => {
+  const navigate = useNavigation();
+
   const [fontsLoaded] = useFonts({
     Raleway_200ExtraLight,
     Raleway_700Bold,
@@ -46,9 +50,9 @@ const AnalysisDashboard = () => {
     );
   }
   return (
-    // <SafeAreaView>
+    <SafeAreaView>
       <View style={styles.analysisContainer}>
-        <Text style={styles.titleText}>Analysis Dashboard</Text>
+        {/* <Text style={styles.titleText}>Analysis Dashboard</Text> */}
         <ScrollView style={styles.scrollViewContainer}>
           <LineChart
             data={{
@@ -97,34 +101,51 @@ const AnalysisDashboard = () => {
           <ScrollViewCard
             CardTitle="Event Summary Report"
             CardIconName="albums"
+            onPress={() => navigate.navigate("Event Summary Report" as never)}
           />
           <ScrollViewCard
             CardTitle="Performance Report"
             CardIconName="trending-up"
+            onPress={() => navigate.navigate("Performance Report" as never)}
           />
           <ScrollViewCard
             CardTitle="Geographic Impact Report"
             CardIconName="location"
+            onPress={() =>
+              navigate.navigate("Geographic Impact Report" as never)
+            }
           />
           <ScrollViewCard
             CardTitle="Waste Composition Report"
             CardIconName="trash"
+            onPress={() =>
+              navigate.navigate("Waste Composition Report" as never)
+            }
           />
           <ScrollViewCard
             CardTitle="Volunteer Engagement Report"
             CardIconName="people"
+            onPress={() =>
+              navigate.navigate("Volunteer Engagement Report" as never)
+            }
           />
           <ScrollViewCard
             CardTitle="Enviroment Impact Report"
             CardIconName="earth"
+            onPress={() =>
+              navigate.navigate("Enviroment Impact Report" as never)
+            }
           />
           <ScrollViewCard
             CardTitle="Transport Efficency Report"
             CardIconName="bus"
+            onPress={() =>
+              navigate.navigate("Transport Efficency Report" as never)
+            }
           />
         </ScrollView>
       </View>
-    // {/* </SafeAreaView> */}
+    </SafeAreaView>
   );
 };
 
@@ -132,14 +153,15 @@ export default AnalysisDashboard;
 
 const styles = StyleSheet.create({
   analysisContainer: {
-    flex: 1,
+    // flex: 1,
+    marginTop: 5,
   },
 
   titleText: {
     fontSize: 18,
     fontFamily: "Quicksand_700Bold",
     textAlign: "center",
-    paddingVertical: 20
+    paddingVertical: 20,
   },
 
   chart: {

@@ -113,7 +113,7 @@ const MainScreen = () => {
   return (
     <View style={styles.container}>
       <View>
-        <Text style={styles.topic}>Beach Cleanup Events</Text>
+        {/* <Text style={styles.topic}>Beach Cleanup Events</Text> */}
         <TextInput
           style={styles.searchInput}
           placeholder="Search Events..."

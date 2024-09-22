@@ -53,8 +53,8 @@ const Profile = () => {
   }, [initializeUserDetails]);
 
   return (
-    <View style={{ flex: 1 }}>
-      <Text style={styles.titleText}>Profile</Text>
+    <SafeAreaView style={{ flex: 1 }}>
+      {/* <Text style={styles.titleText}>Profile</Text> */}
       <View style={styles.profileContainer}>
         <Ionicons name="person-circle" size={100} />
         <View>
@@ -78,7 +78,7 @@ const Profile = () => {
           </Text>
         </Pressable>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
