@@ -13,6 +13,8 @@ import AdminHome from "./admin/admin-home/AdminHome";
 import { createStackNavigator } from "@react-navigation/stack";
 import ReportedAreasPage from "./report/reported-areas/ReportedAreasPage";
 import { AnalysisStack } from "./analysis/AnalysisStack";
+import SelectBus from "./events/book-a-seat/SelectBus";
+import SeatBooking from "./events/book-a-seat/BusLayout";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -38,6 +40,24 @@ const ReportStack = () => {
     </Stack.Navigator>
   );
 };
+
+const Booking = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="SelectBus"
+        component={SelectBus}
+        options={{ headerTitle: "SelectBus" }}
+      />
+      <Stack.Screen
+        name="BusLayout"
+        component={SeatBooking}
+        options={{ headerTitle: "BusLayout" }}
+      />
+
+    </Stack.Navigator>
+  );
+}
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
@@ -106,6 +126,11 @@ const Index = () => {
                 <Icon name="person" color={color} size={size} />
               ),
             }}
+          />
+          <Tab.Screen
+            name="Booking"
+            component={Booking}
+
           />
         </>
       ) : (
