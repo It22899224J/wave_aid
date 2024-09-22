@@ -10,6 +10,8 @@ import { AllUserProvider } from "./context/AllUserContext";
 import ReportMainView from "./app/report/report-screen/ReportMainView";
 import ReportAreaPage from "./app/report/report-area/ReportAreaPage";
 import ReportedAreasPage from "./app/report/reported-areas/ReportedAreasPage";
+import BusSetup from "./app/admin/admin-transporation/CreateBus";
+import SelectLocation from "./app/admin/admin-transporation/SelectLocation";
 
 const Stack = createStackNavigator();
 
