@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, SafeAreaView, Button } from 'react-native';
 import MapView, { Marker } from 'react-native-maps'; // You need to install react-native-maps
 import * as ImagePicker from 'expo-image-picker';
+
 const ReportAreaPage = () => {
 
     const [pollutionLevel, setPollutionLevel] = useState('High');
@@ -53,6 +54,10 @@ const ReportAreaPage = () => {
       >
         {/* <Marker coordinate={{ latitude: 6.9271, longitude: 79.8612 }} /> */}
       </MapView>
+
+      <TouchableOpacity style={styles.locationButton}>
+        <Text style={styles.submitButtonText}>Pick a Location</Text>
+      </TouchableOpacity>
 
       <Text style={styles.sectionTitle}>Report Description</Text>
       <TextInput
@@ -208,6 +213,12 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         marginVertical: 20,
+      },
+      locationButton: { 
+        backgroundColor: '#007AFF',
+        paddingVertical: 8,
+        borderRadius: 10,
+        alignItems: 'center',
       },
       submitButtonText: {
         color: '#ffffff',
