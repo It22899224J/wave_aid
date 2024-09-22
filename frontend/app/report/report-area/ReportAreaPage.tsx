@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
 import MapView, { Marker } from 'react-native-maps'; // Install react-native-maps
 import * as ImagePicker from 'expo-image-picker';
 import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
+import { addDoc, collection } from 'firebase/firestore';
+import { db, storage } from "./../../../service/firebase";
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 interface RouteParams {
   location?: {
@@ -23,8 +26,12 @@ type Props = {
 };
 
 const ReportAreaPage = ({ navigation }: Props) => {
-  const [pollutionLevel, setPollutionLevel] = useState('High');
-  const [priorityLevel, setPriorityLevel] = useState('Medium');
+  const [pollutionLevel, setPollutionLevel] = useState('Low');
+  const [priorityLevel, setPriorityLevel] = useState('Low');
+  const [fullName, setFullName] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [description, setDescription] = useState('');
 
   const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
   const { location, locationName } = route.params || {};
@@ -52,6 +59,8 @@ const ReportAreaPage = ({ navigation }: Props) => {
   };
 
   const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false); 
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -62,7 +71,40 @@ const ReportAreaPage = ({ navigation }: Props) => {
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      setImages([...images, result.assets[0].uri]);
+      const imageUri = result.assets[0].uri;
+
+      // Upload the image to Firebase
+      await uploadImage(imageUri);
+    }
+  };
+
+  const uploadImage = async (uri: string) => {
+    setUploading(true);
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const metadata = {
+      contentType: 'image/jpeg', // Change this if you're using a different image format
+    };
+    console.log(blob);
+    // Create a unique file path
+    const fileName = `${new Date().getTime()}-report-image.jpg`;
+    const storageRef = ref(storage, `reports/${fileName}`);
+    console.log("Uploading to: ", `reports/${fileName}`);
+
+
+    try {
+      // Upload the image to Firebase Storage
+      await uploadBytes(storageRef, blob, metadata); // Use uploadBytes instead of put
+      
+      // Get the image download URL
+      const downloadURL = await getDownloadURL(storageRef); // Use getDownloadURL
+      
+      // Add the image to local state for rendering
+      setImages((prevImages) => [...prevImages, downloadURL]);
+    } catch (error) {
+      console.error("Error uploading image: ", error);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -70,8 +112,58 @@ const ReportAreaPage = ({ navigation }: Props) => {
     navigation.navigate('SelectReportLocation', { currentLocation: location });
   };
 
+  const handleSubmitReport = async () => {
+    if (!fullName || !contactNumber || !email || !description) {
+      Alert.alert('Error', 'Please fill in all the fields.');
+      return;
+    }
+
+    setLoading(true);
+
+    const reportData = {
+      fullName,
+      contactNumber,
+      email,
+      description,
+      pollutionLevel,
+      priorityLevel,
+      location: {
+        latitude: location?.latitude || null,
+        longitude: location?.longitude || null,
+        locationName: reportLocationName,
+      },
+      images,
+      timestamp: new Date(),
+    };
+
+    try {
+      await addDoc(collection(db, 'reports'), reportData);
+      Alert.alert('Success', 'Your report has been submitted.');
+      
+      // Clear all fields
+      setFullName('');
+      setContactNumber('');
+      setEmail('');
+      setDescription('');
+      setPollutionLevel('Low'); // Reset to default
+      setPriorityLevel('Low'); // Reset to default
+      setImages([]); // Clear images
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred while submitting the report.');
+      console.error('Error adding document: ', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
+      {loading && ( // Show loading indicator when loading is true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Submitting your report...</Text>
+        </View>
+      )}
       <ScrollView style={styles.container}>
         <Text style={styles.sectionTitle}>Location</Text>
         <Text style={styles.sectionDescription}>Select the reporting area from the map</Text>
@@ -111,6 +203,8 @@ const ReportAreaPage = ({ navigation }: Props) => {
           multiline
           numberOfLines={4}
           textAlignVertical="top"
+          value={description}
+          onChangeText={setDescription}
         />
 
         <Text style={styles.sectionTitle}>Pollution Level</Text>
@@ -135,13 +229,30 @@ const ReportAreaPage = ({ navigation }: Props) => {
 
         {/* Full name, Contact, and Email inputs */}
         <Text style={styles.sectionTitle}>Enter Full Name</Text>
-        <TextInput style={styles.input} placeholder="Enter your full name" />
+        <TextInput 
+          style={styles.input} 
+          placeholder="Enter your full name" 
+          value={fullName}
+          onChangeText={setFullName}
+        />
 
         <Text style={styles.sectionTitle}>Contact Number</Text>
-        <TextInput style={styles.input} placeholder="Enter your contact number" keyboardType="phone-pad" />
+        <TextInput 
+          style={styles.input} 
+          placeholder="Enter your contact number" 
+          keyboardType="phone-pad"
+          value={contactNumber}
+          onChangeText={setContactNumber}
+        />
 
         <Text style={styles.sectionTitle}>Email Address</Text>
-        <TextInput style={styles.input} placeholder="Enter your email address" keyboardType="email-address" />
+        <TextInput 
+          style={styles.input} 
+          placeholder="Enter your email address" 
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+        />
 
         {/* Image Upload */}
         <Text style={styles.sectionTitle}>Images</Text>
@@ -175,7 +286,10 @@ const ReportAreaPage = ({ navigation }: Props) => {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.submitButton}>
+        <TouchableOpacity 
+          style={styles.submitButton}
+          onPress={handleSubmitReport}
+        >
           <Text style={styles.submitButtonText}>Submit Report</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -270,6 +384,22 @@ const styles = StyleSheet.create({
   addImageText: {
     fontSize: 24,
     color: '#888',
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    zIndex: 1000,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#007AFF',
   },
 });
 
