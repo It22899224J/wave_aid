@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import MapView, { Marker } from 'react-native-maps'; // You need to install react-native-maps
 import * as ImagePicker from 'expo-image-picker';
 const ReportAreaPage = () => {
@@ -35,9 +35,11 @@ const ReportAreaPage = () => {
   
 
   return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={{paddingTop: 50}}>
+        <Text style={styles.topic}>Report Area</Text>
+      </View>
     <ScrollView style={styles.container}>
-      <Text style={styles.topic}>Report Area</Text>
-
       <Text style={styles.sectionTitle}>Select Location</Text>
       <Text style={styles.sectionDescription}>Select the reporting area from the map</Text>
       <MapView
@@ -132,6 +134,7 @@ const ReportAreaPage = () => {
       </TouchableOpacity>
 
     </ScrollView>
+    </SafeAreaView> 
   );
 };
 

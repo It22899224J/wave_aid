@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, Button, ScrollView, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { View, Text, Image, Button, ScrollView, TouchableOpacity, StyleSheet, FlatList, SafeAreaView } from 'react-native';
 
 const communityReports = [
     {
@@ -31,7 +31,7 @@ interface Props {
 const ReportMainView= ({navigation}: Props) => {
 
     return (
-      <View style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
             <View>
                 <Text style={styles.topic}>Report</Text>
             </View>
@@ -80,7 +80,7 @@ const ReportMainView= ({navigation}: Props) => {
                 </View>
             ))} */}
         </ScrollView>
-      </View>
+      </SafeAreaView>
     );
 }
 
