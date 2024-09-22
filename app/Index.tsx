@@ -10,6 +10,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import Profile from "./profile/Profile";
 import { useAuth } from "@/context/AuthContext";
 import { useAllUser } from "@/context/AllUserContext";
+import AdminProfile from "./admin/admin-profile/AdminProfile";
+import AdminHome from "./admin/admin-home/AdminHome";
 
 const Tab = createBottomTabNavigator();
 
@@ -92,8 +94,18 @@ const Index = () => {
           <>
             {/* ADMIN TAB SCREENS HERE */}
             <Tab.Screen
-              name="Admin-Home"
-              component={MainScreen}
+              name="Admin Home"
+              component={AdminHome}
+              options={{
+                headerShown: false,
+                tabBarIcon: ({ color, size }) => (
+                  <Icon name="person" color={color} size={size} />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="Admin Profile"
+              component={AdminProfile}
               options={{
                 headerShown: false,
                 tabBarIcon: ({ color, size }) => (
