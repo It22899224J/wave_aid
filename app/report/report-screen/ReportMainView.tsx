@@ -32,9 +32,9 @@ const ReportMainView= ({navigation}: Props) => {
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
-            <View>
+            {/* <View>
                 <Text style={styles.topic}>Report</Text>
-            </View>
+            </View> */}
          <ScrollView style={styles.container}>
             <View style={styles.imageContainer}>
                 <Image

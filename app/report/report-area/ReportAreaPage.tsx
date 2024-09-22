@@ -36,9 +36,9 @@ const ReportAreaPage = () => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View>
+      {/* <View>
         <Text style={styles.topic}>Report Area</Text>
-      </View>
+      </View> */}
     <ScrollView style={styles.container}>
       <Text style={styles.sectionTitle}>Select Location</Text>
       <Text style={styles.sectionDescription}>Select the reporting area from the map</Text>

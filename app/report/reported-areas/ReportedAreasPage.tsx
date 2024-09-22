@@ -65,9 +65,9 @@ import { NavigationProp } from '@react-navigation/native';
 const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View>
+      {/* <View>
         <Text style={styles.topic}>Reported Areas</Text>
-      </View>
+      </View> */}
     <ScrollView style={styles.container}>
       <View>
         {reportData.map((item) => (
