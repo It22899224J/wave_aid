@@ -107,7 +107,7 @@ export default SignIn;
 
 const style = StyleSheet.create({
   view: {
-    height: "100%",
+    height: "95%",
     width: "100%",
     display: "flex",
     alignItems: "center",

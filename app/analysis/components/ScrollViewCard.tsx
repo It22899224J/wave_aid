@@ -1,5 +1,21 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Pressable, View, Text, StyleSheet } from "react-native";
+import {
+  Pressable,
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+import {
+  Quicksand_300Light,
+  Quicksand_400Regular,
+  Quicksand_700Bold,
+} from "@expo-google-fonts/quicksand";
+import {
+  Raleway_200ExtraLight,
+  Raleway_700Bold,
+} from "@expo-google-fonts/raleway";
+import { useFonts } from "expo-font";
 
 const ScrollViewCard = ({
   CardTitle,
@@ -10,6 +26,21 @@ const ScrollViewCard = ({
   CardIconName: string;
   CardIconSize?: number;
 }) => {
+  const [fontsLoaded] = useFonts({
+    Raleway_200ExtraLight,
+    Raleway_700Bold,
+    Quicksand_300Light,
+    Quicksand_400Regular,
+    Quicksand_700Bold,
+  });
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
   return (
     <Pressable style={styles.scrollViewCard}>
       <View style={styles.scrollViewCardCol1}>
@@ -36,7 +67,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: 10
+    borderRadius: 10,
   },
 
   scrollViewCardCol1: {

@@ -63,12 +63,12 @@ function RootLayout() {
           <Stack.Screen
             name="signin"
             component={SignIn}
-            options={{ headerShown: false }}
+            options={{ headerTitle: "Sign In"  }}
           />
           <Stack.Screen
             name="signup"
             component={SignUp}
-            options={{ headerShown: false }}
+            options={{ headerTitle: "Sign Up" }}
           />
         </>
       )}
