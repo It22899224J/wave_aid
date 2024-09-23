@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 import { useAuth } from '@/context/AuthContext';
 import { collection, getDocs, query, where } from 'firebase/firestore';
@@ -78,11 +78,17 @@ const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) 
     }
   };
 
+  const handleReportPress = (item: Report) => {
+    navigation.navigate('ReportAreaPage', { report: item });
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
         {reportData.map((item) => (
-          <ReportCard key={item.id} item={item} />
+          <TouchableOpacity key={item.id} onPress={() => handleReportPress(item)}>
+            <ReportCard item={item} />
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </SafeAreaView>

@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView,
 import MapView, { Marker } from 'react-native-maps'; // Install react-native-maps
 import * as ImagePicker from 'expo-image-picker';
 import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db, storage } from "./../../../service/firebase";
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '@/context/AuthContext';
@@ -14,6 +14,21 @@ interface RouteParams {
     longitude: number;
   };
   locationName?: string;
+  report?: {
+    id: string;
+    pollutionLevel: string;
+    priorityLevel: string;
+    fullName: string;
+    contactNumber: string;
+    email: string;
+    description: string;
+    images: string[];
+    location: {
+      latitude: number;
+      longitude: number;
+      locationName: string;
+    };
+  };
 }
 
 type RootStackParamList = {
@@ -28,7 +43,10 @@ type Props = {
 
 const ReportAreaPage = ({ navigation }: Props) => {
 
-  const {user} = useAuth();
+  const { user } = useAuth();
+
+  const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
+  const { location, locationName, report } = route.params || {};
 
   const [pollutionLevel, setPollutionLevel] = useState('Low');
   const [priorityLevel, setPriorityLevel] = useState('Low');
@@ -37,19 +55,44 @@ const ReportAreaPage = ({ navigation }: Props) => {
   const [email, setEmail] = useState('');
   const [description, setDescription] = useState('');
 
-  const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
-  const { location, locationName } = route.params || {};
-
-  const [reportLocation, setReportLocation] = useState<string>('');
+  const [reportLocation, setReportLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [reportLocationName, setReportLocationName] = useState<string>('');
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const addressParts = reportLocationName.split(", ");
-  const shortenedAddress = addressParts.slice(0,1).join(", ");
+  const shortenedAddress = addressParts.slice(0, 1).join(", ");
+
+  // Inside your ReportAreaPage
+useEffect(() => {
+  const fetchReportDetails = async () => {
+    if (report) {
+      const reportRef = doc(db, 'reports', report.id);
+      const reportSnap = await getDoc(reportRef);
+      if (reportSnap.exists()) {
+        const data = reportSnap.data();
+        // Set the fields with data from Firestore
+        setPollutionLevel(data.pollutionLevel);
+        setPriorityLevel(data.priorityLevel);
+        setFullName(data.fullName);
+        setContactNumber(data.contactNumber);
+        setEmail(data.email);
+        setDescription(data.description);
+        setImages(data.images || []);
+        setReportLocationName(data.location.locationName);
+        setReportLocation({ latitude: data.location.latitude, longitude: data.location.longitude });
+      }
+    }
+  };
+
+  fetchReportDetails();
+}, [report]);
  
   // Update reportLocation when location changes
   useEffect(() => {
     if (location && location.latitude && location.longitude) {
-      setReportLocation(`(${location.latitude}, ${location.longitude})`);
+      setReportLocation({ latitude: location.latitude, longitude: location.longitude });
       setReportLocationName(locationName || 'Location not selected');
     }
   }, [location, locationName]);
@@ -62,10 +105,6 @@ const ReportAreaPage = ({ navigation }: Props) => {
     setPriorityLevel(level);
   };
 
-  const [images, setImages] = useState<string[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [loading, setLoading] = useState(false); 
-
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -76,8 +115,6 @@ const ReportAreaPage = ({ navigation }: Props) => {
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const imageUri = result.assets[0].uri;
-
-      // Upload the image to Firebase
       await uploadImage(imageUri);
     }
   };
@@ -87,23 +124,14 @@ const ReportAreaPage = ({ navigation }: Props) => {
     const response = await fetch(uri);
     const blob = await response.blob();
     const metadata = {
-      contentType: 'image/jpeg', // Change this if you're using a different image format
+      contentType: 'image/jpeg',
     };
-    console.log(blob);
-    // Create a unique file path
     const fileName = `${new Date().getTime()}-report-image.jpg`;
     const storageRef = ref(storage, `reports/${fileName}`);
-    console.log("Uploading to: ", `reports/${fileName}`);
-
 
     try {
-      // Upload the image to Firebase Storage
-      await uploadBytes(storageRef, blob, metadata); // Use uploadBytes instead of put
-      
-      // Get the image download URL
-      const downloadURL = await getDownloadURL(storageRef); // Use getDownloadURL
-      
-      // Add the image to local state for rendering
+      await uploadBytes(storageRef, blob, metadata);
+      const downloadURL = await getDownloadURL(storageRef);
       setImages((prevImages) => [...prevImages, downloadURL]);
     } catch (error) {
       console.error("Error uploading image: ", error);
@@ -145,15 +173,15 @@ const ReportAreaPage = ({ navigation }: Props) => {
     try {
       await addDoc(collection(db, 'reports'), reportData);
       Alert.alert('Success', 'Your report has been submitted.');
-      
+
       // Clear all fields
       setFullName('');
       setContactNumber('');
       setEmail('');
       setDescription('');
-      setPollutionLevel('Low'); // Reset to default
-      setPriorityLevel('Low'); // Reset to default
-      setImages([]); // Clear images
+      setPollutionLevel('Low');
+      setPriorityLevel('Low');
+      setImages([]);
     } catch (error) {
       Alert.alert('Error', 'An error occurred while submitting the report.');
       console.error('Error adding document: ', error);
@@ -161,6 +189,53 @@ const ReportAreaPage = ({ navigation }: Props) => {
       setLoading(false);
     }
   };
+
+  const handleUpdateReport = async () => {
+    if (!fullName || !contactNumber || !email || !description) {
+      Alert.alert('Error', 'Please fill in all the fields.');
+      return;
+    }
+
+    setLoading(true);
+
+    const reportData = {
+      fullName,
+      contactNumber,
+      email,
+      description,
+      pollutionLevel,
+      priorityLevel,
+      location: {
+        latitude: reportLocation?.latitude || null,
+        longitude: reportLocation?.longitude || null,
+        locationName: reportLocationName,
+      },
+      images,
+      status: 'pending',
+      timestamp: new Date(),
+    };
+
+    try {
+      if (report) {
+        await updateDoc(doc(db, 'reports', report.id), reportData);
+      }
+      Alert.alert('Success', 'Your report has been updated.');
+
+      // Clear all fields
+      setFullName('');
+      setContactNumber('');
+      setEmail('');
+      setDescription('');
+      setPollutionLevel('Low');
+      setPriorityLevel('Low');
+      setImages([]);
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred while updating the report.');
+      console.error('Error updating document: ', error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -170,21 +245,22 @@ const ReportAreaPage = ({ navigation }: Props) => {
           <Text style={styles.loadingText}>Submitting your report...</Text>
         </View>
       )}
+      
       <ScrollView style={styles.container}>
         <Text style={styles.sectionTitle}>Location</Text>
         <Text style={styles.sectionDescription}>Select the reporting area from the map</Text>
         <MapView
           style={styles.map}
           initialRegion={{
-            latitude: 7.8731,
-            longitude: 80.7718,
+            latitude: reportLocation?.latitude || 7.8731,
+            longitude: reportLocation?.longitude || 80.7718, 
             latitudeDelta: 5,
             longitudeDelta: 5,
           }}
         >
-          {location && (
+          {reportLocation && (
             <Marker
-              coordinate={{ latitude: location.latitude, longitude: location.longitude }}
+              coordinate={reportLocation}
               title={shortenedAddress}
               description={reportLocationName}
             />
@@ -219,14 +295,9 @@ const ReportAreaPage = ({ navigation }: Props) => {
             <TouchableOpacity
               key={level}
               style={[styles.pollutionButton, pollutionLevel === level && styles.pollutionButtonSelected]}
-              onPress={() => handlePollutionLevelChange(level)}
+              onPress={() => setPollutionLevel(level)}
             >
-              <Text
-                style={[
-                  styles.pollutionButtonText,
-                  pollutionLevel === level && styles.pollutionButtonTextSelected,
-                ]}
-              >
+              <Text style={[styles.pollutionButtonText, pollutionLevel === level && styles.pollutionButtonTextSelected]}>
                 {level}
               </Text>
             </TouchableOpacity>
@@ -262,7 +333,7 @@ const ReportAreaPage = ({ navigation }: Props) => {
 
         {/* Image Upload */}
         <Text style={styles.sectionTitle}>Images</Text>
-        <Text style={styles.sectionDescription}>Upload Images of the reported area</Text>
+        <Text style={styles.sectionDescription}>Upload Images of the reporting area</Text>
         <View style={styles.imagesContainer}>
           <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
             <Text style={styles.addImageText}>+</Text>
@@ -278,26 +349,33 @@ const ReportAreaPage = ({ navigation }: Props) => {
             <TouchableOpacity
               key={level}
               style={[styles.pollutionButton, priorityLevel === level && styles.pollutionButtonSelected]}
-              onPress={() => handlePriorityLevelChange(level)}
+              onPress={() => setPriorityLevel(level)}
             >
-              <Text
-                style={[
-                  styles.pollutionButtonText,
-                  priorityLevel === level && styles.pollutionButtonTextSelected,
-                ]}
-              >
+              <Text style={[styles.pollutionButtonText, priorityLevel === level && styles.pollutionButtonTextSelected]}>
                 {level}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <TouchableOpacity 
+        {report ? (
+          <TouchableOpacity style={styles.locationButton} onPress={handleUpdateReport}>
+            <Text style={styles.submitButtonText}>Update Report</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.locationButton} onPress={handleSubmitReport}>
+            <Text style={styles.submitButtonText}>Submit Report</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* <TouchableOpacity
           style={styles.submitButton}
           onPress={handleSubmitReport}
         >
-          <Text style={styles.submitButtonText}>Submit Report</Text>
-        </TouchableOpacity>
+          <Text style={styles.submitButtonText}>
+            Submit Report
+          </Text>
+        </TouchableOpacity> */}
       </ScrollView>
     </SafeAreaView>
   );
