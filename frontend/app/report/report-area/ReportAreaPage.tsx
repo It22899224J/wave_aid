@@ -138,6 +138,7 @@ const ReportAreaPage = ({ navigation }: Props) => {
         locationName: reportLocationName,
       },
       images,
+      status: 'pending',
       timestamp: new Date(),
     };
 
