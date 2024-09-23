@@ -38,7 +38,7 @@ const ReportMainView= ({navigation}: Props) => {
          <ScrollView style={styles.container}>
             <View style={styles.imageContainer}>
                 <Image
-                    source={{ uri: 'https://img.freepik.com/free-photo/trash-sand-beach-showing-environmental-pollution-problem_1150-6645.jpg?t=st=1726859923~exp=1726863523~hmac=20cade8c537967c9331b7eaa36cca7455e68433c872622b1010235964093b627&w=1060' }}
+                    source={{ uri: 'https://globalnomadic.com/wp-content/uploads/2024/02/AdobeStock_644054501.jpeg' }}
                     style={styles.headerImage}
                 />
             </View>
@@ -56,7 +56,7 @@ const ReportMainView= ({navigation}: Props) => {
             </View>
             <View style={styles.imageContainer}>
                 <Image
-                    source={{ uri: 'https://img.freepik.com/free-photo/trash-sand-beach-showing-environmental-pollution-problem_1150-6523.jpg?t=st=1726859907~exp=1726863507~hmac=e629b8117539dbaa5a1f0e80ec4e573a16aec7a42f4b8d398a6740844b0636f1&w=1060' }}
+                    source={{ uri: 'https://www.ecowatch.com/wp-content/uploads/2022/07/GettyImages-1353301481-scaled.jpg' }}
                     style={styles.headerImage}
                 />
             </View>

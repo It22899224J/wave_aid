@@ -30,7 +30,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ item, onRemove }) => {
             <Text style={[styles.wasteLevel, { color: item.wasteLevelColor }]}>{item.wasteLevel}</Text>
           </View>
           <View style={styles.row}>
-            <Icon name="pulse" size={20} color="#000" />
+            <Icon name="pencil" size={20} color="#000" />
             <Text style={[styles.status, { color: item.statusColor }]}>{item.status}</Text>
           </View>
         </View>
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 10,
         right: 10,
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
         borderRadius: 12,
         padding: 5,
       },

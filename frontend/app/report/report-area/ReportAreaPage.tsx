@@ -225,7 +225,7 @@ useEffect(() => {
         await updateDoc(doc(db, 'reports', report.id), reportData);
       }
       Alert.alert('Success', 'Your report has been updated.');
-      
+
     } catch (error) {
       Alert.alert('Error', 'An error occurred while updating the report.');
       console.error('Error updating document: ', error);
@@ -468,6 +468,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 10,
     marginBottom: 10,
+    borderRadius: 8,
   },
   addImageText: {
     fontSize: 24,
