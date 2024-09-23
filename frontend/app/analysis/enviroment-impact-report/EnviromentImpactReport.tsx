@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Dimensions, ScrollView, Image } from "react-native";
 import { LineChart, BarChart, ProgressChart } from "react-native-chart-kit";
+import { chartConfig } from "../AnalysisDashboard";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -27,20 +28,6 @@ const ecosystemImpact = [
   { category: "Air Quality", score: 0.7 },
   { category: "Habitat Restoration", score: 0.8 },
 ];
-
-const chartConfig = {
-  backgroundColor: "#e26a00",
-  backgroundGradientFrom: "#fb8c00",
-  backgroundGradientTo: "#ffa726",
-  decimalPlaces: 2,
-  color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-  style: {
-    borderRadius: 16,
-  },
-  propsForLabels: {
-    fontSize: 12,
-  },
-};
 
 const EnvironmentalImpactReport = () => {
   return (

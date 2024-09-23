@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Dimensions, ScrollView } from "react-native";
 import { BarChart, PieChart } from "react-native-chart-kit";
+import { chartConfig } from "../AnalysisDashboard";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -17,18 +18,6 @@ const wasteTypeData = [
   { name: "Metal", value: 15, color: "rgb(0, 0, 255)" },
   { name: "Other", value: 15, color: "rgb(0, 255, 0)" },
 ];
-
-const chartConfig = {
-  backgroundGradientFrom: "#ffffff",
-  backgroundGradientTo: "#ffffff",
-  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  strokeWidth: 2,
-  barPercentage: 0.7,
-  useShadowColorFromDataset: false,
-  propsForLabels: {
-    fontSize: 10,
-  },
-};
 
 const GeographicImpactReport = () => {
   return (

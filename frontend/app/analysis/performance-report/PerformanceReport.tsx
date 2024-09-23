@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Dimensions, ScrollView } from "react-native";
 import { LineChart, BarChart, StackedBarChart } from "react-native-chart-kit";
+import { chartConfig } from "../AnalysisDashboard";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -41,18 +42,6 @@ const performanceData = [
     wasteCollected: 390,
   },
 ];
-
-const chartConfig = {
-  backgroundGradientFrom: "#ffffff",
-  backgroundGradientTo: "#ffffff",
-  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  strokeWidth: 2,
-  barPercentage: 0.7,
-  useShadowColorFromDataset: false,
-  propsForLabels: {
-    fontSize: 10,
-  },
-};
 
 const PerformanceReport = () => {
   return (

@@ -33,6 +33,37 @@ import { useNavigation } from "@react-navigation/native";
 import { useEffect } from "react";
 import Loader from "@/components/loader/Loader";
 
+
+export const chartConfig = {
+  backgroundColor: "#ffffff",
+  backgroundGradientFrom: "#ffffff",
+  backgroundGradientTo: "#ffffff",
+  decimalPlaces: 0,
+  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+  style: {
+    borderRadius: 16,
+  },
+  propsForLabels: {
+    fontSize: 10,
+  },
+};
+
+
+// //orange background config
+// const chartConfig = {
+//   backgroundColor: "#e26a00",
+//   backgroundGradientFrom: "#fb8c00",
+//   backgroundGradientTo: "#ffa726",
+//   decimalPlaces: 2,
+//   color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+//   style: {
+//     borderRadius: 16,
+//   },
+//   propsForLabels: {
+//     fontSize: 12,
+//   },
+// };
+
 const DashboardHeaderChart = () => (
   <>
     <LineChart
@@ -56,25 +87,10 @@ const DashboardHeaderChart = () => (
         Math.round((Dimensions.get("window").width * 10) / 100)
       } // from react-native
       height={275}
-      //   yAxisLabel="$"
-      yAxisSuffix="k"
+        // yAxisLabel="$"
+      yAxisSuffix="k "
       yAxisInterval={1} // optional, defaults to 1
-      chartConfig={{
-        backgroundColor: "#e26a00",
-        backgroundGradientFrom: "#fb8c00",
-        backgroundGradientTo: "#ffa726",
-        decimalPlaces: 0, // optional, defaults to 2dp
-        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-        style: {
-          borderRadius: 16,
-        },
-        propsForDots: {
-          r: "5",
-          strokeWidth: "2",
-          stroke: "#ffa726",
-        },
-      }}
+      chartConfig={chartConfig}
       bezier
       style={styles.chart}
     />
@@ -144,6 +160,7 @@ const AnalysisDashboard = () => {
               CardIconName={item.item.CardIconName}
               CardIconSize={item.item.CardIconSize}
               onPressLocation={item.item.onPressLocation}
+              key={item.index}
             />
           )}
           ListHeaderComponent={() => <DashboardHeaderChart />}

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Dimensions, ScrollView } from "react-native";
 import { LineChart, BarChart, PieChart } from "react-native-chart-kit";
+import { chartConfig } from "../AnalysisDashboard";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -46,17 +47,6 @@ const volunteerData = [
     satisfactionRating: 4.6,
   },
 ];
-
-const chartConfig = {
-  backgroundColor: "#ffffff",
-  backgroundGradientFrom: "#ffffff",
-  backgroundGradientTo: "#ffffff",
-  decimalPlaces: 2,
-  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  style: {
-    borderRadius: 16,
-  },
-};
 
 const VolunteerEngagementReport = () => {
   return (

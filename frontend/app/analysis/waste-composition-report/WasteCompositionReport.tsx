@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Dimensions, ScrollView } from "react-native";
 import { PieChart, BarChart, LineChart } from "react-native-chart-kit";
+import { chartConfig } from "../AnalysisDashboard";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -27,20 +28,6 @@ const commonWasteItems = [
   { item: "Plastic bags", count: 350 },
   { item: "Bottle caps", count: 300 },
 ];
-
-const chartConfig = {
-  backgroundColor: "#ffffff",
-  backgroundGradientFrom: "#ffffff",
-  backgroundGradientTo: "#ffffff",
-  decimalPlaces: 0,
-  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  style: {
-    borderRadius: 16,
-  },
-  propsForLabels: {
-    fontSize: 10,
-  },
-};
 
 const WasteCompositionReport = () => {
   return (
@@ -124,10 +111,12 @@ const WasteCompositionReport = () => {
         }}
         yAxisLabel=""
         yAxisSuffix=""
+        fromZero={true}
+        
         width={screenWidth - 32}
         height={220}
         chartConfig={chartConfig}
-        verticalLabelRotation={30}
+        // verticalLabelRotation={30}
         style={{ marginVertical: 8, borderRadius: 16 }}
       />
     </ScrollView>

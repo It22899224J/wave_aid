@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Dimensions, ScrollView } from "react-native";
 import { LineChart, BarChart, PieChart } from "react-native-chart-kit";
+import { chartConfig } from "../AnalysisDashboard";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -20,19 +21,7 @@ const wasteTypes = [
   { name: "Other", percentage: 5, color: "rgba(153, 102, 255, 1)" },
 ];
 
-const chartConfig = {
-  backgroundColor: "#ffffff",
-  backgroundGradientFrom: "#ffffff",
-  backgroundGradientTo: "#ffffff",
-  decimalPlaces: 0,
-  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  style: {
-    borderRadius: 16,
-  },
-  propsForLabels: {
-    fontSize: 10,
-  },
-};
+
 
 const EventSummaryReport = () => {
   return (

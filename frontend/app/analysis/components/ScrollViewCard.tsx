@@ -1,5 +1,11 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Pressable, View, Text, StyleSheet } from "react-native";
+import {
+  Pressable,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import {
   Quicksand_300Light,
   Quicksand_400Regular,
@@ -39,7 +45,7 @@ const ScrollViewCard = ({
   }
 
   return (
-    <Pressable
+    <TouchableOpacity
       style={styles.scrollViewCard}
       onPress={() => navigate.navigate(onPressLocation as never)}
     >
@@ -49,7 +55,7 @@ const ScrollViewCard = ({
       <View style={styles.scrollViewCardCol2}>
         <Text style={styles.scrollViewCardTitleText}>{CardTitle}</Text>
       </View>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 
