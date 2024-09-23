@@ -15,11 +15,10 @@ export const AnalysisStack = () => (
     <Stack.Screen
       name="Analysis Dashboard"
       component={AnalysisDashboard}
-      options={
-        {
-          // headerShown: false,
-        }
-      }
+      options={{
+        // headerShown: false,
+        headerTitle: "Analysis Dashboard",
+      }}
     />
     <Stack.Screen
       name="Enviroment Impact Report"

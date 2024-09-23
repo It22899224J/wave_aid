@@ -49,6 +49,9 @@ const SignUp = () => {
       if (formData.password == "") {
         throw Error("Please Enter a Password");
       }
+      if (formData.role == "") {
+        throw Error("Please Enter a Role");
+      }
       if (formData.email && formData.password) {
         const user = await createUserWithEmailAndPassword(
           auth,
@@ -62,9 +65,26 @@ const SignUp = () => {
           role: formData.role,
         });
       }
-    } catch (err: any) {
-      console.log("Error in signup: " + err);
-      alert(err.message);
+    } catch (error: any) {
+      console.log("Error in signup: " + error);
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          error.message = "Email already in use";
+          break;
+        case "auth/invalid-email":
+          error.message = "Invalid email";
+          break;
+        case "auth/missing-password":
+          error.message = "Missing password";
+          break;
+        case "auth/weak-password":
+          error.message = "Password is too weak";
+          break;
+        case "auth/too-many-requests":
+          error.message = "Too many requests. Please try again later.";
+          break;
+      }
+      alert(error.message);
     } finally {
       setLoading(false);
     }
@@ -72,9 +92,7 @@ const SignUp = () => {
 
   if (loading) {
     // Show loading spinner while checking user authentication state
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
 
   return (
