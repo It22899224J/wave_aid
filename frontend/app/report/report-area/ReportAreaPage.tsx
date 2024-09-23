@@ -5,8 +5,9 @@ import * as ImagePicker from 'expo-image-picker';
 import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import { addDoc, collection, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db, storage } from "./../../../service/firebase";
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { useAuth } from '@/context/AuthContext';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 interface RouteParams {
   location?: {
@@ -137,6 +138,16 @@ useEffect(() => {
       console.error("Error uploading image: ", error);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const removeImage = async (imageUrl: string) => {
+    const imageRef = ref(storage, imageUrl);
+    try {
+      await deleteObject(imageRef);
+      setImages(images.filter((url) => url !== imageUrl));
+    } catch (error) {
+      console.error('Error deleting image:', error);
     }
   };
 
@@ -338,8 +349,13 @@ useEffect(() => {
           <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
             <Text style={styles.addImageText}>+</Text>
           </TouchableOpacity>
-          {images.map((uri, index) => (
-            <Image key={index} source={{ uri }} style={styles.imagePlaceholder} />
+          {images.map((imageUrl, index) => (
+            <View key={index} style={styles.imageWrapper}>
+              <Image source={{ uri: imageUrl }} style={styles.uploadedImage} />
+              <TouchableOpacity style={styles.removeIcon} onPress={() => removeImage(imageUrl)}>
+                <Icon name="close" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
           ))}
         </View>
 
@@ -367,6 +383,8 @@ useEffect(() => {
             <Text style={styles.submitButtonText}>Submit Report</Text>
           </TouchableOpacity>
         )}
+
+        <View style={{ height: 30 }}></View>
 
         {/* <TouchableOpacity
           style={styles.submitButton}
@@ -484,6 +502,24 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: '#007AFF',
+  },
+  imageWrapper: {
+    position: 'relative',
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  uploadedImage: {
+    width: 170,
+    height: 100,
+    borderRadius: 8,
+  },
+  removeIcon: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 12,
+    padding: 2,
   },
 });
 
