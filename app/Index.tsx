@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MainScreen from "./events/main-screen/EventsMainView";
-import UpcommingEvents from "./events/main-screen/UpcommingEvents";
 import ReportMainView from "./report/report-screen/ReportMainView";
 import ReportAreaPage from "./report/report-area/ReportAreaPage";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -16,6 +15,7 @@ import ReportedAreasPage from "./report/reported-areas/ReportedAreasPage";
 import { AnalysisStack } from "./analysis/AnalysisStack";
 import SelectBus from "./events/book-a-seat/SelectBus";
 import SeatBooking from "./events/book-a-seat/BusLayout";
+import UpcommingEvents from "./events/main-screen/UpcommingEvents";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -96,7 +96,7 @@ const Index = () => {
             }}
           />
 
-          <Tab.Screen
+          {/* <Tab.Screen
             name="Analysis"
             component={AnalysisStack}
             options={{
@@ -115,9 +115,9 @@ const Index = () => {
                 <Icon name="document-text-outline" color={color} size={size} />
               ),
             }}
-          />
+          /> */}
 
-          <Tab.Screen
+          {/* <Tab.Screen
             name="Booking"
             component={Booking}
             options={{
@@ -126,7 +126,7 @@ const Index = () => {
                 <Icon name="bus" color={color} size={size} />
               ),
             }}
-          />
+          /> */}
 
           <Tab.Screen
             name="Profile"
@@ -142,6 +142,16 @@ const Index = () => {
       ) : (
         <>
           {/* ADMIN TAB SCREENS HERE */}
+          <Tab.Screen
+            name="Home"
+            component={UpcommingEvents}
+            options={{
+              headerTitle: "Beach Cleanup Events",
+              tabBarIcon: ({ color, size }) => (
+                <Icon name="home" color={color} size={size} />
+              ),
+            }}
+          />
           <Tab.Screen
             name="Admin Home"
             component={AdminHome}

@@ -1,43 +1,72 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Octicons from "@expo/vector-icons/Octicons";
 
-const UpcommingEvents: React.FC = () => {
+export interface CardProps {
+  _id: string;
+  name: string;
+  date: string;
+  locationName: string;
+  location: string;
+  weather: string;
+  organizer: string;
+  image: string;
+  imageUrl: string;
+}
+
+const UpcommingEvents: React.FC<{ event: CardProps }> = ({ event }) => {
+  // Sample data
+  const sampleEvent: CardProps = {
+    _id: "1",
+    name: "Beach Cleanup",
+    date: "2024-09-30",
+    locationName: "Sunny Beach",
+    location: "123 Beach Ave, Ocean City",
+    weather: "Sunny",
+    organizer: "Clean Earth Org",
+    image: "path/to/image.jpg",
+    imageUrl: "https://example.com/sample-image.jpg", // Replace with your image URL
+  };
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Beach Cleanup</Text>
-      <Text style={styles.title}>Organized By</Text>
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>{event.name}</Text>
+      <Text style={styles.title}>Organized By: {event.organizer}</Text>
 
       {/* Vertically Aligned Texts with Icons */}
       <View style={styles.verticalContainer}>
         <View style={styles.textContainer}>
           <Octicons name="organization" size={24} color="black" />
-          <Text style={styles.text}>Item 1</Text>
+          <Text style={styles.text}>Location: {event.locationName}</Text>
         </View>
       </View>
+
       <Text style={styles.title}>Event Details</Text>
 
       <View style={styles.verticalContainer}>
         <View style={styles.textContainer}>
-          <Octicons name="organization" size={24} color="black" />
-          <Text style={styles.text}>Item 2</Text>
+          <Octicons name="calendar" size={24} color="black" />
+          <Text style={styles.text}>Date: {event.date}</Text>
         </View>
         <View style={styles.textContainer}>
-          <Octicons name="organization" size={24} color="black" />
-          <Text style={styles.text}>Item 3</Text>
+          <Octicons name="location" size={24} color="black" />
+          <Text style={styles.text}>Location: {event.location}</Text>
         </View>
         <View style={styles.textContainer}>
-          <Octicons name="organization" size={24} color="black" />
-          <Text style={styles.text}>Item 4</Text>
+          <Octicons name="star" size={24} color="black" />
+          <Text style={styles.text}>Weather: {event.weather}</Text>
         </View>
       </View>
 
       {/* Full-sized Image */}
-      <Image
-        source={{ uri: "" }} 
-        style={styles.image}
-      />
+      <Image source={{ uri: event.imageUrl }} style={styles.image} />
 
       {/* Two Horizontally Aligned Boxes */}
       <View style={styles.horizontalContainer}>
@@ -50,18 +79,20 @@ const UpcommingEvents: React.FC = () => {
       </View>
 
       <View>
-        <Text style={styles.title}>Event Details</Text>
+        <Text style={styles.title}>Transport options</Text>
       </View>
-      <View>
-        <Text style={styles.title}>Event Details</Text>
-        <Text style={styles.title}>Event Details</Text>
-      </View>
+
       <View>
         <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Click Me</Text>
+          <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
       </View>
-    </View>
+
+      <View>
+        <Text style={styles.title}>Volunteer guidelines</Text>
+        <Text style={styles.title}>Details</Text>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -72,7 +103,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   title: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: "bold",
     marginBottom: 16,
   },
@@ -81,11 +112,13 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     alignItems: "center",
-    paddingVertical: 8,
+    paddingVertical: 30,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
+    paddingHorizontal: 20,
+    gap: 35,
   },
   text: {
     fontSize: 18,
@@ -94,10 +127,12 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 200,
     marginBottom: 16,
+    borderRadius:10,
   },
   horizontalContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginBottom: 16,
   },
   box: {
     flex: 1,
