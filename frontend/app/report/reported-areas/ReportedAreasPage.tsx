@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
+import { StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Alert, View, ActivityIndicator } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 import { useAuth } from '@/context/AuthContext';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/service/firebase';
 import { ReportCard } from './ReportCard';
 
@@ -20,6 +20,7 @@ interface Report {
 const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) => {
   
   const [reportData, setReportData] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(false);
   const {user} = useAuth();
   const userId = user?.uid;
 
@@ -82,12 +83,48 @@ const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) 
     navigation.navigate('ReportAreaPage', { report: item });
   };
 
+  const confirmRemoveReport = (reportId: string) => {
+    Alert.alert(
+      'Confirm Deletion',
+      'Are you sure you want to delete this report?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => removeReport(reportId),
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const removeReport = async (reportId: string) => {
+    setLoading(true);
+    try {
+      await deleteDoc(doc(db, 'reports', reportId));
+      setReportData(reportData.filter((report) => report.id !== reportId));
+    } catch (error) {
+      console.error('Error removing report:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      )}
       <ScrollView style={styles.container}>
         {reportData.map((item) => (
           <TouchableOpacity key={item.id} onPress={() => handleReportPress(item)}>
-            <ReportCard item={item} />
+            <ReportCard item={item} onRemove={confirmRemoveReport} />
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -113,6 +150,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
+  },
+  loadingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
   },
 });
 

@@ -1,8 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons'; // For icons
 
-export const ReportCard = ({ item }: { item: any }) => {
+interface ReportCardProps {
+  item: {
+    id: string;
+    beachName: string;
+    date: string;
+    wasteLevel: string;
+    wasteLevelColor: string;
+    status: string;
+    statusColor: string;
+    image: string;
+  };
+  onRemove: (id: string) => void;
+}
+
+export const ReportCard: React.FC<ReportCardProps> = ({ item, onRemove }) => {
     return (
       <View style={styles.card}>
         <View style={styles.cardInfo}>
@@ -21,6 +35,9 @@ export const ReportCard = ({ item }: { item: any }) => {
           </View>
         </View>
         <Image source={{ uri: item.image }} style={styles.cardImage} />
+        <TouchableOpacity style={styles.removeButton} onPress={() => onRemove(item.id)}>
+          <Icon name="trash" size={24} color="#FF0000" />
+        </TouchableOpacity>
       </View>
     );
 };
@@ -70,6 +87,14 @@ const styles = StyleSheet.create({
         resizeMode: "cover",
         borderTopLeftRadius: 100,
         borderBottomLeftRadius: 100,
+      },
+      removeButton: {
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        borderRadius: 12,
+        padding: 5,
       },
 });
 

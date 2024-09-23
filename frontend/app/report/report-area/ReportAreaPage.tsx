@@ -185,14 +185,8 @@ useEffect(() => {
       await addDoc(collection(db, 'reports'), reportData);
       Alert.alert('Success', 'Your report has been submitted.');
 
-      // Clear all fields
-      setFullName('');
-      setContactNumber('');
-      setEmail('');
-      setDescription('');
-      setPollutionLevel('Low');
-      setPriorityLevel('Low');
-      setImages([]);
+      // navigate to the previous screen
+      navigation.goBack();
     } catch (error) {
       Alert.alert('Error', 'An error occurred while submitting the report.');
       console.error('Error adding document: ', error);
@@ -231,15 +225,7 @@ useEffect(() => {
         await updateDoc(doc(db, 'reports', report.id), reportData);
       }
       Alert.alert('Success', 'Your report has been updated.');
-
-      // Clear all fields
-      setFullName('');
-      setContactNumber('');
-      setEmail('');
-      setDescription('');
-      setPollutionLevel('Low');
-      setPriorityLevel('Low');
-      setImages([]);
+      
     } catch (error) {
       Alert.alert('Error', 'An error occurred while updating the report.');
       console.error('Error updating document: ', error);
