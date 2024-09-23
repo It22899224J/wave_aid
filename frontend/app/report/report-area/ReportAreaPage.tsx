@@ -6,6 +6,7 @@ import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import { addDoc, collection } from 'firebase/firestore';
 import { db, storage } from "./../../../service/firebase";
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useAuth } from '@/context/AuthContext';
 
 interface RouteParams {
   location?: {
@@ -26,6 +27,9 @@ type Props = {
 };
 
 const ReportAreaPage = ({ navigation }: Props) => {
+
+  const {user} = useAuth();
+
   const [pollutionLevel, setPollutionLevel] = useState('Low');
   const [priorityLevel, setPriorityLevel] = useState('Low');
   const [fullName, setFullName] = useState('');
@@ -121,6 +125,7 @@ const ReportAreaPage = ({ navigation }: Props) => {
     setLoading(true);
 
     const reportData = {
+      userId: user ? user.uid : null,
       fullName,
       contactNumber,
       email,
