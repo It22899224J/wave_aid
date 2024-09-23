@@ -33,6 +33,55 @@ import { useNavigation } from "@react-navigation/native";
 import { useEffect } from "react";
 import Loader from "@/components/loader/Loader";
 
+const DashboardHeaderChart = () => (
+  <>
+    <LineChart
+      data={{
+        labels: ["January", "February", "March", "April", "May", "June"],
+        datasets: [
+          {
+            data: [
+              Math.random() * 100,
+              Math.random() * 100,
+              Math.random() * 100,
+              Math.random() * 100,
+              Math.random() * 100,
+              Math.random() * 100,
+            ],
+          },
+        ],
+      }}
+      width={
+        Dimensions.get("window").width -
+        Math.round((Dimensions.get("window").width * 10) / 100)
+      } // from react-native
+      height={275}
+      //   yAxisLabel="$"
+      yAxisSuffix="k"
+      yAxisInterval={1} // optional, defaults to 1
+      chartConfig={{
+        backgroundColor: "#e26a00",
+        backgroundGradientFrom: "#fb8c00",
+        backgroundGradientTo: "#ffa726",
+        decimalPlaces: 0, // optional, defaults to 2dp
+        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+        style: {
+          borderRadius: 16,
+        },
+        propsForDots: {
+          r: "5",
+          strokeWidth: "2",
+          stroke: "#ffa726",
+        },
+      }}
+      bezier
+      style={styles.chart}
+    />
+    <Text style={styles.chartCaption}>Volunteer Interation</Text>
+  </>
+);
+
 const AnalysisDashboard = () => {
   const navigate = useNavigation();
 
@@ -105,55 +154,6 @@ const AnalysisDashboard = () => {
 };
 
 export default AnalysisDashboard;
-
-const DashboardHeaderChart = () => (
-  <>
-    <LineChart
-      data={{
-        labels: ["January", "February", "March", "April", "May", "June"],
-        datasets: [
-          {
-            data: [
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-            ],
-          },
-        ],
-      }}
-      width={
-        Dimensions.get("window").width -
-        Math.round((Dimensions.get("window").width * 10) / 100)
-      } // from react-native
-      height={275}
-      //   yAxisLabel="$"
-      yAxisSuffix="k"
-      yAxisInterval={1} // optional, defaults to 1
-      chartConfig={{
-        backgroundColor: "#e26a00",
-        backgroundGradientFrom: "#fb8c00",
-        backgroundGradientTo: "#ffa726",
-        decimalPlaces: 0, // optional, defaults to 2dp
-        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-        style: {
-          borderRadius: 16,
-        },
-        propsForDots: {
-          r: "5",
-          strokeWidth: "2",
-          stroke: "#ffa726",
-        },
-      }}
-      bezier
-      style={styles.chart}
-    />
-    <Text style={styles.chartCaption}>Volunteer Interation</Text>
-  </>
-);
 
 const styles = StyleSheet.create({
   analysisContainer: {

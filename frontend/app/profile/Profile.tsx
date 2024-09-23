@@ -1,6 +1,9 @@
+import Loader from "@/components/loader/Loader";
 import { useAllUser, User } from "@/context/AllUserContext";
 import { useAuth } from "@/context/AuthContext";
+import { db } from "@/service/firebase";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { deleteDoc, doc } from "firebase/firestore";
 import { useCallback, useEffect, useState } from "react";
 import {
   Button,
@@ -15,10 +18,31 @@ import {
 const Profile = () => {
   const { signOut, user, loading: authLoading } = useAuth();
   const { users, loading: allUserLoading } = useAllUser();
+  const [loading, setLoading] = useState(false);
 
   const [userDetails, setUserDetails] = useState<User | undefined>(undefined);
 
-  const deleteProfile = () => {
+  const deleteProfile = async () => {
+    if (user) {
+      setLoading(true);
+      try {
+        // Delete Firestore record
+        await deleteDoc(doc(db, "users", user.uid));
+        // Delete Firebase Authentication record
+        await user.delete();
+        // Sign out the user
+        await signOut();
+        Alert.alert("Success", "Account deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting user account:", error);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const onClickDeleteProfile = () => {
     Alert.alert(
       "Are you sure?",
       `User associated to ${user?.email} will be deleted`,
@@ -29,7 +53,7 @@ const Profile = () => {
         },
         {
           text: "Confirm",
-          onPress: () => {},
+          onPress: () => deleteProfile(),
           style: "destructive",
         },
       ],
@@ -50,6 +74,10 @@ const Profile = () => {
   useEffect(() => {
     setUserDetails(() => initializeUserDetails());
   }, [initializeUserDetails]);
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -90,7 +118,7 @@ const Profile = () => {
           <Text style={styles.profileButtonContainerBtnText}>Edit Profile</Text>
         </Pressable>
         <Pressable
-          onPress={deleteProfile}
+          onPress={onClickDeleteProfile}
           style={styles.profileButtonContainerBtnDelete}
         >
           <Text style={styles.profileButtonContainerBtnText}>

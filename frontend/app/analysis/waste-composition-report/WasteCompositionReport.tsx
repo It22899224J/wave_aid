@@ -1,95 +1,136 @@
 import React from "react";
-import { View, Text, Dimensions, SafeAreaView, ScrollView } from "react-native";
-import { LineChart, BarChart, PieChart } from "react-native-chart-kit";
+import { View, Text, Dimensions, ScrollView } from "react-native";
+import { PieChart, BarChart, LineChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
 
-const eventData = [
-  { date: "2023-01", events: 5, participants: 100, wasteCollected: 500 },
-  { date: "2023-02", events: 7, participants: 150, wasteCollected: 750 },
-  { date: "2023-03", events: 6, participants: 200, wasteCollected: 600 },
-  { date: "2023-04", events: 2, participants: 350, wasteCollected: 400 },
-  { date: "2023-05", events: 4, participants: 500, wasteCollected: 750 },
+const wasteCompositionData = [
+  { type: "Plastics", percentage: 60, color: "rgba(255, 99, 132, 1)" },
+  { type: "Glass", percentage: 15, color: "rgba(54, 162, 235, 1)" },
+  { type: "Metal", percentage: 10, color: "rgba(255, 206, 86, 1)" },
+  { type: "Paper", percentage: 10, color: "rgba(75, 192, 192, 1)" },
+  { type: "Other", percentage: 5, color: "rgba(153, 102, 255, 1)" },
 ];
 
-const wasteTypeData = [
-  {
-    name: "Plastics",
-    value: 50,
-    color: "rgba(131, 167, 234, 1)",
-    legendFontColor: "#7F7F7F",
-    legendFontSize: 15,
-  },
-  {
-    name: "Glass",
-    value: 20,
-    color: "#F00",
-    legendFontColor: "#7F7F7F",
-    legendFontSize: 15,
-  },
-  {
-    name: "Metal",
-    value: 15,
-    color: "rgb(0, 0, 255)",
-    legendFontColor: "#7F7F7F",
-    legendFontSize: 15,
-  },
-  {
-    name: "Other",
-    value: 15,
-    color: "rgb(0, 255, 0)",
-    legendFontColor: "#7F7F7F",
-    legendFontSize: 15,
-  },
+const wasteCompositionOverTime = [
+  { month: "Jan", plastics: 58, glass: 16, metal: 11, paper: 10, other: 5 },
+  { month: "Feb", plastics: 59, glass: 15, metal: 11, paper: 10, other: 5 },
+  { month: "Mar", plastics: 60, glass: 15, metal: 10, paper: 10, other: 5 },
+  { month: "Apr", plastics: 61, glass: 14, metal: 10, paper: 10, other: 5 },
+  { month: "May", plastics: 62, glass: 14, metal: 9, paper: 10, other: 5 },
+];
+
+const commonWasteItems = [
+  { item: "Plastic bottles", count: 500 },
+  { item: "Cigarette butts", count: 450 },
+  { item: "Food wrappers", count: 400 },
+  { item: "Plastic bags", count: 350 },
+  { item: "Bottle caps", count: 300 },
 ];
 
 const chartConfig = {
+  backgroundColor: "#ffffff",
   backgroundGradientFrom: "#ffffff",
   backgroundGradientTo: "#ffffff",
+  decimalPlaces: 0,
   color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  strokeWidth: 2,
-  barPercentage: 0.7,
-  useShadowColorFromDataset: false,
+  style: {
+    borderRadius: 16,
+  },
   propsForLabels: {
     fontSize: 10,
   },
-  // propsForVerticalLabels: {
-  //   fontSize: 8,
-  //   rotation: 45,
-  //   originY: 0,
-  //   y: 5,
-  // },
 };
 
 const WasteCompositionReport = () => {
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView>
-        <View style={{ padding: 16 }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "bold",
-              marginTop: 20,
-              marginBottom: 10,
-            }}
-          >
-            Types of Waste Collected
-          </Text>
-          <PieChart
-            data={wasteTypeData}
-            width={screenWidth - 32}
-            height={220}
-            chartConfig={chartConfig}
-            accessor="value"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            center={[10, 10]}
-            absolute
-          />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <ScrollView style={{ padding: 16 }}>
+      {/* <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>
+        Waste Composition Report
+      </Text> */}
+
+      <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
+        Overall Waste Composition
+      </Text>
+      <PieChart
+        data={wasteCompositionData.map((item) => ({
+          name: item.type,
+          population: item.percentage,
+          color: item.color,
+          legendFontColor: "#7F7F7F",
+          legendFontSize: 12,
+        }))}
+        width={screenWidth - 32}
+        height={220}
+        chartConfig={chartConfig}
+        accessor="population"
+        backgroundColor="transparent"
+        paddingLeft="15"
+        absolute
+      />
+
+      <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
+        Waste Composition Changes Over Time
+      </Text>
+      <LineChart
+        data={{
+          labels: wasteCompositionOverTime.map((d) => d.month),
+          datasets: [
+            {
+              data: wasteCompositionOverTime.map((d) => d.plastics),
+              color: () => "rgba(255, 99, 132, 1)",
+              strokeWidth: 2,
+            },
+            {
+              data: wasteCompositionOverTime.map((d) => d.glass),
+              color: () => "rgba(54, 162, 235, 1)",
+              strokeWidth: 2,
+            },
+            {
+              data: wasteCompositionOverTime.map((d) => d.metal),
+              color: () => "rgba(255, 206, 86, 1)",
+              strokeWidth: 2,
+            },
+            {
+              data: wasteCompositionOverTime.map((d) => d.paper),
+              color: () => "rgba(75, 192, 192, 1)",
+              strokeWidth: 2,
+            },
+            {
+              data: wasteCompositionOverTime.map((d) => d.other),
+              color: () => "rgba(153, 102, 255, 1)",
+              strokeWidth: 2,
+            },
+          ],
+        }}
+        width={screenWidth - 32}
+        height={220}
+        chartConfig={chartConfig}
+        bezier
+        style={{ marginVertical: 8, borderRadius: 16 }}
+      />
+
+      <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
+        Most Common Waste Items
+      </Text>
+      <BarChart
+        data={{
+          labels: commonWasteItems.map((item) => item.item),
+          datasets: [
+            {
+              data: commonWasteItems.map((item) => item.count),
+            },
+          ],
+        }}
+        yAxisLabel=""
+        yAxisSuffix=""
+        width={screenWidth - 32}
+        height={220}
+        chartConfig={chartConfig}
+        verticalLabelRotation={30}
+        style={{ marginVertical: 8, borderRadius: 16 }}
+      />
+    </ScrollView>
   );
 };
 

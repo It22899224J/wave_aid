@@ -33,15 +33,21 @@ const chartConfig = {
 const GeographicImpactReport = () => {
   return (
     <ScrollView style={{ padding: 16 }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>Geographic Impact Report</Text>
-      
-      <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 16 }}>Waste Collected per Location</Text>
+      {/* <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>
+        Geographic Impact Report
+      </Text> */}
+
+      <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
+        Waste Collected per Location
+      </Text>
       <BarChart
         data={{
-          labels: locationData.map(d => d.location),
-          datasets: [{
-            data: locationData.map(d => d.wasteCollected)
-          }]
+          labels: locationData.map((d) => d.location),
+          datasets: [
+            {
+              data: locationData.map((d) => d.wasteCollected),
+            },
+          ],
         }}
         yAxisSuffix=""
         yAxisLabel=""
@@ -52,15 +58,18 @@ const GeographicImpactReport = () => {
         // verticalLabelRotation={45}
       />
 
-      <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 16 }}>Cleanups per Location</Text>
+      <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
+        Cleanups per Location
+      </Text>
       <BarChart
         data={{
-          labels: locationData.map(d => d.location),
-          datasets: [{
-            data: locationData.map(d => d.cleanups)
-          }]
+          labels: locationData.map((d) => d.location),
+          datasets: [
+            {
+              data: locationData.map((d) => d.cleanups),
+            },
+          ],
         }}
-        
         yAxisSuffix=""
         yAxisLabel=""
         width={screenWidth - 32}

@@ -1,106 +1,250 @@
 import React from "react";
-import { View, Text, Dimensions, SafeAreaView, ScrollView } from "react-native";
-import { LineChart, BarChart, PieChart } from "react-native-chart-kit";
+import { View, Text, Dimensions, ScrollView, Image } from "react-native";
+import { LineChart, BarChart, ProgressChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
 
-const eventData = [
-  { date: "2023-01", events: 5, participants: 100, wasteCollected: 500 },
-  { date: "2023-02", events: 7, participants: 150, wasteCollected: 750 },
-  { date: "2023-03", events: 6, participants: 200, wasteCollected: 600 },
-  { date: "2023-04", events: 2, participants: 350, wasteCollected: 400 },
-  { date: "2023-05", events: 4, participants: 500, wasteCollected: 750 },
+const wildlifeData = [
+  { month: "Jan", count: 50 },
+  { month: "Feb", count: 60 },
+  { month: "Mar", count: 75 },
+  { month: "Apr", count: 70 },
+  { month: "May", count: 85 },
 ];
 
-const wasteTypeData = [
-  {
-    name: "Plastics",
-    value: 50,
-    color: "rgba(131, 167, 234, 1)",
-    legendFontColor: "#7F7F7F",
-    legendFontSize: 15,
-  },
-  {
-    name: "Glass",
-    value: 20,
-    color: "#F00",
-    legendFontColor: "#7F7F7F",
-    legendFontSize: 15,
-  },
-  {
-    name: "Metal",
-    value: 15,
-    color: "rgb(0, 0, 255)",
-    legendFontColor: "#7F7F7F",
-    legendFontSize: 15,
-  },
-  {
-    name: "Other",
-    value: 15,
-    color: "rgb(0, 255, 0)",
-    legendFontColor: "#7F7F7F",
-    legendFontSize: 15,
-  },
+const pollutionData = [
+  { month: "Jan", level: 80 },
+  { month: "Feb", level: 75 },
+  { month: "Mar", level: 70 },
+  { month: "Apr", level: 65 },
+  { month: "May", level: 60 },
+];
+
+const ecosystemImpact = [
+  { category: "Biodiversity", score: 0.7 },
+  { category: "Water Quality", score: 0.8 },
+  { category: "Soil Health", score: 0.6 },
+  { category: "Air Quality", score: 0.7 },
+  { category: "Habitat Restoration", score: 0.8 },
 ];
 
 const chartConfig = {
-  backgroundGradientFrom: "#ffffff",
-  backgroundGradientTo: "#ffffff",
-  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  strokeWidth: 2,
-  barPercentage: 0.7,
-  useShadowColorFromDataset: false,
-  propsForLabels: {
-    fontSize: 10,
+  backgroundColor: "#e26a00",
+  backgroundGradientFrom: "#fb8c00",
+  backgroundGradientTo: "#ffa726",
+  decimalPlaces: 2,
+  color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+  style: {
+    borderRadius: 16,
   },
-  // propsForVerticalLabels: {
-  //   fontSize: 8,
-  //   rotation: 45,
-  //   originY: 0,
-  //   y: 5,
-  // },
+  propsForLabels: {
+    fontSize: 12,
+  },
 };
 
-const EnviromentImpactReport = () => {
+const EnvironmentalImpactReport = () => {
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView>
-        <View style={{ padding: 16 }}>
-          <Text
+    <ScrollView style={{ padding: 16, backgroundColor: "#f0f0f0" }}>
+      {/* <Text
+        style={{
+          fontSize: 24,
+          fontWeight: "bold",
+          marginBottom: 16,
+          color: "#333",
+        }}
+      >
+        Environmental Impact Report
+      </Text> */}
+
+      <View
+        style={{
+          backgroundColor: "white",
+          borderRadius: 10,
+          padding: 16,
+          marginBottom: 16,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            marginBottom: 8,
+            color: "#333",
+          }}
+        >
+          Estimated Wildlife Saved/Protected
+        </Text>
+        <LineChart
+          data={{
+            labels: wildlifeData.map((d) => d.month),
+            datasets: [
+              {
+                data: wildlifeData.map((d) => d.count),
+              },
+            ],
+          }}
+          width={screenWidth - 64}
+          height={220}
+          chartConfig={chartConfig}
+          bezier
+          style={{ marginVertical: 8, borderRadius: 16 }}
+        />
+        <Text style={{ fontSize: 14, color: "#666", marginTop: 8 }}>
+          The graph shows an increasing trend in the number of wildlife saved or
+          protected each month, indicating the positive impact of our beach
+          cleaning efforts on local ecosystems.
+        </Text>
+      </View>
+
+      <View
+        style={{
+          backgroundColor: "white",
+          borderRadius: 10,
+          padding: 16,
+          marginBottom: 16,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            marginBottom: 8,
+            color: "#333",
+          }}
+        >
+          Reduction in Pollution Levels
+        </Text>
+        <LineChart
+          data={{
+            labels: pollutionData.map((d) => d.month),
+            datasets: [
+              {
+                data: pollutionData.map((d) => d.level),
+              },
+            ],
+          }}
+          width={screenWidth - 64}
+          height={220}
+          chartConfig={{
+            ...chartConfig,
+            color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
+          }}
+          bezier
+          style={{ marginVertical: 8, borderRadius: 16 }}
+        />
+        <Text style={{ fontSize: 14, color: "#666", marginTop: 8 }}>
+          The decreasing trend in pollution levels demonstrates the
+          effectiveness of our cleanup efforts in reducing environmental
+          contamination over time.
+        </Text>
+      </View>
+
+      <View
+        style={{
+          backgroundColor: "white",
+          borderRadius: 10,
+          padding: 16,
+          marginBottom: 16,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            marginBottom: 8,
+            color: "#333",
+          }}
+        >
+          Long-term Impact on Local Ecosystems
+        </Text>
+        <ProgressChart
+          data={{
+            labels: ecosystemImpact.map((d) => d.category),
+            data: ecosystemImpact.map((d) => d.score),
+          }}
+          width={screenWidth - 64}
+          height={220}
+          chartConfig={chartConfig}
+          style={{ marginVertical: 8, borderRadius: 16 }}
+        />
+        <Text style={{ fontSize: 14, color: "#666", marginTop: 8 }}>
+          This chart illustrates the positive impact of our efforts across
+          various aspects of the local ecosystem. Higher scores indicate greater
+          improvement in each category.
+        </Text>
+      </View>
+
+      <View
+        style={{
+          backgroundColor: "white",
+          borderRadius: 10,
+          padding: 16,
+          marginBottom: 16,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            marginBottom: 8,
+            color: "#333",
+          }}
+        >
+          Before and After Comparison
+        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 8,
+          }}
+        >
+          <Image
+            source={{ uri: "/api/placeholder/200/150" }}
             style={{
-              fontSize: 20,
-              fontWeight: "bold",
-              marginTop: 20,
-              marginBottom: 10,
+              width: (screenWidth - 80) / 2,
+              height: 150,
+              borderRadius: 8,
             }}
-          >
-            Waste Collected per Event
-          </Text>
-          <BarChart
-            data={{
-              labels: eventData.map((d) => d.date),
-              datasets: [
-                {
-                  data: eventData.map((d) => d.wasteCollected),
-                },
-              ],
+          />
+          <Image
+            source={{ uri: "/api/placeholder/200/150" }}
+            style={{
+              width: (screenWidth - 80) / 2,
+              height: 150,
+              borderRadius: 8,
             }}
-            width={screenWidth - 32}
-            height={300}
-            yAxisLabel=""
-            yAxisSuffix=" kg"
-            chartConfig={{
-              ...chartConfig,
-              formatYLabel: (value) => Math.round(Number(value)).toString(),
-            }}
-            style={{ marginVertical: 8, borderRadius: 16 }}
-            fromZero={true}
-            segments={5}
           />
         </View>
-      </ScrollView>
-    </SafeAreaView>
+        <Text style={{ fontSize: 14, color: "#666" }}>
+          These images showcase the visible improvement in beach conditions
+          before and after our cleanup efforts. The transformation highlights
+          the tangible impact of our work on the local environment.
+        </Text>
+      </View>
+
+      <View style={{ backgroundColor: "white", borderRadius: 10, padding: 16 }}>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            marginBottom: 8,
+            color: "#333",
+          }}
+        >
+          Summary
+        </Text>
+        <Text style={{ fontSize: 14, color: "#666" }}>
+          Our environmental impact report demonstrates significant positive
+          changes in wildlife protection, pollution reduction, and overall
+          ecosystem health. The data shows consistent improvement across all
+          measured metrics, indicating that our beach cleaning initiatives are
+          making a real difference in preserving and restoring local coastal
+          environments.
+        </Text>
+      </View>
+    </ScrollView>
   );
 };
 
-export default EnviromentImpactReport;
+export default EnvironmentalImpactReport;

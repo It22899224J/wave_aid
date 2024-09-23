@@ -57,9 +57,9 @@ const chartConfig = {
 const PerformanceReport = () => {
   return (
     <ScrollView style={{ padding: 16 }}>
-      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>
+      {/* <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>
         Performance Report
-      </Text>
+      </Text> */}
 
       <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
         Waste Collected per Hour
@@ -105,17 +105,21 @@ const PerformanceReport = () => {
       <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
         Efficiency: Waste Collected vs Participants
       </Text>
-      <StackedBarChart
+      <LineChart
         data={{
-          labels: performanceData.map((d) => d.date), // X-axis labels
-          legend: ["Participants", "Waste Collected"], // Legends for the stacked bar chart
-          data: performanceData.map((d) => [d.participants, d.wasteCollected]), // Array of arrays where each inner array represents values for each stack
-          barColors: ["#dfe4ea", "#ced6e0"], // Colors for the stacked sections
+          labels: performanceData.map((d) => d.date),
+          datasets: [
+            {
+              data: performanceData.map((d) => d.areaCovered),
+              color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
+              strokeWidth: 2,
+            },
+          ],
         }}
         width={screenWidth - 32}
         height={220}
         chartConfig={chartConfig}
-        hideLegend={false} // Explicitly add the hideLegend property
+        bezier
         style={{ marginVertical: 8, borderRadius: 16 }}
       />
     </ScrollView>

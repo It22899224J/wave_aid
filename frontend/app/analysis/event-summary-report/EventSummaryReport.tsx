@@ -1,124 +1,127 @@
 import React from "react";
-import { View, Text, Dimensions, SafeAreaView, ScrollView } from "react-native";
+import { View, Text, Dimensions, ScrollView } from "react-native";
 import { LineChart, BarChart, PieChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
 
 const eventData = [
-  { date: "2023-01", events: 5, participants: 100, wasteCollected: 500 },
-  { date: "2023-02", events: 7, participants: 150, wasteCollected: 750 },
-  { date: "2023-03", events: 6, participants: 200, wasteCollected: 600 },
-  { date: "2023-04", events: 2, participants: 350, wasteCollected: 400 },
-  { date: "2023-05", events: 4, participants: 500, wasteCollected: 750 },
+  { date: "2023-01", events: 2, participants: 30, wasteCollected: 150 },
+  { date: "2023-02", events: 3, participants: 45, wasteCollected: 200 },
+  { date: "2023-03", events: 4, participants: 60, wasteCollected: 300 },
+  { date: "2023-04", events: 3, participants: 40, wasteCollected: 180 },
+  { date: "2023-05", events: 5, participants: 75, wasteCollected: 350 },
 ];
 
-const wasteTypeData = [
-  {
-    name: "Plastics",
-    value: 50,
-    color: "rgba(131, 167, 234, 1)",
-    legendFontColor: "#7F7F7F",
-    legendFontSize: 15,
-  },
-  {
-    name: "Glass",
-    value: 20,
-    color: "#F00",
-    legendFontColor: "#7F7F7F",
-    legendFontSize: 15,
-  },
-  {
-    name: "Metal",
-    value: 15,
-    color: "rgb(0, 0, 255)",
-    legendFontColor: "#7F7F7F",
-    legendFontSize: 15,
-  },
-  {
-    name: "Other",
-    value: 15,
-    color: "rgb(0, 255, 0)",
-    legendFontColor: "#7F7F7F",
-    legendFontSize: 15,
-  },
+const wasteTypes = [
+  { name: "Plastics", percentage: 60, color: "rgba(255, 99, 132, 1)" },
+  { name: "Glass", percentage: 15, color: "rgba(54, 162, 235, 1)" },
+  { name: "Metal", percentage: 10, color: "rgba(255, 206, 86, 1)" },
+  { name: "Paper", percentage: 10, color: "rgba(75, 192, 192, 1)" },
+  { name: "Other", percentage: 5, color: "rgba(153, 102, 255, 1)" },
 ];
 
 const chartConfig = {
+  backgroundColor: "#ffffff",
   backgroundGradientFrom: "#ffffff",
   backgroundGradientTo: "#ffffff",
+  decimalPlaces: 0,
   color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  strokeWidth: 2,
-  barPercentage: 0.7,
-  useShadowColorFromDataset: false,
+  style: {
+    borderRadius: 16,
+  },
   propsForLabels: {
     fontSize: 10,
   },
-  // propsForVerticalLabels: {
-  //   fontSize: 8,
-  //   rotation: 45,
-  //   originY: 0,
-  //   y: 5,
-  // },
 };
 
 const EventSummaryReport = () => {
-  const calculateYAxisMin = (min: number, max: number) =>
-    Math.floor(min - (max - min) * 0.1);
-
-  const participantsMin = Math.min(...eventData.map((d) => d.participants));
-  const participantsMax = Math.max(...eventData.map((d) => d.participants));
-  const eventsMin = Math.min(...eventData.map((d) => d.events));
-  const eventsMax = Math.max(...eventData.map((d) => d.events));
-  const wasteCollectedMin = Math.min(...eventData.map((d) => d.wasteCollected));
-  const wasteCollectedMax = Math.max(...eventData.map((d) => d.wasteCollected));
-
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView>
-        <View style={{ padding: 16 }}>
-          
+    <ScrollView style={{ padding: 16 }}>
+      {/* <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>
+        Event Summary Report
+      </Text> */}
 
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "bold",
-              marginTop: 20,
-              marginBottom: 10,
-            }}
-          >
-            Events Over Time
-          </Text>
-          <LineChart
-            data={{
-              labels: eventData.map((d) => d.date),
-              datasets: [
-                {
-                  data: eventData.map((d) => d.events),
-                  color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`,
-                  strokeWidth: 2,
-                },
-              ],
-              legend: ["Events"],
-            }}
-            width={screenWidth - 32}
-            height={300}
-            chartConfig={{
-              ...chartConfig,
-            }}
-            bezier
-            style={{ marginVertical: 8, borderRadius: 16 }}
-            yAxisLabel=""
-            yAxisSuffix=""
-            fromZero={true}
-            formatYLabel={(value) => Math.round(Number(value)).toString()}
-            // yAxisInterval={5}
-            // yLabelsOffset={5}
-            segments={5}
+      <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
+        Number of Events Over Time
+      </Text>
+      <LineChart
+        data={{
+          labels: eventData.map((d) => d.date),
+          datasets: [
+            {
+              data: eventData.map((d) => d.events),
+              color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`,
+              strokeWidth: 2,
+            },
+          ],
+        }}
+        width={screenWidth - 32}
+        height={220}
+        chartConfig={chartConfig}
+        bezier
+        style={{ marginVertical: 8, borderRadius: 16 }}
+      />
 
-          />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
+        Total Participants per Event
+      </Text>
+      <BarChart
+        data={{
+          labels: eventData.map((d) => d.date),
+          datasets: [
+            {
+              data: eventData.map((d) => d.participants),
+            },
+          ],
+        }}
+        yAxisSuffix=""
+        yAxisLabel=""
+        width={screenWidth - 32}
+        height={220}
+        chartConfig={chartConfig}
+        style={{ marginVertical: 8, borderRadius: 16 }}
+      />
+
+      <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
+        Amount of Waste Collected per Event
+      </Text>
+      <BarChart
+        data={{
+          labels: eventData.map((d) => d.date),
+          datasets: [
+            {
+              data: eventData.map((d) => d.wasteCollected),
+            },
+          ],
+        }}
+        yAxisSuffix=""
+        yAxisLabel=""
+        width={screenWidth - 32}
+        height={220}
+        chartConfig={chartConfig}
+        style={{ marginVertical: 8, borderRadius: 16 }}
+      />
+
+      <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
+        Types of Waste Collected
+      </Text>
+      <PieChart
+        data={wasteTypes.map((wt) => ({
+          name: wt.name,
+          population: wt.percentage,
+          color: wt.color,
+          legendFontColor: "#7F7F7F",
+          legendFontSize: 12,
+        }))}
+        width={screenWidth - 32}
+        height={220}
+        chartConfig={chartConfig}
+        accessor="population"
+        backgroundColor="transparent"
+        paddingLeft="15"
+        absolute
+      />
+    </ScrollView>
   );
 };
 

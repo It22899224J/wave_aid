@@ -59,9 +59,9 @@ const chartConfig = {
 const TransportEfficiencyReport = () => {
   return (
     <ScrollView style={{ padding: 16 }}>
-      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>
+      {/* <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>
         Transport Efficiency Report
-      </Text>
+      </Text> */}
 
       <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
         Fuel Consumption per Event
