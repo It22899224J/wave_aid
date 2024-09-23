@@ -144,7 +144,7 @@ const Index = () => {
           {/* ADMIN TAB SCREENS HERE */}
           <Tab.Screen
             name="Home"
-            component={UpcommingEvents}
+            component={MainScreen}
             options={{
               headerTitle: "Beach Cleanup Events",
               tabBarIcon: ({ color, size }) => (

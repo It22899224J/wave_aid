@@ -8,6 +8,7 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 
@@ -121,72 +122,59 @@ const MainScreen = () => {
           onChangeText={setSearchText}
         />
       </View>
-      <View style={styles.tabsContainer}>
-        {["All Events", "Upcoming", "Past"].map((tab, index) => (
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === tab.toLowerCase() && styles.activeTab,
-            ]}
-            onPress={() => setActiveTab(tab.toLowerCase())}
-          >
-            <Text style={styles.tabText}>{tab}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <View style={styles.mapContainer}>
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: 7.8731,
-            longitude: 80.7718,
-            latitudeDelta: 0.5,
-            longitudeDelta: 0.5,
-          }}
-        >
-          {beaches.map((beach, index) => (
-            <Marker
-              coordinate={beach.coordinate}
-              title={beach.title}
-              pinColor={beach.color}
-            />
+      <ScrollView style={styles.scrollContainer}>
+        <View style={styles.tabsContainer}>
+          {["All Events", "Upcoming", "Past"].map((tab, index) => (
+            <TouchableOpacity
+              style={[
+                styles.tab,
+                activeTab === tab.toLowerCase() && styles.activeTab,
+              ]}
+              onPress={() => setActiveTab(tab.toLowerCase())}
+            >
+              <Text style={styles.tabText}>{tab}</Text>
+            </TouchableOpacity>
           ))}
-        </MapView>
-      </View>
-      <View>
-        <Text style={styles.topic}>
-          {capitalizeFirstLetter(activeTab)} Cleanup Events
-        </Text>
-      </View>
-      <View style={styles.cardsContainer}>
-        <FlatList
-          style={styles.flatList}
-          data={cardData}
-          renderItem={({ item }) => (
-            <CardComponent details={item}></CardComponent>
-          )}
-          keyExtractor={(item) => item._id}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
+        </View>
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: 7.8731,
+              longitude: 80.7718,
+              latitudeDelta: 0.5,
+              longitudeDelta: 0.5,
+            }}
+          >
+            {beaches.map((beach, index) => (
+              <Marker
+                coordinate={beach.coordinate}
+                title={beach.title}
+                pinColor={beach.color}
+              />
+            ))}
+          </MapView>
+        </View>
+        <View>
+          <Text style={styles.topic}>
+            {capitalizeFirstLetter(activeTab)} Cleanup Events
+          </Text>
+        </View>
+        <View style={styles.cardsContainer}>
+          {cardData.map((item) => (
+            <CardComponent details={item} />
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    display: "flex",
-    flexDirection: "column",
+    flex: 1,
     padding: 15,
-        gap: 10,
-    backgroundColor:"#ffffff"
-  },
-  topic: {
-    fontSize: 22,
-    fontWeight: "bold",
-    textAlign: "left",
-    marginVertical: 10,
+    backgroundColor: "#ffffff",
   },
   searchInput: {
     height: 40,
@@ -222,11 +210,21 @@ const styles = StyleSheet.create({
     height: 240,
     borderRadius: 8,
   },
-  mapContainer: {},
-  cardsContainer: {
-    height: 300,
+  mapContainer: {
+    marginBottom: 10,
   },
-  flatList: {},
+  scrollContainer: {
+    flexGrow: 1,
+  },
+  cardsContainer: {
+    marginBottom: 20,
+  },
+  topic: {
+    fontSize: 18,
+    fontWeight: "semibold",
+    textAlign:"left"
+  }
 });
+
 
 export default MainScreen;
