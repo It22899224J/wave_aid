@@ -58,13 +58,34 @@ const Profile = () => {
         <Ionicons name="person-circle" size={100} />
         <View>
           <Text style={styles.profileUsername}>{userDetails?.name}</Text>
-          <Pressable onPress={signOut} style={styles.profileSignoutButton}>
-            <Text style={styles.profileSignoutButtonText}>Sign Out</Text>
-          </Pressable>
+          <Text style={styles.profileEmail}>{userDetails?.email}</Text>
         </View>
       </View>
 
       <View style={styles.profileButtonContainer}>
+        <Pressable
+          onPress={() => {
+            Alert.alert(
+              "Are you sure?",
+              `User associated to ${user?.email} will be logged out`,
+              [
+                {
+                  text: "Cancel",
+                  style: "cancel",
+                },
+                {
+                  text: "Confirm",
+                  onPress: () => signOut(),
+                  style: "destructive",
+                },
+              ],
+              { cancelable: true }
+            );
+          }}
+          style={styles.profileSignoutButton}
+        >
+          <Text style={styles.profileSignoutButtonText}>Sign Out</Text>
+        </Pressable>
         <Pressable onPress={() => {}} style={styles.profileButtonContainerBtn}>
           <Text style={styles.profileButtonContainerBtnText}>Edit Profile</Text>
         </Pressable>
@@ -92,6 +113,7 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     alignSelf: "center",
+    alignItems: "center",
     flexDirection: "column",
     rowGap: 5,
     marginBottom: 50,
@@ -99,6 +121,10 @@ const styles = StyleSheet.create({
   profileUsername: {
     textAlign: "center",
     fontSize: 20,
+  },
+  profileEmail: {
+    textAlign: "center",
+    fontSize: 12,
   },
   profileSignoutButton: {
     backgroundColor: "#8E8E8F",

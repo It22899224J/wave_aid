@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Dimensions, ScrollView } from "react-native";
-import { LineChart, BarChart } from "react-native-chart-kit";
+import { LineChart, BarChart, StackedBarChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -105,22 +105,19 @@ const PerformanceReport = () => {
       <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
         Efficiency: Waste Collected vs Participants
       </Text>
-      {/* <ScatterChart
+      <StackedBarChart
         data={{
-          datasets: [
-            {
-              data: performanceData.map((d) => ({
-                x: d.participants,
-                y: d.wasteCollected,
-              })),
-            },
-          ],
+          labels: performanceData.map((d) => d.date), // X-axis labels
+          legend: ["Participants", "Waste Collected"], // Legends for the stacked bar chart
+          data: performanceData.map((d) => [d.participants, d.wasteCollected]), // Array of arrays where each inner array represents values for each stack
+          barColors: ["#dfe4ea", "#ced6e0"], // Colors for the stacked sections
         }}
         width={screenWidth - 32}
         height={220}
         chartConfig={chartConfig}
+        hideLegend={false} // Explicitly add the hideLegend property
         style={{ marginVertical: 8, borderRadius: 16 }}
-      /> */}
+      />
     </ScrollView>
   );
 };

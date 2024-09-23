@@ -1,10 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-  Pressable,
-  View,
-  Text,
-  StyleSheet,
-} from "react-native";
+import { Pressable, View, Text, StyleSheet } from "react-native";
 import {
   Quicksand_300Light,
   Quicksand_400Regular,
@@ -16,18 +11,22 @@ import {
 } from "@expo-google-fonts/raleway";
 import { useFonts } from "expo-font";
 import Loader from "@/components/loader/Loader";
+import { useNavigation } from "@react-navigation/native";
+
+export interface ScrollCardProps {
+  CardTitle: string;
+  CardIconName: string;
+  CardIconSize?: number;
+  onPressLocation: string;
+}
 
 const ScrollViewCard = ({
   CardTitle,
   CardIconName,
   CardIconSize,
-  onPress
-}: {
-  CardTitle: string;
-  CardIconName: string;
-  CardIconSize?: number;
-  onPress: () => void
-}) => {
+  onPressLocation,
+}: ScrollCardProps) => {
+  const navigate = useNavigation();
   const [fontsLoaded] = useFonts({
     Raleway_200ExtraLight,
     Raleway_700Bold,
@@ -36,13 +35,14 @@ const ScrollViewCard = ({
     Quicksand_700Bold,
   });
   if (!fontsLoaded) {
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
 
   return (
-    <Pressable style={styles.scrollViewCard} onPress={onPress}>
+    <Pressable
+      style={styles.scrollViewCard}
+      onPress={() => navigate.navigate(onPressLocation as never)}
+    >
       <View style={styles.scrollViewCardCol1}>
         <Ionicons name={CardIconName as any} size={CardIconSize ?? 35} />
       </View>

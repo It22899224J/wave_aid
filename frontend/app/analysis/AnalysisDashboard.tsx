@@ -6,7 +6,8 @@ import {
   Dimensions,
   ScrollView,
   Image,
-  SafeAreaView
+  SafeAreaView,
+  FlatList,
 } from "react-native";
 import {
   Raleway_200ExtraLight,
@@ -27,7 +28,7 @@ import {
   ContributionGraph,
   StackedBarChart,
 } from "react-native-chart-kit";
-import ScrollViewCard from "./components/ScrollViewCard";
+import ScrollViewCard, { ScrollCardProps } from "./components/ScrollViewCard";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect } from "react";
 import Loader from "@/components/loader/Loader";
@@ -43,111 +44,116 @@ const AnalysisDashboard = () => {
     Quicksand_700Bold,
   });
   if (!fontsLoaded) {
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
   return (
     <SafeAreaView>
       <View style={styles.analysisContainer}>
         {/* <Text style={styles.titleText}>Analysis Dashboard</Text> */}
-        <ScrollView style={styles.scrollViewContainer}>
-          <LineChart
-            data={{
-              labels: ["January", "February", "March", "April", "May", "June"],
-              datasets: [
-                {
-                  data: [
-                    Math.random() * 100,
-                    Math.random() * 100,
-                    Math.random() * 100,
-                    Math.random() * 100,
-                    Math.random() * 100,
-                    Math.random() * 100,
-                  ],
-                },
-              ],
-            }}
-            width={
-              Dimensions.get("window").width -
-              Math.round((Dimensions.get("window").width * 10) / 100)
-            } // from react-native
-            height={275}
-            //   yAxisLabel="$"
-            yAxisSuffix="k"
-            yAxisInterval={1} // optional, defaults to 1
-            chartConfig={{
-              backgroundColor: "#e26a00",
-              backgroundGradientFrom: "#fb8c00",
-              backgroundGradientTo: "#ffa726",
-              decimalPlaces: 0, // optional, defaults to 2dp
-              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              style: {
-                borderRadius: 16,
-              },
-              propsForDots: {
-                r: "5",
-                strokeWidth: "2",
-                stroke: "#ffa726",
-              },
-            }}
-            bezier
-            style={styles.chart}
-          />
-          <Text style={styles.chartCaption}>Volunteer Interation</Text>
-          <ScrollViewCard
-            CardTitle="Event Summary Report"
-            CardIconName="albums"
-            onPress={() => navigate.navigate("Event Summary Report" as never)}
-          />
-          <ScrollViewCard
-            CardTitle="Performance Report"
-            CardIconName="trending-up"
-            onPress={() => navigate.navigate("Performance Report" as never)}
-          />
-          <ScrollViewCard
-            CardTitle="Geographic Impact Report"
-            CardIconName="location"
-            onPress={() =>
-              navigate.navigate("Geographic Impact Report" as never)
-            }
-          />
-          <ScrollViewCard
-            CardTitle="Waste Composition Report"
-            CardIconName="trash"
-            onPress={() =>
-              navigate.navigate("Waste Composition Report" as never)
-            }
-          />
-          <ScrollViewCard
-            CardTitle="Volunteer Engagement Report"
-            CardIconName="people"
-            onPress={() =>
-              navigate.navigate("Volunteer Engagement Report" as never)
-            }
-          />
-          <ScrollViewCard
-            CardTitle="Enviroment Impact Report"
-            CardIconName="earth"
-            onPress={() =>
-              navigate.navigate("Enviroment Impact Report" as never)
-            }
-          />
-          <ScrollViewCard
-            CardTitle="Transport Efficency Report"
-            CardIconName="bus"
-            onPress={() =>
-              navigate.navigate("Transport Efficency Report" as never)
-            }
-          />
-        </ScrollView>
+        <FlatList<ScrollCardProps>
+          style={styles.scrollViewContainer}
+          data={[
+            {
+              CardTitle: "Event Summary Report",
+              CardIconName: "albums",
+              onPressLocation: "Event Summary Report",
+            },
+            {
+              CardTitle: "Performance Report",
+              CardIconName: "trending-up",
+              onPressLocation: "Performance Report",
+            },
+            {
+              CardTitle: "Geographic Impact Report",
+              CardIconName: "location",
+              onPressLocation: "Geographic Impact Report",
+            },
+            {
+              CardTitle: "Waste Composition Report",
+              CardIconName: "trash",
+              onPressLocation: "Waste Composition Report",
+            },
+            {
+              CardTitle: "Volunteer Engagement Report",
+              CardIconName: "people",
+              onPressLocation: "Volunteer Engagement Report",
+            },
+            {
+              CardTitle: "Enviroment Impact Report",
+              CardIconName: "earth",
+              onPressLocation: "Enviroment Impact Report",
+            },
+            {
+              CardTitle: "Transport Efficency Report",
+              CardIconName: "bus",
+              onPressLocation: "Transport Efficency Report",
+            },
+          ]}
+          renderItem={(item) => (
+            <ScrollViewCard
+              CardTitle={item.item.CardTitle}
+              CardIconName={item.item.CardIconName}
+              CardIconSize={item.item.CardIconSize}
+              onPressLocation={item.item.onPressLocation}
+            />
+          )}
+          ListHeaderComponent={() => <DashboardHeaderChart />}
+        />
       </View>
     </SafeAreaView>
   );
 };
 
 export default AnalysisDashboard;
+
+const DashboardHeaderChart = () => (
+  <>
+    <LineChart
+      data={{
+        labels: ["January", "February", "March", "April", "May", "June"],
+        datasets: [
+          {
+            data: [
+              Math.random() * 100,
+              Math.random() * 100,
+              Math.random() * 100,
+              Math.random() * 100,
+              Math.random() * 100,
+              Math.random() * 100,
+            ],
+          },
+        ],
+      }}
+      width={
+        Dimensions.get("window").width -
+        Math.round((Dimensions.get("window").width * 10) / 100)
+      } // from react-native
+      height={275}
+      //   yAxisLabel="$"
+      yAxisSuffix="k"
+      yAxisInterval={1} // optional, defaults to 1
+      chartConfig={{
+        backgroundColor: "#e26a00",
+        backgroundGradientFrom: "#fb8c00",
+        backgroundGradientTo: "#ffa726",
+        decimalPlaces: 0, // optional, defaults to 2dp
+        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+        style: {
+          borderRadius: 16,
+        },
+        propsForDots: {
+          r: "5",
+          strokeWidth: "2",
+          stroke: "#ffa726",
+        },
+      }}
+      bezier
+      style={styles.chart}
+    />
+    <Text style={styles.chartCaption}>Volunteer Interation</Text>
+  </>
+);
 
 const styles = StyleSheet.create({
   analysisContainer: {
