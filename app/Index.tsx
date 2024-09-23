@@ -96,7 +96,7 @@ const Index = () => {
             }}
           />
 
-          {/* <Tab.Screen
+          <Tab.Screen
             name="Analysis"
             component={AnalysisStack}
             options={{
@@ -115,9 +115,9 @@ const Index = () => {
                 <Icon name="document-text-outline" color={color} size={size} />
               ),
             }}
-          /> */}
+          /> 
 
-          {/* <Tab.Screen
+         <Tab.Screen
             name="Booking"
             component={Booking}
             options={{
@@ -126,7 +126,7 @@ const Index = () => {
                 <Icon name="bus" color={color} size={size} />
               ),
             }}
-          /> */}
+          />
 
           <Tab.Screen
             name="Profile"
