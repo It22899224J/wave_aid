@@ -115,6 +115,17 @@ const Index = () => {
         <>
           {/* ADMIN TAB SCREENS HERE */}
           <Tab.Screen
+            name="Home"
+            component={MainScreen}
+            options={{
+              headerTitle: "Beach Cleanup Events",
+              tabBarIcon: ({ color, size }) => (
+                <Icon name="home" color={color} size={size} />
+              ),
+            }}
+            />
+            
+          <Tab.Screen
             name="Admin Home"
             component={AdminHome}
             options={{
