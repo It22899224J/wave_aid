@@ -30,12 +30,7 @@ export default function App() {
 function RootLayout() {
   const { user, loading } = useAuth(); // Use user and loading from AuthContext
 
-  if (loading) {
-    // Show loading spinner while checking user authentication state
-    return (
-      <Loader />
-    );
-  }
+  if (loading) return <Loader />;
 
   return (
     <Stack.Navigator>
@@ -58,7 +53,6 @@ function RootLayout() {
             options={{ headerShown: false }}
           />
 
-
           <Stack.Screen
             name="ReportedAreasPage"
             component={ReportedAreasPage}
@@ -72,7 +66,7 @@ function RootLayout() {
           <Stack.Screen
             name="SelectLocation"
             component={SelectLocation}
-            options={{ title: 'Select Location' }}
+            options={{ title: "Select Location" }}
           />
         </>
       ) : (

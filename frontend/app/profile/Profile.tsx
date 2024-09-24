@@ -3,7 +3,7 @@ import { useAllUser, User } from "@/context/AllUserContext";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/service/firebase";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { deleteDoc, doc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 import { useCallback, useEffect, useState } from "react";
 import {
   Button,
@@ -27,7 +27,14 @@ const Profile = () => {
       setLoading(true);
       try {
         // Delete Firestore record
-        await deleteDoc(doc(db, "users", user.uid));
+        const userCollection = collection(db, "users");
+        const q = query(userCollection, where("userId", "==", user.uid));
+
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach(async (docSnapshot) => {
+          await deleteDoc(doc(db, "users", docSnapshot.id));
+          console.log(`Deleted document with ID: ${docSnapshot.id}`);
+        });
         // Delete Firebase Authentication record
         await user.delete();
         // Sign out the user

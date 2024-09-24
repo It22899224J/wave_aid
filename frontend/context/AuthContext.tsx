@@ -1,3 +1,4 @@
+import Loader from "@/components/loader/Loader";
 import { auth } from "@/service/firebase";
 import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import {

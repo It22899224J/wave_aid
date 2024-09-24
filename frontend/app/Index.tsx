@@ -4,7 +4,7 @@ import MainScreen from "./events/main-screen/EventsMainView";
 import Icon from "react-native-vector-icons/Ionicons";
 import Profile from "./profile/Profile";
 import { useAuth } from "@/context/AuthContext";
-import { useAllUser } from "@/context/AllUserContext";
+import { AllUserProvider, useAllUser } from "@/context/AllUserContext";
 import AdminProfile from "./admin/admin-profile/AdminProfile";
 import AdminHome from "./admin/admin-home/AdminHome";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -12,6 +12,9 @@ import { AnalysisStack } from "./analysis/AnalysisStack";
 import SelectBus from "./events/book-a-seat/SelectBus";
 import SeatBooking from "./events/book-a-seat/BusLayout";
 import { ReportStack } from "./report/ReportStack";
+import AdminUserManagementStack from "./admin/admin-user-management/AdminUserManagementStack";
+import Loader from "@/components/loader/Loader";
+import { auth } from "@/service/firebase";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -37,6 +40,7 @@ const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const { users, loading: allUserLoading } = useAllUser();
   const [userRole, setUserRole] = useState<"User" | "Admin">("User");
+  const [loading, setLoading] = useState(true);
 
   const initializeUserDetails = useCallback(() => {
     if (!allUserLoading && !authLoading) {
@@ -52,7 +56,11 @@ const Index = () => {
     if (details) {
       setUserRole(details.role);
     }
+    setLoading(false);
   }, [initializeUserDetails]);
+
+  if (loading) return <Loader />;
+  if (allUserLoading || authLoading) return <Loader />;
 
   return (
     <Tab.Navigator>
@@ -70,16 +78,6 @@ const Index = () => {
             }}
           />
 
-          <Tab.Screen
-            name="Analysis"
-            component={AnalysisStack}
-            options={{
-              headerShown: false,
-              tabBarIcon: ({ color, size }) => (
-                <Icon name="analytics" color={color} size={size} />
-              ),
-            }}
-          />
           <Tab.Screen
             name="Report"
             component={ReportStack}
@@ -123,10 +121,35 @@ const Index = () => {
               // headerShown: false,
               headerTitle: "Admin Home",
               tabBarIcon: ({ color, size }) => (
-                <Icon name="person" color={color} size={size} />
+                <Icon name="home" color={color} size={size} />
               ),
             }}
           />
+
+          <Tab.Screen
+            name="Admin User Management"
+            component={AdminUserManagementStack}
+            options={{
+              headerShown: false,
+              // headerTitle: "Admin User Dashboard",
+              tabBarIcon: ({ color, size }) => (
+                <Icon name="people" color={color} size={size} />
+              ),
+              tabBarLabel: "User Management",
+            }}
+          />
+
+          <Tab.Screen
+            name="Analysis"
+            component={AnalysisStack}
+            options={{
+              headerShown: false,
+              tabBarIcon: ({ color, size }) => (
+                <Icon name="analytics" color={color} size={size} />
+              ),
+            }}
+          />
+
           <Tab.Screen
             name="Admin Profile"
             component={AdminProfile}

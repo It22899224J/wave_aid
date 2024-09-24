@@ -1,3 +1,4 @@
+import Loader from "@/components/loader/Loader";
 import { db } from "@/service/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import { createContext, FC, useContext, useEffect, useState } from "react";

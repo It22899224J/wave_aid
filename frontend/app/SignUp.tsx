@@ -20,7 +20,7 @@ import Loader from "@/components/loader/Loader";
 
 interface formData {
   username?: string | undefined;
-  role?: string | undefined;
+  // role?: string | undefined;
   email?: string | undefined;
   password?: string | undefined;
 }
@@ -32,7 +32,7 @@ const SignUp = () => {
     username: "",
     email: "",
     password: "",
-    role: "",
+    // role: "",
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigation();
@@ -49,9 +49,9 @@ const SignUp = () => {
       if (formData.password == "") {
         throw Error("Please Enter a Password");
       }
-      if (formData.role == "") {
-        throw Error("Please Enter a Role");
-      }
+      // if (formData.role == "") {
+      //   throw Error("Please Enter a Role");
+      // }
       if (formData.email && formData.password) {
         const user = await createUserWithEmailAndPassword(
           auth,
@@ -62,7 +62,7 @@ const SignUp = () => {
           userId: user.user.uid,
           name: formData.username,
           email: formData.email,
-          role: formData.role,
+          role: "User",
         });
       }
     } catch (error: any) {
@@ -136,7 +136,7 @@ const SignUp = () => {
             }}
             secureTextEntry
           />
-          <SelectDropdown
+          {/* <SelectDropdown
             data={[
               { title: "Admin" },
               { title: "User" },
@@ -180,7 +180,7 @@ const SignUp = () => {
             }}
             showsVerticalScrollIndicator={false}
             dropdownStyle={style.dropdownMenuStyle}
-          />
+          /> */}
           <Button title="Sign Up" onPress={signup} />
         </KeyboardAvoidingView>
         <TouchableOpacity onPress={() => navigate.navigate("signin" as never)}>
