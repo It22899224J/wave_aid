@@ -84,6 +84,7 @@ const UserCard = ({ user }: { user: User }) => {
       <View>
         <Text>Name : {user.name}</Text>
         <Text>Name : {user.email}</Text>
+        <Text>Name : {user.contactNo}</Text>
         <Text>Name : {user.role}</Text>
       </View>
       <View style={styles.iconContainer}>

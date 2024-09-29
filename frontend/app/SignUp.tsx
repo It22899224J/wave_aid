@@ -17,22 +17,17 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import Loader from "@/components/loader/Loader";
-
-interface formData {
-  username?: string | undefined;
-  // role?: string | undefined;
-  email?: string | undefined;
-  password?: string | undefined;
-}
+import { User } from "@/context/AllUserContext";
 
 const SignUp = () => {
   const { user } = useAuth();
 
-  const [formData, setFormData] = useState<formData>({
-    username: "",
+  const [formData, setFormData] = useState<Partial<User>>({
+    name: "",
     email: "",
     password: "",
-    // role: "",
+    contactNo: "",
+    role: "User",
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigation();
@@ -40,7 +35,7 @@ const SignUp = () => {
   const signup = async () => {
     setLoading(true);
     try {
-      if (formData.username == "") {
+      if (formData.name == "") {
         throw Error("Please Enter a Username");
       }
       if (formData.email == "") {
@@ -60,8 +55,9 @@ const SignUp = () => {
         );
         addDoc(collection(db, "users"), {
           userId: user.user.uid,
-          name: formData.username,
+          name: formData.name,
           email: formData.email,
+          contactNo: formData.contactNo,
           role: "User",
         });
       }
@@ -103,13 +99,29 @@ const SignUp = () => {
           <Text>Username</Text>
           <TextInput
             style={style.textInput}
-            value={formData.username}
+            value={formData.name}
             onChangeText={(e) =>
               setFormData((existingFormData) => ({
                 ...existingFormData,
-                username: e,
+                name: e,
               }))
             }
+          />
+          <Text>Contact No.</Text>
+          <TextInput
+            style={style.textInput}
+            value={formData.contactNo}
+            passwordRules={
+              "required: upper; required: lower; required: digit; max-consecutive: 2; minlength: 8;"
+            }
+            onChangeText={(e) =>
+              setFormData((existingFormData) => ({
+                ...existingFormData,
+                contactNo: e,
+              }))
+            }
+            autoCapitalize="none"
+            keyboardType="phone-pad"
           />
           <Text>Email</Text>
           <TextInput

@@ -8,6 +8,8 @@ export interface User {
   name: string;
   email: string;
   role: "User" | "Admin";
+  password?: string;
+  contactNo: string;
 }
 interface AllUserContextData {
   users: User[] | null;
@@ -30,8 +32,8 @@ export const AllUserProvider: FC<{ children: React.ReactNode }> = ({
     const unsubscribe = onSnapshot(userCollection, (querySnapshot) => {
       const userList: User[] = [];
       querySnapshot.forEach((doc) => {
-        const { userId, name, email, role } = doc.data();
-        userList.push({ userId, name, email, role });
+        const { userId, name, email, role, contactNo } = doc.data();
+        userList.push({ userId, name, email, role, contactNo });
       });
       setUsers(userList);
       setLoading(false);

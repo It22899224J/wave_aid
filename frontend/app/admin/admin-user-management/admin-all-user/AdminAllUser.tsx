@@ -22,7 +22,6 @@ const AdminAllUser = () => {
       </TouchableOpacity>
       <FlatList<User>
         data={users?.map((user) => ({ ...user }))}
-        keyExtractor={(item) => item.userId}
         renderItem={(item) => <UserCard user={item.item} key={item.index} />}
         ItemSeparatorComponent={() => (
           <View style={styles.divider}>
