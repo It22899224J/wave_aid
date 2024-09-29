@@ -5,9 +5,11 @@ import UserCard from "../components/UserCard";
 import { FlatList } from "react-native-gesture-handler";
 import { Divider } from "@rneui/themed";
 import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "@/context/AuthContext";
 
 const AdminAllUser = () => {
   const { users, loading: allUserLoading } = useAllUser();
+  const { user } = useAuth();
   const navigate = useNavigation();
   if (allUserLoading) {
     return <Loader />;
@@ -21,7 +23,9 @@ const AdminAllUser = () => {
         <Text style={styles.buttonText}>Add Admin User</Text>
       </TouchableOpacity>
       <FlatList<User>
-        data={users?.map((user) => ({ ...user }))}
+        data={users?.filter(
+          (singleUser: User) => singleUser.userId != user?.uid
+        )}
         renderItem={(item) => <UserCard user={item.item} key={item.index} />}
         ItemSeparatorComponent={() => (
           <View style={styles.divider}>

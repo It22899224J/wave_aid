@@ -15,6 +15,7 @@ const AdminUpdateUser = ({ route }: any) => {
     name: "",
     role: "User",
     userId: "",
+    contactNo: "",
   });
 
   useEffect(() => {
@@ -47,7 +48,10 @@ const AdminUpdateUser = ({ route }: any) => {
     if (userId) {
       isLoading(true);
       await axios
-        .put(`http://192.168.1.5:3000/update-user/${userId}`, formData)
+        .put(
+          `http://192.168.1.5:3000/adminUser/update-user/${userId}`,
+          formData
+        )
         .then((res) => {
           console.log(res);
         })
@@ -72,6 +76,7 @@ const AdminUpdateUser = ({ route }: any) => {
       <Text>Username : {formData.name}</Text>
       <Text>role : {formData.role}</Text>
       <Text>email : {formData.email}</Text>
+      <Text>contact no : {formData.contactNo}</Text>
     </View>
   );
 };
