@@ -6,23 +6,32 @@ import {
   Text,
   StyleSheet,
   SafeAreaView,
+  Platform,
 } from "react-native";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "./../../../service/firebase";
-import {
-  NavigationProp,
-  RouteProp,
-  useNavigation,
-  useRoute,
-} from "@react-navigation/native";
+import { NavigationProp, RouteProp, useRoute } from "@react-navigation/native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Picker } from '@react-native-picker/picker';
+
+
+interface Seats {
+  seatId: string | null;
+  seatNumber: number | null;
+  status: string;
+  userID: string | null
+}
 
 interface Bus {
   rows: number;
-  seatsPerRow: number;
   busName: string;
+  seatsPerRow: number;
+  seats: Seats[];
   eventID: string | null;
+  totalSeats: number;
   contactNumber: number;
   pickupLocation: string;
+  departureTime: string;
 }
 
 interface RouteParams {
@@ -44,15 +53,17 @@ type Props = {
 };
 
 const BusSetup = ({ navigation }: Props) => {
-  // const navigation = useNavigation();
   const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
   const { location } = route.params || {};
 
   const [busName, setBusName] = useState<string>("");
   const [rows, setRows] = useState<string>("");
-  const [seatsPerRow, setSeatsPerRow] = useState<string>("");
   const [contactNumber, setContactNumber] = useState<string>("");
+  const [seatsPerRow, setSeatsPerRow] = useState<number>(4); // Default to 4
+
   const [pickupLocation, setPickupLocation] = useState<string>("");
+  const [departureTime, setDepartureTime] = useState<Date>(new Date());
+  const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
 
   // Update pickupLocation when location changes
   useEffect(() => {
@@ -62,22 +73,55 @@ const BusSetup = ({ navigation }: Props) => {
   }, [location]);
 
   const createBus = async () => {
-    if (!rows || !seatsPerRow || !busName || !pickupLocation) {
+    if (!rows || !busName || !pickupLocation) {
       alert("Please fill out all fields");
       return;
     }
 
+    const seats: Seats[] = [];
+    const totalSeats = (parseInt(rows) * seatsPerRow) + 1
+
+
+    for (let row = 1; row <= parseInt(rows); row++) {
+      for (let seat = 0; seat < seatsPerRow; seat++) {
+        let seatNumber;
+
+        if (row % 2 === 1) {
+
+          seatNumber = (row - 1) * seatsPerRow + seat + 1;
+        } else {
+
+          seatNumber = row * seatsPerRow - seat;
+        }
+
+        seats.push({
+          seatId: null,
+          seatNumber: seatNumber,
+          status: "available",
+          userID: null
+        });
+      }
+    }
+
+
+
     const bus: Bus = {
       busName,
       rows: parseInt(rows),
-      seatsPerRow: parseInt(seatsPerRow),
       eventID: null,
+      seatsPerRow: seatsPerRow,
       contactNumber: parseInt(contactNumber),
+      totalSeats: totalSeats,
       pickupLocation,
+      departureTime: departureTime.toTimeString().split(" ")[0],
+      seats
     };
 
+
+
     try {
-      await addDoc(collection(db, "buses"), bus);
+      const busRef = await addDoc(collection(db, "buses"), bus);
+      const busId = busRef.id;
       alert("Bus created successfully");
     } catch (error) {
       console.error("Error adding document: ", error);
@@ -86,6 +130,17 @@ const BusSetup = ({ navigation }: Props) => {
 
   const handleSelectLocation = () => {
     navigation.navigate("SelectLocation", { currentLocation: location });
+  };
+
+  const showTimePickerHandler = () => {
+    setShowTimePicker(true);
+  };
+
+  const handleTimeChange = (event: any, selectedTime?: Date) => {
+    setShowTimePicker(Platform.OS === "ios");
+    if (selectedTime) {
+      setDepartureTime(selectedTime);
+    }
   };
 
   return (
@@ -107,15 +162,17 @@ const BusSetup = ({ navigation }: Props) => {
           keyboardType="numeric"
           placeholder="e.g. 5"
         />
+        <Text style={styles.label}>Seats Per Row:</Text>
+        <Picker
+          selectedValue={seatsPerRow}
+          style={styles.picker}
+          onValueChange={(itemValue) => setSeatsPerRow(itemValue)} // Directly set as a number
+        >
+          <Picker.Item label="4 (2-2)" value={4} />
+          <Picker.Item label="5 (2-3)" value={5} />
+        </Picker>
 
-        <Text style={styles.label}>Seats per Row:</Text>
-        <TextInput
-          style={styles.input}
-          value={seatsPerRow}
-          onChangeText={setSeatsPerRow}
-          keyboardType="numeric"
-          placeholder="e.g. 4"
-        />
+
         <Text style={styles.label}>Contact Number:</Text>
         <TextInput
           style={styles.input}
@@ -124,6 +181,7 @@ const BusSetup = ({ navigation }: Props) => {
           keyboardType="numeric"
           placeholder="Enter contact number"
         />
+
         <Text style={styles.label}>Pickup Location:</Text>
         <TextInput
           style={styles.input}
@@ -131,6 +189,22 @@ const BusSetup = ({ navigation }: Props) => {
           editable={false}
         />
         <Button title="Select Location" onPress={handleSelectLocation} />
+
+        <Text style={styles.label}>Departure Time:</Text>
+        <Button title="Select Departure Time" onPress={showTimePickerHandler} />
+        {showTimePicker && (
+          <DateTimePicker
+            value={departureTime}
+            mode="time"
+            display="default"
+            onChange={handleTimeChange}
+          />
+        )}
+
+        <Text style={styles.label}>
+          Selected Departure Time: {departureTime.toLocaleTimeString()}
+        </Text>
+
         <Button title="Create Bus" onPress={createBus} />
       </View>
     </SafeAreaView>
@@ -152,6 +226,12 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 5,
     fontSize: 16,
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: "#ccc",
   },
 });
 

@@ -7,11 +7,12 @@ import Loader from '@/components/loader/Loader';
 
 interface Bus {
   id: string;
-  busName: string;
   rows: number;
-  seatsPerRow: number;
+  busName: string;
+  eventID: string | null;
   contactNumber: number;
   pickupLocation: string;
+  departureTime: string;
 }
 
 const SelectBus: React.FC = () => {
@@ -41,8 +42,8 @@ const SelectBus: React.FC = () => {
     fetchBuses();
   }, []);
 
-  const handleBusPress = () => {
-    navigation.navigate('BusLayout' as never); // Navigate to BusLayout without parameters
+  const handleBusPress = (busId: string) => {
+    navigation.navigate('BusLayout' as never, { busId } as never); // Navigate to BusLayout without parameters
   };
 
   if (loading) {
@@ -59,11 +60,11 @@ const SelectBus: React.FC = () => {
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
         <View style={styles.busItem}>
-          <TouchableOpacity onPress={handleBusPress}>
+          <TouchableOpacity onPress={() => handleBusPress(item.id)}>
             <Text style={styles.busName}>{item.busName}</Text>
           </TouchableOpacity>
           <Text>Rows: {item.rows}</Text>
-          <Text>Seats per Row: {item.seatsPerRow}</Text>
+          <Text>Depature Time: {item.departureTime}</Text>
           <Text>Contact: {item.contactNumber}</Text>
           <Text>Pickup Location: {item.pickupLocation}</Text>
         </View>
