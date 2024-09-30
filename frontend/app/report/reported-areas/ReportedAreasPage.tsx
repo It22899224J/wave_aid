@@ -80,7 +80,7 @@ const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) 
   };
 
   const handleReportPress = (item: Report) => {
-    navigation.navigate('ReportAreaPage', { report: item });
+    navigation.navigate('UpdateReportPage', { report: item });
   };
 
   const confirmRemoveReport = (reportId: string) => {
