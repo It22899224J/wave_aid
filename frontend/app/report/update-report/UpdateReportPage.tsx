@@ -33,7 +33,7 @@ interface RouteParams {
 }
 
 type RootStackParamList = {
-  SelectReportLocation: {
+  UpdateReportLocation: {
     currentLocation: { latitude: number; longitude: number } | undefined;
   };
 };
@@ -42,7 +42,7 @@ type Props = {
   navigation: NavigationProp<RootStackParamList>;
 };
 
-const ReportAreaPage = ({ navigation }: Props) => {
+const UpdateReportPage = ({ navigation }: Props) => {
 
   const { user } = useAuth();
 
@@ -64,8 +64,30 @@ const ReportAreaPage = ({ navigation }: Props) => {
 
   const addressParts = reportLocationName.split(", ");
   const shortenedAddress = addressParts.slice(0, 1).join(", ");
- 
-  // Update reportLocation when location changes
+
+  useEffect(() => {
+    const fetchReportDetails = async () => {
+      if (report) {
+        const reportRef = doc(db, 'reports', report.id);
+        const reportSnap = await getDoc(reportRef);
+        if (reportSnap.exists()) {
+          const data = reportSnap.data();
+          setPollutionLevel(data.pollutionLevel);
+          setPriorityLevel(data.priorityLevel);
+          setFullName(data.fullName);
+          setContactNumber(data.contactNumber);
+          setEmail(data.email);
+          setDescription(data.description);
+          setImages(data.images || []);
+          setReportLocationName(data.location.locationName);
+          setReportLocation({ latitude: data.location.latitude, longitude: data.location.longitude });
+        }
+      }
+    };
+
+    fetchReportDetails();
+  }, [report]);
+
   useEffect(() => {
     if (location && location.latitude && location.longitude) {
       setReportLocation({ latitude: location.latitude, longitude: location.longitude });
@@ -119,10 +141,10 @@ const ReportAreaPage = ({ navigation }: Props) => {
   };
 
   const handlePickLocation = () => {
-    navigation.navigate('SelectReportLocation', { currentLocation: location });
+    navigation.navigate('UpdateReportLocation', { currentLocation: location });
   };
 
-  const handleSubmitReport = async () => {
+  const handleUpdateReport = async () => {
     if (!fullName || !contactNumber || !email || !description) {
       Alert.alert('Error', 'Please fill in all the fields.');
       return;
@@ -131,7 +153,6 @@ const ReportAreaPage = ({ navigation }: Props) => {
     setLoading(true);
 
     const reportData = {
-      userId: user ? user.uid : null,
       fullName,
       contactNumber,
       email,
@@ -139,8 +160,8 @@ const ReportAreaPage = ({ navigation }: Props) => {
       pollutionLevel,
       priorityLevel,
       location: {
-        latitude: location?.latitude || null,
-        longitude: location?.longitude || null,
+        latitude: reportLocation?.latitude || null,
+        longitude: reportLocation?.longitude || null,
         locationName: reportLocationName,
       },
       images,
@@ -149,18 +170,18 @@ const ReportAreaPage = ({ navigation }: Props) => {
     };
 
     try {
-      await addDoc(collection(db, 'reports'), reportData);
-      Alert.alert('Success', 'Your report has been submitted.');
-
-      // navigate to the previous screen
-      navigation.goBack();
+        if (report) {
+          await updateDoc(doc(db, 'reports', report.id), reportData);
+        } else {
+          Alert.alert('Error', 'Report data is missing.');
+        }
     } catch (error) {
-      Alert.alert('Error', 'An error occurred while submitting the report.');
-      console.error('Error adding document: ', error);
+      Alert.alert('Error', 'An error occurred while updating the report.');
+      console.error('Error updating document: ', error);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -288,8 +309,8 @@ const ReportAreaPage = ({ navigation }: Props) => {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.locationButton} onPress={handleSubmitReport}>
-          <Text style={styles.submitButtonText}>Submit Report</Text>
+        <TouchableOpacity style={styles.locationButton} onPress={handleUpdateReport}>
+            <Text style={styles.submitButtonText}>Update Report</Text>
         </TouchableOpacity>
 
         <View style={{ height: 30 }}></View>
@@ -423,4 +444,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ReportAreaPage;
+export default UpdateReportPage;

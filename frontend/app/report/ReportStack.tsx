@@ -3,6 +3,8 @@ import ReportMainView from "./report-screen/ReportMainView";
 import ReportAreaPage from "./report-area/ReportAreaPage";
 import ReportedAreasPage from "./reported-areas/ReportedAreasPage";
 import SelectReportLocation from "./report-area/SelectReportLocation";
+import UpdateReportPage from "./update-report/UpdateReportPage";
+import UpdateReportLocation from "./update-report/UpdateReportLocation";
 
 const Stack = createStackNavigator();
 
@@ -28,6 +30,16 @@ export const ReportStack = () => {
           name="SelectReportLocation"
           component={SelectReportLocation}
           options={{ headerTitle: "Select Report Location", headerTitleAlign: "center" }}
+        />
+        <Stack.Screen
+          name="UpdateReportPage"
+          component={UpdateReportPage}
+          options={{ headerTitle: "Update Report", headerTitleAlign: "center" }}
+        />
+        <Stack.Screen
+          name="UpdateReportLocation"
+          component={UpdateReportLocation}
+          options={{ headerTitle: "Update Report Location", headerTitleAlign: "center" }}
         />
       </Stack.Navigator>
     );
