@@ -22,7 +22,7 @@ export interface CardProps {
   imageUrl: string;
 }
 
-const UpcommingEvents: React.FC<{ event: CardProps }> = ({ event }) => {
+const UpcommingEventsView: React.FC<{ event: CardProps }> = ({ event }) => {
   // Sample data
   const sampleEvent: CardProps = {
     _id: "1",
@@ -158,4 +158,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UpcommingEvents;
+export default UpcommingEventsView;
