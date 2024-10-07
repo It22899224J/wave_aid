@@ -1,8 +1,8 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import MainScreen from "./EventsMainView";
-import OrganizeEvents from "../organize-event/organize/OrganizeEvents";
 import UpcommingEventsView from "./UpcommingEventsView";
 import UpcommingEventWrap from "./UpcommingEventWrap";
+import OrganizeEvents from "../organize-event/organize/OrganizeEvents";
 import SelectEventLocation from "../organize-event/organize/SelectEventLocation";
 const Stack = createStackNavigator();
 

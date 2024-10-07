@@ -12,7 +12,6 @@ import { AnalysisStack } from "./analysis/AnalysisStack";
 import SelectBus from "./events/book-a-seat/SelectBus";
 import SeatBooking from "./events/book-a-seat/BusLayout";
 import { ReportStack } from "./report/ReportStack";
-import OrganizeEvents from "./events/organize-event/organize/OrganizeEvents";
 import { EventStack } from "./events/main-screen/EventStack";
 import AdminUserManagementStack from "./admin/admin-user-management/AdminUserManagementStack";
 import Loader from "@/components/loader/Loader";
@@ -71,7 +70,7 @@ const Index = () => {
           {/* USER TAB SCREENS HERE */}
           <Tab.Screen
             name="Home"
-            component={OrganizeEvents}
+            component={EventStack}
             options={{
               headerTitle: "Beach Cleanup Events",
               tabBarIcon: ({ color, size }) => (
