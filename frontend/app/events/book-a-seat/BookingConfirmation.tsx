@@ -2,12 +2,20 @@ import React, { useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { BusContext } from '@/context/BusContext';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 const BookingConfirmation = () => {
-
     const route = useRoute();
+    const { busId, bookedSeats } = route.params as { busId: string; bookedSeats: string[] };
     const { buses } = useContext(BusContext);
+    const navigation = useNavigation();
+
+
+    const busDetails = buses.find(bus => bus.id === busId);
+
+    if (!busDetails) {
+        return <Text style={styles.errorText}>Bus not found</Text>;
+    }
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -17,7 +25,7 @@ const BookingConfirmation = () => {
             </View>
 
             <Image
-                source={{ uri: 'https://example.com/bus-image.jpg' }}
+                source={{ uri: busDetails.imageUrl }}
                 style={styles.image}
             />
 
@@ -31,7 +39,7 @@ const BookingConfirmation = () => {
                     <FontAwesome5 name="chair" size={24} color="gray" />
                     <View style={styles.detailTextContainer}>
                         <Text style={styles.detailLabel}>Seat Numbers</Text>
-                        <Text style={styles.detailValue}>A5, C5</Text>
+                        <Text style={styles.detailValue}>{bookedSeats.join(', ')}</Text>
                     </View>
                 </View>
 
@@ -39,7 +47,7 @@ const BookingConfirmation = () => {
                     <Ionicons name="call-outline" size={24} color="gray" />
                     <View style={styles.detailTextContainer}>
                         <Text style={styles.detailLabel}>Contact Information</Text>
-                        <Text style={styles.detailValue}>For inquiries, call: 1-800-555-0199</Text>
+                        <Text style={styles.detailValue}>{busDetails.contactNumber}</Text>
                     </View>
                 </View>
 
@@ -47,7 +55,7 @@ const BookingConfirmation = () => {
                     <MaterialIcons name="event" size={24} color="gray" />
                     <View style={styles.detailTextContainer}>
                         <Text style={styles.detailLabel}>Event Date</Text>
-                        <Text style={styles.detailValue}>August 25, 2024</Text>
+                        <Text style={styles.detailValue}></Text>
                     </View>
                 </View>
 
@@ -55,7 +63,7 @@ const BookingConfirmation = () => {
                     <Ionicons name="location-outline" size={24} color="gray" />
                     <View style={styles.detailTextContainer}>
                         <Text style={styles.detailLabel}>Pick Up Location</Text>
-                        <Text style={styles.detailValue}>Malabe</Text>
+                        <Text style={styles.detailValue}>{busDetails.pickupLocation}</Text>
                     </View>
                     <TouchableOpacity>
                         <Text style={styles.viewText}>View</Text>
@@ -63,33 +71,11 @@ const BookingConfirmation = () => {
                 </View>
             </View>
 
-            <TouchableOpacity style={styles.goBackButton}>
+            <TouchableOpacity
+                onPress={() => { navigation.navigate('SelectBus' as never) }}
+                style={styles.goBackButton}>
                 <Text style={styles.goBackText}>Go back</Text>
             </TouchableOpacity>
-
-            {/* Navigation icons (mocked for now) */}
-            <View style={styles.bottomNav}>
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="home-outline" size={24} color="gray" />
-                    <Text style={styles.navText}>Home</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
-                    <MaterialIcons name="event" size={24} color="gray" />
-                    <Text style={styles.navText}>Events</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="document-text-outline" size={24} color="gray" />
-                    <Text style={styles.navText}>Report</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
-                    <FontAwesome5 name="bus" size={24} color="#00acf0" />
-                    <Text style={styles.navTextActive}>Transport</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="person-outline" size={24} color="gray" />
-                    <Text style={styles.navText}>Profile</Text>
-                </TouchableOpacity>
-            </View>
         </ScrollView>
     );
 };
@@ -189,6 +175,11 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#00acf0',
         marginTop: 5,
+    },
+    errorText: {
+        textAlign: 'center',
+        color: 'red',
+        marginTop: 20,
     },
 });
 
