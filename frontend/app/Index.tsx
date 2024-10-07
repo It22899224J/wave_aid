@@ -16,6 +16,8 @@ import { EventStack } from "./events/main-screen/EventStack";
 import AdminUserManagementStack from "./admin/admin-user-management/AdminUserManagementStack";
 import Loader from "@/components/loader/Loader";
 import { auth } from "@/service/firebase";
+import BookingConfirmation from "./events/book-a-seat/BookingConfirmation";
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -32,6 +34,11 @@ const Booking = () => {
         name="BusLayout"
         component={SeatBooking}
         options={{ headerTitle: "Bus Layout" }}
+      />
+      <Stack.Screen
+        name="BookingConfirmation"
+        component={BookingConfirmation}
+        options={{ title: "BookingConfirmation" }}
       />
     </Stack.Navigator>
   );

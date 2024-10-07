@@ -12,6 +12,8 @@ import ReportedAreasPage from "./app/report/reported-areas/ReportedAreasPage";
 import BusSetup from "./app/admin/admin-transporation/CreateBus";
 import SelectLocation from "./app/admin/admin-transporation/SelectLocation";
 import Loader from "./components/loader/Loader";
+import BusProvider from "./context/BusContext";
+import BookingConfirmation from "./app/events/book-a-seat/BookingConfirmation";
 
 const Stack = createStackNavigator();
 
@@ -19,9 +21,11 @@ export default function App() {
   return (
     <AuthProvider>
       <AllUserProvider>
-        <NavigationContainer>
-          <RootLayout />
-        </NavigationContainer>
+        <BusProvider>
+          <NavigationContainer>
+            <RootLayout />
+          </NavigationContainer>
+        </BusProvider>
       </AllUserProvider>
     </AuthProvider>
   );
@@ -59,9 +63,9 @@ function RootLayout() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="BusSetup" // Add the CreateBus screen
+            name="BusSetup"
             component={BusSetup}
-            options={{ headerTitle: "Create Bus" }} // You can adjust header options
+            options={{ headerTitle: "Create Bus" }}
           />
           <Stack.Screen
             name="SelectLocation"

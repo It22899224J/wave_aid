@@ -1,46 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
-import { db } from './../../../service/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { BusContext } from '@/context/BusContext';
 import { useNavigation } from '@react-navigation/native';
 import Loader from '@/components/loader/Loader';
-
-interface Bus {
-  id: string;
-  rows: number;
-  busName: string;
-  eventID: string | null;
-  contactNumber: number;
-  pickupLocation: string;
-  departureTime: string;
-}
+import { Bus } from '@/types/Bus';
 
 const SelectBus: React.FC = () => {
-  const [buses, setBuses] = useState<Bus[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const { buses, loading, error } = useContext(BusContext);
   const navigation = useNavigation();
-
-  useEffect(() => {
-    const fetchBuses = async () => {
-      try {
-        const busCollection = collection(db, 'buses');
-        const busSnapshot = await getDocs(busCollection);
-        const busList: Bus[] = busSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Bus[];
-        setBuses(busList);
-      } catch (err) {
-        setError('Failed to fetch buses');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBuses();
-  }, []);
 
   const handleBusPress = (busId: string) => {
     navigation.navigate('BusLayout' as never, { busId } as never);
@@ -56,7 +23,7 @@ const SelectBus: React.FC = () => {
 
   const BusCard = ({ item }: { item: Bus }) => (
     <View style={styles.card}>
-      <Image source={{ uri: 'https://img.freepik.com/free-vector/double-decker-bus-concept-illustration_114360-11580.jpg?t=st=1728127983~exp=1728131583~hmac=80cadffa90f9e06f7e17bcb476d4c61ea61ddda24a45ecc67499315e7cfd8e9b&w=740' }} style={styles.image} />
+      <Image source={{ uri: item.imageUrl }} style={styles.image} />
       <View style={styles.cardContent}>
         <Text style={styles.destination}>Bus to {item.busName}</Text>
         <Text style={styles.info}>Departure: {item.departureTime}</Text>

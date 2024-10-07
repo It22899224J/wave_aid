@@ -6,11 +6,14 @@ import { db } from '../../../service/firebase'; // Your Firebase config
 import SeatsLayout from "@mindinventory/react-native-bus-seat-layout";
 import SleeperSeatIcon from "../../../assets/images/seat.png";
 import { useAuth } from '@/context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
+
 
 const SeatBooking: React.FC = () => {
-    const route = useRoute(); // Get route object
-    const busId = route.params?.busId; // Access busId from route params
 
+    const route = useRoute(); // Get route object
+    const busId = (route.params as { busId: string }).busId; // Access busId from route params
+    const navigation = useNavigation();
     const { user } = useAuth();
 
     const [busDetails, setBusDetails] = useState<any>(null);
@@ -50,7 +53,7 @@ const SeatBooking: React.FC = () => {
                 // Show confirmation alert
                 Alert.alert(
                     "Confirm Booking", // Title
-                    `Are you sure you want to book these seats: ${bookedSeats.join(', ')}?`, // Message showing the booked seat numbers
+                    `Are you sure you want to book these seats: ${bookedSeats.join(', ')}?`,
                     [
                         {
                             text: "Cancel",
@@ -77,6 +80,11 @@ const SeatBooking: React.FC = () => {
                                 console.log('Seats booked:', bookedSeats);
 
                                 setBookedSeats([]); // Clear the booked seats after booking
+
+                                navigation.navigate('BookingConfirmation' as never, {
+                                    busId,
+                                    bookedSeats,
+                                } as never);
                             }
                         }
                     ]
@@ -86,8 +94,6 @@ const SeatBooking: React.FC = () => {
             console.error(error);
         }
     };
-
-
 
     if (loading) {
         return <ActivityIndicator size="large" color="#0000ff" />;
@@ -102,7 +108,6 @@ const SeatBooking: React.FC = () => {
             seatNumber: seat.seatNumber,
             seatType: 'booked',
         })) || [];
-
 
     return (
         <View style={styles.container}>
