@@ -59,10 +59,10 @@ const SelectReportLocation = ({ navigation }: Props) => {
       <MapView
         style={styles.map}
         initialRegion={{
-          latitude: 6.9271,
-          longitude: 79.8612,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
+          latitude: 7.8731,
+          longitude: 80.7718,
+          latitudeDelta: 5,
+          longitudeDelta: 5,
         }}
         onPress={handleMapPress}
       >

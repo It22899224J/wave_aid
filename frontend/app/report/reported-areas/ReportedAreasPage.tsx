@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Alert, View, ActivityIndicator } from 'react-native';
+import { StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Alert, View, Text, ActivityIndicator } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 import { useAuth } from '@/context/AuthContext';
 import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
@@ -18,14 +18,15 @@ interface Report {
 }
 
 const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) => {
-  
+
   const [reportData, setReportData] = useState<Report[]>([]);
   const [loading, setLoading] = useState(false);
-  const {user} = useAuth();
+  const { user } = useAuth();
   const userId = user?.uid;
 
   useEffect(() => {
     const fetchReportedAreas = async () => {
+      setLoading(true);
       const q = query(collection(db, 'reports'), where('userId', '==', userId));
       const querySnapshot = await getDocs(q);
 
@@ -34,7 +35,7 @@ const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) 
         const beachName = data.location.locationName.split(',')[0]; // Get first part of locationName
         const wasteLevelColor = getWasteLevelColor(data.pollutionLevel);
         const statusColor = getStatusColor(data.status);
-        
+
         return {
           id: doc.id,
           beachName,
@@ -43,11 +44,12 @@ const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) 
           wasteLevelColor,
           status: data.status,
           statusColor,
-          image: data.images[0] || 'default-image-url.png', 
+          image: data.images[0] || 'default-image-url.png',
         } as Report;
-
       });
+      
       setReportData(reports);
+      setLoading(false);
     };
 
     fetchReportedAreas();
@@ -121,13 +123,19 @@ const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) 
           <ActivityIndicator size="large" color="#0000ff" />
         </View>
       )}
-      <ScrollView style={styles.container}>
-        {reportData.map((item) => (
-          <TouchableOpacity key={item.id} onPress={() => handleReportPress(item)}>
-            <ReportCard item={item} onRemove={confirmRemoveReport} />
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      {!loading && reportData.length === 0 ? (
+        <View style={styles.noReportsContainer}>
+          <Text style={styles.noReportsText}>No reported areas yet!</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.container}>
+          {reportData.map((item) => (
+            <TouchableOpacity key={item.id} onPress={() => handleReportPress(item)}>
+              <ReportCard item={item} onRemove={confirmRemoveReport} />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };
@@ -140,16 +148,17 @@ const styles = StyleSheet.create({
     gap: 10,
     backgroundColor: '#ffffff',
   },
-  topic: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 20,
+  noReportsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
-  title: {
-    fontSize: 22,
+  noReportsText: {
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: 'gray',
+    textAlign: 'center',
   },
   loadingContainer: {
     ...StyleSheet.absoluteFillObject,

@@ -107,7 +107,7 @@ const ReportMainView= ({navigation}: Props) => {
                 </View>
                 </View>
             ))} */}
-            <Text style={styles.sectionTitle}>Reported Areas By All Users</Text>
+            <Text style={styles.sectionTitle}>All Reported Areas By Users</Text>
             <MapView
               style={styles.map}
               initialRegion={{
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
         resizeMode: 'cover',
       },
       sectionTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         marginVertical: 10,
         marginLeft: 20,
