@@ -1,4 +1,4 @@
-import { CardProps } from "@/types/events";
+import { CardProps } from "@/types/events"; 
 import { Link } from "@react-navigation/native";
 import React from "react";
 import { View, Text, Image, StyleSheet, Linking } from "react-native";
