@@ -1,7 +1,7 @@
 import Loader from "@/components/loader/Loader";
 import { User } from "@/context/AllUserContext";
 import { useState } from "react";
-import { Text, View, StyleSheet, Alert } from "react-native";
+import { Text, View, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
@@ -10,11 +10,11 @@ const UserCard = ({ user }: { user: User }) => {
   const [loading, isLoading] = useState(false);
   const navigate = useNavigation();
 
-  const deleteProfile = async (userId: string) => {
+  const deleteProfile = async () => {
     if (user) {
       isLoading(true);
       await axios
-        .delete(`http://192.168.1.5:3000/delete-user/${userId}`)
+        .delete(`http://192.168.1.5:3000/delete-user/${user.userId}`)
         .then((res) => {
           console.log(res);
         })
@@ -32,7 +32,7 @@ const UserCard = ({ user }: { user: User }) => {
     }
   };
 
-  const onClickDelete = (userId: string) => {
+  const onClickDelete = () => {
     Alert.alert(
       "Are you sure?",
       `User associated to ${user?.email} will be deleted`,
@@ -43,7 +43,7 @@ const UserCard = ({ user }: { user: User }) => {
         },
         {
           text: "Confirm",
-          onPress: () => deleteProfile(userId),
+          onPress: () => deleteProfile(),
           style: "destructive",
         },
       ],
@@ -83,18 +83,22 @@ const UserCard = ({ user }: { user: User }) => {
     <View style={styles.mainContainer}>
       <View>
         <Text>Name : {user.name}</Text>
-        <Text>Name : {user.email}</Text>
-        <Text>Name : {user.contactNo}</Text>
-        <Text>Name : {user.role}</Text>
+        <Text>Email : {user.email}</Text>
+        <Text>Contact No : {user.contactNo}</Text>
+        <Text>Role : {user.role}</Text>
       </View>
       <View style={styles.iconContainer}>
-        <Icon name="edit" size={20} onPress={onClickUpdate} />
-        <Icon
-          name="delete"
-          size={20}
-          color={"#ff6644"}
-          onPress={() => onClickDelete(user.userId)}
-        />
+        <TouchableOpacity onPress={onClickUpdate}>
+          <Icon name="edit" size={23} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onClickDelete}>
+          <Icon
+            name="delete"
+            size={23}
+            color={"#ff6644"}
+            onPress={onClickDelete}
+          />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -106,9 +110,10 @@ const styles = StyleSheet.create({
   mainContainer: {
     // marginTop: 20,
     // marginHorizontal: 15,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    // flexDirection: "row",
+    // justifyContent: "space-between",
+    // alignItems: "center",
+    rowGap: 20,
     backgroundColor: "#dfdfdf",
     paddingHorizontal: 10,
     paddingVertical: 15,
@@ -117,6 +122,6 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     flexDirection: "row",
-    columnGap: 20,
+    columnGap: 50,
   },
 });

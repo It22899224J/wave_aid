@@ -1,11 +1,79 @@
 const server = require("../server");
 const db = server.db;
+const admin = server.admin;
+const validator = require('validator');
+
+exports.createUser = async (req, res) => {
+    const { email, password, name, role, contactNo } = req.body;
+
+    try {
+        if (!email || !validator.isEmail(email)) {
+            throw Error("Invalid email address");
+        }
+        if (!password || password.length < 6 || !validator.isStrongPassword(password)) {
+            throw Error("Password must be a strong password");
+        }
+        if (!name || validator.isEmpty(name)) {
+            throw Error("Name is required");
+        }
+        if (!role || validator.isEmpty(role)) {
+            throw Error("Role is required");
+        }
+        if (!contactNo || !validator.isMobilePhone(contactNo, 'si-LK')) {
+            throw Error("Invalid contact number");
+        }
+        const user = await admin.auth().createUser({
+            email,
+            password,
+            name,
+            role,
+            contactNo,
+        });
+
+        await db.collection("users").add({
+            userId: user.uid,
+            email,
+            name,
+            role,
+            contactNo,
+        });
+
+        res.status(201).send({
+            message: "User created successfully",
+            userId: user.uid,
+            email,
+            name,
+            role,
+            contactNo,
+        });
+    } catch (error) {
+        console.error("Error updating user:", error);
+        res.status(500).send({
+            error: error.message || "An error occurred while updating the user.",
+        });
+    }
+};
+
 
 exports.updateUser = async (req, res) => {
     const userId = req.params.userId;
-    const { email, name, role } = req.body; // Values to be updated
+    const { email, name, role, contactNo } = req.body; // Values to be updated
 
     try {
+
+        if (!email || !validator.isEmail(email)) {
+            throw Error("Invalid email address");
+        }
+        if (!name || validator.isEmpty(name)) {
+            throw Error("Name is required");
+        }
+        if (!role || validator.isEmpty(role)) {
+            throw Error("Role is required");
+        }
+        if (!contactNo || !validator.isMobilePhone(contactNo, 'si-LK')) {
+            throw Error("Invalid contact number");
+        }
+
         // Step 1: Update Firebase Authentication record
         const updateAuthData = {};
         if (email) updateAuthData.email = email;
@@ -24,9 +92,7 @@ exports.updateUser = async (req, res) => {
         // Check if any documents matched the query
         if (querySnapshot.empty) {
             console.log(`No Firestore document found for userId: ${userId}`);
-            return res
-                .status(404)
-                .send({ error: `No Firestore document found for userId: ${userId}` });
+            throw Error(`No Firestore document found for userId: ${userId}`)
         }
 
         // Step 3: Update the Firestore document
@@ -34,7 +100,7 @@ exports.updateUser = async (req, res) => {
         if (email) updateFirestoreData.email = email;
         if (name) updateFirestoreData.name = name; // Assuming 'name' is stored in Firestore
         if (role) updateFirestoreData.role = role;
-
+        if (contactNo) updateFirestoreData.contactNo = contactNo;
         querySnapshot.forEach(async (doc) => {
             await doc.ref.update(updateFirestoreData);
             console.log(`Successfully updated Firestore document with ID: ${doc.id}`);
@@ -46,7 +112,9 @@ exports.updateUser = async (req, res) => {
         });
     } catch (error) {
         console.error("Error updating user:", error);
-        res.status(500).send({ error: "Failed to update user or Firestore data" });
+        res.status(500).send({
+            error: error.message || "An error occurred while updating the user.",
+        });
     }
 };
 
@@ -85,9 +153,9 @@ exports.deleteUser = async (req, res) => {
             message: `Successfully deleted user with ID: ${userId} from Firebase Auth and Firestore`,
         });
     } catch (error) {
-        console.error("Error deleting user or Firestore document:", error);
-        res
-            .status(500)
-            .send({ error: "Failed to delete user or related Firestore data" });
+        console.error("Error updating user:", error);
+        res.status(500).send({
+            error: error.message || "An error occurred while updating the user.",
+        });
     }
 };
