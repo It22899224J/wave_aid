@@ -1,34 +1,59 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, Button, ScrollView, TouchableOpacity, StyleSheet, FlatList, SafeAreaView } from 'react-native';
+import { NavigationProp, useFocusEffect } from '@react-navigation/native';
+import MapView, { Marker } from 'react-native-maps';
+import { collection, getDocs, onSnapshot } from 'firebase/firestore';
+import { db } from '@/service/firebase';
 
-const communityReports = [
-    {
-      id: '1',
-      title: 'North Shore Beach',
-      reporter: 'John Doe',
-      image: 'https://img.freepik.com/free-photo/trash-sand-beach-showing-environmental-pollution-problem_1150-6523.jpg?t=st=1726859907~exp=1726863507~hmac=e629b8117539dbaa5a1f0e80ec4e573a16aec7a42f4b8d398a6740844b0636f1&w=1060', // Replace with actual image URL
-    },
-    {
-      id: '2',
-      title: 'Sunny Cove',
-      reporter: 'Jane Smith',
-      image: 'https://example.com/image2.jpg', // Replace with actual image URL
-    },
-    {
-      id: '3',
-      title: 'Ocean View Park',
-      reporter: 'Alex Johnson',
-      image: 'https://example.com/image3.jpg', // Replace with actual image URL
-    },
-  ];
-
-import { NavigationProp } from '@react-navigation/native';
+interface Report {
+  id: string;
+  location: {
+    latitude: number;
+    longitude: number;
+    locationName: string;
+  };
+  fullName: string;
+}
 
 interface Props {
   navigation: NavigationProp<any>;
 }
 
 const ReportMainView= ({navigation}: Props) => {
+  
+  const [reports, setReports] = useState<Report[]>([]);
+
+  const fetchReports = () => {
+    const unsubscribe = onSnapshot(collection(db, 'reports'), (querySnapshot) => {
+      const fetchedReports: Report[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.location) {
+          fetchedReports.push({
+            id: doc.id,
+            location: {
+              latitude: data.location.latitude,
+              longitude: data.location.longitude,
+              locationName: data.location.locationName,
+            },
+            fullName: data.fullName
+          });
+        }
+      });
+
+      setReports(fetchedReports);
+    });
+
+    return unsubscribe;
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const unsubscribe = fetchReports();
+      return () => unsubscribe();
+    }, [])
+  );
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
@@ -61,7 +86,7 @@ const ReportMainView= ({navigation}: Props) => {
                 />
             </View>
             <View style={styles.card}>
-                <Text style={styles.cardTitle}>Check Reported Areas</Text>
+                <Text style={styles.cardTitle}>Check Your Reported Areas</Text>
                 <Text style={styles.cardDescription}>
                     Check the details and the state of your reported beach cleanup areas.
                 </Text>
@@ -82,6 +107,28 @@ const ReportMainView= ({navigation}: Props) => {
                 </View>
                 </View>
             ))} */}
+            <Text style={styles.sectionTitle}>Reported Areas By All Users</Text>
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                latitude: 7.8731,
+                longitude: 80.7718, 
+                latitudeDelta: 5,
+                longitudeDelta: 5,
+              }}
+            >
+            {reports.map((report) => (
+              <Marker
+                key={report.id}
+                coordinate={{
+                  latitude: report.location.latitude,
+                  longitude: report.location.longitude,
+                }}
+                title={report.location.locationName}
+                description={`Reported by ${report.fullName}`}
+              />
+            ))}
+            </MapView>
         </ScrollView>
       </SafeAreaView>
     );
@@ -189,6 +236,19 @@ const styles = StyleSheet.create({
         height: 100,
         borderRadius: 10,
         resizeMode: 'cover',
+      },
+      sectionTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginVertical: 10,
+        marginLeft: 20,
+        marginBottom: 20,
+      },
+      map: {
+        width: '100%',
+        height: 300,
+        borderRadius: 10,
+        marginBottom: 20,
       },
 });
 
