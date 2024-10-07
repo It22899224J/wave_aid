@@ -1,4 +1,4 @@
-import CardComponent from "@/components/card-view/RoundedCard";
+import CardComponent from "./RoundedCard";
 import { capitalizeFirstLetter } from "@/utilities/capitalizeLetter";
 import React, { useState } from "react";
 import {
@@ -9,8 +9,12 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Button, // Import Button
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
+import { useNavigation } from "@react-navigation/native"; // Import useNavigation
+import { RootStackParamList } from "@/types/navigation";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 const beaches = [
   {
@@ -57,55 +61,13 @@ const cardData = [
     image: "test",
     imageUrl: "https://via.placeholder.com/150",
   },
-  {
-    _id: "2",
-    name: "Community Gathering",
-    date: "September 25, 2024",
-    locationName: "City Park",
-    location: "https://www.google.com/maps/place/City+Park",
-    weather: "Sunny",
-    organizer: "John Doe",
-    image: "test",
-    imageUrl: "https://via.placeholder.com/150",
-  },
-  {
-    _id: "3",
-    name: "Community Gathering",
-    date: "September 25, 2024",
-    locationName: "City Park",
-    location: "https://www.google.com/maps/place/City+Park",
-    weather: "Sunny",
-    organizer: "John Doe",
-    image: "test",
-    imageUrl: "https://via.placeholder.com/150",
-  },
-  {
-    _id: "4",
-    name: "Community Gathering",
-    date: "September 25, 2024",
-    locationName: "City Park",
-    location: "https://www.google.com/maps/place/City+Park",
-    weather: "Sunny",
-    organizer: "John Doe",
-    image: "test",
-    imageUrl: "https://via.placeholder.com/150",
-  },
-  {
-    _id: "5",
-    name: "Community Gathering",
-    date: "September 25, 2024",
-    locationName: "City Park",
-    location: "https://www.google.com/maps/place/City+Park",
-    weather: "Sunny",
-    organizer: "John Doe",
-    image: "test",
-    imageUrl: "https://via.placeholder.com/150",
-  },
+  // ... other card data
 ];
 
 const MainScreen = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [searchText, setSearchText] = useState("");
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const filteredData = cardData.filter((item) =>
     item.name.toLowerCase().includes(searchText.toLowerCase())
@@ -114,7 +76,6 @@ const MainScreen = () => {
   return (
     <View style={styles.container}>
       <View>
-        {/* <Text style={styles.topic}>Beach Cleanup Events</Text> */}
         <TextInput
           style={styles.searchInput}
           placeholder="Search Events..."
@@ -126,6 +87,7 @@ const MainScreen = () => {
         <View style={styles.tabsContainer}>
           {["All Events", "Upcoming", "Past"].map((tab, index) => (
             <TouchableOpacity
+              key={index}
               style={[
                 styles.tab,
                 activeTab === tab.toLowerCase() && styles.activeTab,
@@ -146,8 +108,9 @@ const MainScreen = () => {
               longitudeDelta: 0.5,
             }}
           >
-            {beaches.map((beach, index) => (
+            {beaches.map((beach) => (
               <Marker
+                key={beach.id}
                 coordinate={beach.coordinate}
                 title={beach.title}
                 pinColor={beach.color}
@@ -155,14 +118,20 @@ const MainScreen = () => {
             ))}
           </MapView>
         </View>
+        <TouchableOpacity
+          style={styles.organizeButton}
+          onPress={() => navigation.navigate("OrganizeEvents")} // Navigate to OrganizeEvents
+        >
+          <Text style={styles.buttonText}>Organize Event</Text>
+        </TouchableOpacity>
         <View>
           <Text style={styles.topic}>
             {capitalizeFirstLetter(activeTab)} Cleanup Events
           </Text>
         </View>
         <View style={styles.cardsContainer}>
-          {cardData.map((item) => (
-            <CardComponent details={item} />
+          {filteredData.map((item) => (
+            <CardComponent key={item._id} details={item} />
           ))}
         </View>
       </ScrollView>
@@ -223,6 +192,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     textAlign: "left",
+  },
+  organizeButton: {
+    backgroundColor: "#007BFF",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 
