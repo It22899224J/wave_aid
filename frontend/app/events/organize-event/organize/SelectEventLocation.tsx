@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 
 type RootStackParamList = {
-  OrganizePage: {
+  OrganizeEvents: {
     location: { latitude: number; longitude: number } | undefined;
     locationName: string;
   };
