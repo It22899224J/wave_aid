@@ -36,22 +36,6 @@ const AdminProfile = () => {
         <Text>Email : {userDetails?.email}</Text>
         <Text>Role : {userDetails?.role}</Text>
         <Button title="Sign Out" onPress={signOut} />
-        <View>
-          <TouchableOpacity>
-            <Text
-              onPress={() => navigation.navigate('BusSetup' as never)}
-              style={{
-                backgroundColor: 'blue',
-                color: 'white',
-                padding: 10,
-                textAlign: 'center',
-                marginTop: 10,
-              }}
-            >
-              Add Bus
-            </Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </SafeAreaView>
   );

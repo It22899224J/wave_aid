@@ -43,13 +43,16 @@ interface RouteParams {
     latitude: number;
     longitude: number;
   };
+
 }
 
 type RootStackParamList = {
   SelectLocation: {
     currentLocation: { latitude: number; longitude: number } | undefined;
   };
-  // ... other routes
+  OrganizeEvents: {
+    busId: string;
+  };
 };
 
 type Props = {
@@ -160,6 +163,7 @@ const BusSetup = ({ navigation }: Props) => {
     try {
       const busRef = await addDoc(collection(db, "buses"), bus);
       const busId = busRef.id;
+      navigation.navigate("OrganizeEvents", { busId })
       alert("Bus created successfully");
     } catch (error) {
       console.error("Error adding document: ", error);

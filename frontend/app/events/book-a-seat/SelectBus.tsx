@@ -1,16 +1,24 @@
 import React, { useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { BusContext } from '@/context/BusContext';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import Loader from '@/components/loader/Loader';
 import { Bus } from '@/types/Bus';
 
+// Define the navigation param list
+type RootStackParamList = {
+  SelectBus: undefined;
+  BusLayout: { busId: string };
+};
+
+type SelectBusNavigationProp = NavigationProp<RootStackParamList, 'SelectBus'>;
+
 const SelectBus: React.FC = () => {
   const { buses, loading, error } = useContext(BusContext);
-  const navigation = useNavigation();
+  const navigation = useNavigation<SelectBusNavigationProp>();
 
   const handleBusPress = (busId: string) => {
-    navigation.navigate('BusLayout' as never, { busId } as never);
+    navigation.navigate('BusLayout', { busId });
   };
 
   if (loading) {
@@ -21,9 +29,9 @@ const SelectBus: React.FC = () => {
     return <Text style={styles.error}>{error}</Text>;
   }
 
-  const BusCard = ({ item }: { item: Bus }) => (
+  const BusCard: React.FC<{ item: Bus }> = ({ item }) => (
     <View style={styles.card}>
-      <Image source={{ uri: item.imageUrl }} style={styles.image} />
+      {item.imageUrl && <Image source={{ uri: item.imageUrl }} style={styles.image} />}
       <View style={styles.cardContent}>
         <Text style={styles.destination}>Bus to {item.busName}</Text>
         <Text style={styles.info}>Departure: {item.departureTime}</Text>
@@ -44,7 +52,7 @@ const SelectBus: React.FC = () => {
     <FlatList
       data={buses}
       renderItem={({ item }) => <BusCard item={item} />}
-      keyExtractor={item => item.id}
+      keyExtractor={(item) => item.id}
       contentContainerStyle={styles.container}
     />
   );

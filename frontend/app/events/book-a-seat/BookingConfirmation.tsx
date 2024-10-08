@@ -24,10 +24,12 @@ const BookingConfirmation = () => {
                 <Text style={styles.headerText}>Your Booking is Confirmed!</Text>
             </View>
 
-            <Image
-                source={{ uri: busDetails.imageUrl }}
-                style={styles.image}
-            />
+            {busDetails.imageUrl && (
+                <Image
+                    source={{ uri: busDetails.imageUrl }}
+                    style={styles.image}
+                />
+            )}
 
             <View style={styles.summary}>
                 <Text style={styles.summaryText}>Booking Summary</Text>

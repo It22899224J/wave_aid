@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,13 +12,14 @@ import {
   Image,
 } from "react-native";
 import { NavigationProp, RouteProp, useRoute } from "@react-navigation/native";
-import { addDoc, collection, doc, getDoc } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/service/firebase";
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import MapView, { Marker } from "react-native-maps";
+import { BusContext } from "@/context/BusContext";
 
 interface RouteParams {
   location?: {
@@ -31,7 +32,7 @@ interface RouteParams {
     organizerName: string;
     date: string;
     time: { from: string; to: string };
-    transportOptions: string[];
+    transportOptions: string;
     volunteerGuidelines: string[];
     location: {
       latitude: number;
@@ -39,6 +40,7 @@ interface RouteParams {
       locationName: string;
     };
   };
+  busId: string
 }
 
 type Props = {
@@ -46,12 +48,12 @@ type Props = {
 };
 
 const apiKey = "ddb64a174007a68a4edc85f09f65f2e6";
-const tideApiKey = "6ac3d4f9-f559-4b96-b371-ae4871e75c01"; 
+const tideApiKey = "6ac3d4f9-f559-4b96-b371-ae4871e75c01";
 
 const OrganizeEvents = ({ navigation }: Props) => {
   const { user } = useAuth();
   const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
-  const { location, locationName, report } = route.params || {};
+  const { location, locationName, report, busId } = route.params || {};
 
   const [organizerName, setOrganizerName] = useState("");
   const [date, setDate] = useState(new Date());
@@ -74,8 +76,21 @@ const OrganizeEvents = ({ navigation }: Props) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimeFromPicker, setShowTimeFromPicker] = useState(false);
   const [showTimeToPicker, setShowTimeToPicker] = useState(false);
-    const addressParts = reportLocationName.split(", ");
-    const shortenedAddress = addressParts.slice(0, 1).join(", ");
+  const addressParts = reportLocationName.split(", ");
+  const shortenedAddress = addressParts.slice(0, 1).join(", ");
+
+  const { buses } = useContext(BusContext);
+
+  useEffect(() => {
+    if (busId) {
+      console.log("Bus ID:", busId);
+      const busDetails = buses.find((bus) => bus.id === busId);
+    } else {
+      console.log("Bus ID is not available");
+    }
+  }, [busId]);
+
+
 
   useEffect(() => {
     const fetchReportDetails = async () => {
@@ -136,9 +151,8 @@ const OrganizeEvents = ({ navigation }: Props) => {
     selectedDate: Date
   ) => {
     setLoadingTide(true);
-    const url = `https://www.worldtides.info/api/v2/tides?lat=${latitude}&lon=${longitude}&date=${
-      selectedDate.toISOString().split("T")[0]
-    }&key=${tideApiKey}`;
+    const url = `https://www.worldtides.info/api/v2/tides?lat=${latitude}&lon=${longitude}&date=${selectedDate.toISOString().split("T")[0]
+      }&key=${tideApiKey}`;
 
     try {
       const response = await axios.get(url);
@@ -204,7 +218,7 @@ const OrganizeEvents = ({ navigation }: Props) => {
       organizerName,
       date: date.toISOString(),
       time: { from: timeFrom.toISOString(), to: timeTo.toISOString() },
-      transportOptions,
+      transportOptions: busId,
       volunteerGuidelines,
       location: {
         latitude: reportLocation?.latitude || null,
@@ -219,9 +233,18 @@ const OrganizeEvents = ({ navigation }: Props) => {
     };
 
     try {
-      await addDoc(collection(db, "events"), reportData);
+      const docRef = await addDoc(collection(db, "events"), reportData);
+      const eventId = docRef.id;
       Alert.alert("Success", "Your report has been submitted.");
-      // Reset the form
+
+
+      if (busId) {
+        const busRef = doc(db, "buses", busId);
+        await updateDoc(busRef, {
+          eventID: eventId,
+        });
+        console.log(`Bus ${busId} updated with eventId ${eventId}`);
+      }
       setOrganizerName("");
       setDate(new Date());
       setTimeFrom(new Date());
@@ -377,12 +400,15 @@ const OrganizeEvents = ({ navigation }: Props) => {
         )}
 
         <Text style={styles.sectionTitle}>Transport Options</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter transport options"
-          value={transportOptions}
-          onChangeText={setTransportOptions}
-        />
+        <TouchableOpacity style={styles.imageButton}
+          onPress={() => { navigation.navigate('BusSetup' as never) }}
+        >
+          <Text style={
+            {
+              color: "#ffffff"
+            }
+          }>Add</Text>
+        </TouchableOpacity>
 
         <Text style={styles.sectionTitle}>Volunteer Guidelines</Text>
         {volunteerGuidelines.map((guideline, index) => (

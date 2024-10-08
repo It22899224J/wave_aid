@@ -7,42 +7,19 @@ import { useAuth } from "@/context/AuthContext";
 import { AllUserProvider, useAllUser } from "@/context/AllUserContext";
 import AdminProfile from "./admin/admin-profile/AdminProfile";
 import AdminHome from "./admin/admin-home/AdminHome";
-import { createStackNavigator } from "@react-navigation/stack";
 import { AnalysisStack } from "./analysis/AnalysisStack";
-import SelectBus from "./events/book-a-seat/SelectBus";
-import SeatBooking from "./events/book-a-seat/BusLayout";
 import { ReportStack } from "./report/ReportStack";
 import { EventStack } from "./events/main-screen/EventStack";
 import AdminUserManagementStack from "./admin/admin-user-management/AdminUserManagementStack";
 import Loader from "@/components/loader/Loader";
-import { auth } from "@/service/firebase";
-import BookingConfirmation from "./events/book-a-seat/BookingConfirmation";
+import { Booking } from "./events/book-a-seat/BookingNav";
+
 
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
 
-const Booking = () => {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="SelectBus"
-        component={SelectBus}
-        options={{ headerTitle: "Select Bus" }}
-      />
-      <Stack.Screen
-        name="BusLayout"
-        component={SeatBooking}
-        options={{ headerTitle: "Bus Layout" }}
-      />
-      <Stack.Screen
-        name="BookingConfirmation"
-        component={BookingConfirmation}
-        options={{ title: "BookingConfirmation" }}
-      />
-    </Stack.Navigator>
-  );
-};
+
+
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
@@ -131,8 +108,8 @@ const Index = () => {
                 <Icon name="home" color={color} size={size} />
               ),
             }}
-            />
-            
+          />
+
           <Tab.Screen
             name="Admin Home"
             component={AdminHome}
