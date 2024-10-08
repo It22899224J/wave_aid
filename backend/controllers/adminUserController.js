@@ -159,3 +159,36 @@ exports.deleteUser = async (req, res) => {
         });
     }
 };
+
+
+exports.getUserLastLoginTime = async (req, res) => {
+    // Extract the UID from URL parameters
+    const uid = req.params.uid;
+    console.log(`Fetching last login time for UID: ${uid}`); // Log the UID for debugging
+
+    try {
+        // Fetch the user record from Firebase
+        const userRecord = await admin.auth().getUser(uid);
+
+        // Access last sign-in time
+        const lastLoginTime = userRecord.metadata.lastSignInTime;
+
+        // Send the response with user ID and last login time
+        res.status(200).json(lastLoginTime);
+    } catch (error) {
+        // Log the error details for troubleshooting
+        console.error('Error fetching user data:', error);
+
+        // Check if the error is a specific Firebase error for a non-existent user
+        if (error.code === 'auth/user-not-found') {
+            res.status(404).json({
+                error: 'User not found',
+            });
+        } else {
+            // Handle other possible errors
+            res.status(500).json({
+                error: 'An error occurred while fetching user data',
+            });
+        }
+    }
+};

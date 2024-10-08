@@ -101,7 +101,7 @@ const Index = () => {
       ) : (
         <>
           {/* ADMIN TAB SCREENS HERE */}
-          <Tab.Screen
+          {/* <Tab.Screen
             name="Home"
             component={AdminMainStack}
             options={{
@@ -110,7 +110,7 @@ const Index = () => {
                 <Icon name="home" color={color} size={size} />
               ),
             }}
-          />
+          /> */}
 
           <Tab.Screen
             name="Admin Home"
