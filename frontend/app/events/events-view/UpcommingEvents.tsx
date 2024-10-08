@@ -21,6 +21,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/service/firebase";
 import { EventCard } from "./EventCard";
+import moment from "moment";
 
 interface Event {
   id: string;
@@ -45,20 +46,22 @@ const UpcommingEvents = ({
 
   useEffect(() => {
     const fetchReportedAreas = async () => {
-      const q = query(collection(db, "events"));
+      const today = new Date().toISOString(); 
+
+      const q = query(collection(db, "events"), where("date", ">", today));
       const querySnapshot = await getDocs(q);
 
       const events = querySnapshot.docs.map((doc) => {
         const data = doc.data();
-        const beachName = data.location.locationName.split(",")[0]; // Get first part of locationName
+        const beachName = data.location.locationName.split(",")[0]; 
         const wasteLevelColor = getWasteLevelColor(data.pollutionLevel);
         const statusColor = getStatusColor(data.status);
 
         return {
           id: doc.id,
           beachName,
-          date: data.timestamp.toDate().toLocaleDateString(),
-          time: data.timestamp.toDate().toLocaleTimeString(),
+          date: new Date(data.date).toLocaleDateString(),
+          time: moment(data.time.from).format("hh:mm A"),
           weather: data.weather,
           tide: data.tide,
           organizer: data.organizer,

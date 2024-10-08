@@ -1,6 +1,5 @@
-import CardComponent from "./RoundedCard";
 import { capitalizeFirstLetter } from "@/utilities/capitalizeLetter";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,58 +8,86 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Button, // Import Button
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { useNavigation } from "@react-navigation/native"; // Import useNavigation
+import { useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types/navigation";
 import { StackNavigationProp } from "@react-navigation/stack";
 import UpcommingEvents from "../events-view/UpcommingEvents";
 import OrganizedEvents from "../update-event/OrganizedEvents";
-import OrganizeEvents from "../organize-event/organize/OrganizeEvents";
+import { collection, getDocs, query } from "firebase/firestore";
+import { db } from "@/service/firebase";
+import { useAuth } from "@/context/AuthContext";
+import moment from "moment"; // Moment.js for date handling
+import PastEvents from "../past-events/PastEvents";
+import MyEvents from "../my-events/MyEvents";
 
-const beaches = [
-  {
-    id: "1",
-    title: "Unawatuna Beach",
-    coordinate: { latitude: 6.0275, longitude: 80.2184 },
-    color: "green",
-  },
-  {
-    id: "2",
-    title: "Hikkaduwa Beach",
-    coordinate: { latitude: 6.1349, longitude: 80.1094 },
-    color: "red",
-  },
-  {
-    id: "3",
-    title: "Mirissa Beach",
-    coordinate: { latitude: 5.9439, longitude: 80.4151 },
-    color: "green",
-  },
-  {
-    id: "4",
-    title: "Bentota Beach",
-    coordinate: { latitude: 6.394, longitude: 80.01 },
-    color: "red",
-  },
-  {
-    id: "5",
-    title: "Nilaveli Beach",
-    coordinate: { latitude: 8.68, longitude: 81.175 },
-    color: "green",
-  },
-];
-
+interface Event {
+  id: string;
+  beachName: string;
+  date: string;
+  time: string;
+  weather: string;
+  organizer: string;
+  tide: string;
+  image: string;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+}
 
 const MainScreen = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [searchText, setSearchText] = useState("");
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const [reportData, setReportData] = useState<Event[]>([]);
+  const { user } = useAuth();
+  const userId = user?.uid;
 
-  // const filteredData = cardData.filter((item) =>
-  //   item.name.toLowerCase().includes(searchText.toLowerCase())
-  // );
+  useEffect(() => {
+    const fetchReportedAreas = async () => {
+      const q = query(collection(db, "events"));
+      const querySnapshot = await getDocs(q);
+
+      const events = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        const beachName = data.location.locationName.split(",")[0];
+
+        return {
+          id: doc.id,
+          beachName,
+          date: data.timestamp.toDate().toLocaleDateString(),
+          time: data.timestamp.toDate().toLocaleTimeString(),
+          weather: data.weather,
+          tide: data.tide,
+          organizer: data.organizer,
+          image: data.images[0] || "default-image-url.png",
+          location: {
+            latitude: data.location.latitude,
+            longitude: data.location.longitude,
+          },
+        } as Event;
+      });
+      setReportData(events);
+    };
+
+    fetchReportedAreas();
+  }, [userId]);
+
+  // Determine color based on the event date
+  const getMarkerColor = (eventDate: string) => {
+    const today = moment().startOf("day"); // Get today's date (start of the day)
+    const eventMoment = moment(eventDate, "MM/DD/YYYY"); // Event date
+
+    if (eventMoment.isBefore(today)) {
+      return "red"; // Past event
+    } else if (eventMoment.isSame(today)) {
+      return "blue"; // Current event (today)
+    } else {
+      return "green"; // Future event
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -74,7 +101,7 @@ const MainScreen = () => {
       </View>
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.tabsContainer}>
-          {["All Events", "Upcoming", "Past"].map((tab, index) => (
+          {["Upcoming","My Events", "Past"].map((tab, index) => (
             <TouchableOpacity
               key={index}
               style={[
@@ -97,33 +124,36 @@ const MainScreen = () => {
               longitudeDelta: 0.5,
             }}
           >
-            {beaches.map((beach) => (
+            {reportData.map((event) => (
               <Marker
-                key={beach.id}
-                coordinate={beach.coordinate}
-                title={beach.title}
-                pinColor={beach.color}
+                key={event.id}
+                coordinate={event.location}
+                title={event.beachName}
+                pinColor={getMarkerColor(event.date)} // Set marker color based on date
               />
             ))}
           </MapView>
         </View>
         <TouchableOpacity
           style={styles.organizeButton}
-          onPress={() => navigation.navigate("OrganizeEvents")} // Navigate to OrganizeEvents
+          onPress={() => navigation.navigate("OrganizeEvents")}
         >
           <Text style={styles.buttonText}>Organize Event</Text>
         </TouchableOpacity>
-        <View>
-          <Text style={styles.topic}>
-            {capitalizeFirstLetter(activeTab)} Cleanup Events
-          </Text>
-        </View>
-        <View style={styles.cardsContainer}>
-            <UpcommingEvents navigation={navigation} />
-        </View>
-        <View style={styles.cardsContainer}>
-         <OrganizedEvents navigation={navigation}/>
+
+       {activeTab=="upcoming" && <View style={styles.cardsContainer}>
+          <UpcommingEvents navigation={navigation} />
+        </View>}
+        {
+          activeTab=="my events" && <View style={styles.cardsContainer}>
+            <MyEvents navigation={navigation} />
           </View>
+        }
+        {
+          activeTab=="past" && <View style={styles.cardsContainer}>
+            <PastEvents navigation={navigation} />
+            </View>
+        }
       </ScrollView>
     </View>
   );
