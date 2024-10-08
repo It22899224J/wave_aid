@@ -12,6 +12,8 @@ import { ReportStack } from "./report/ReportStack";
 import { EventStack } from "./events/main-screen/EventStack";
 import AdminUserManagementStack from "./admin/admin-user-management/AdminUserManagementStack";
 import Loader from "@/components/loader/Loader";
+import BookingConfirmation from "./events/book-a-seat/BookingConfirmation";
+import { AdminMainStack } from "./events/admin-screens/AdminMainStack";
 import { Booking } from "./events/book-a-seat/BookingNav";
 
 
@@ -101,7 +103,7 @@ const Index = () => {
           {/* ADMIN TAB SCREENS HERE */}
           <Tab.Screen
             name="Home"
-            component={EventStack}
+            component={AdminMainStack}
             options={{
               headerTitle: "Beach Cleanup Events",
               tabBarIcon: ({ color, size }) => (
