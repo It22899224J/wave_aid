@@ -73,7 +73,7 @@ const OrganizeEvents = ({ navigation }: Props) => {
   const [tideDetails, setTideDetails] = useState<any | null>(null);
   const [loadingTide, setLoadingTide] = useState(false);
   const [images, setImages] = useState<string[]>([]);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(true);
   const [showTimeFromPicker, setShowTimeFromPicker] = useState(false);
   const [showTimeToPicker, setShowTimeToPicker] = useState(false);
   const addressParts = reportLocationName.split(", ");
@@ -233,6 +233,8 @@ const OrganizeEvents = ({ navigation }: Props) => {
     };
 
     try {
+      await addDoc(collection(db, "events"), reportData);
+      console.log("Document written with ID: ", reportData);
       const docRef = await addDoc(collection(db, "events"), reportData);
       const eventId = docRef.id;
       Alert.alert("Success", "Your report has been submitted.");
@@ -264,11 +266,10 @@ const OrganizeEvents = ({ navigation }: Props) => {
     const currentDate = selectedDate || date;
     setShowDatePicker(false);
     setDate(currentDate);
+    console.log("Date changed: ", currentDate);
 
     // Reset tide data when date changes
     setTideDetails(null);
-
-    // Fetch tide data when date changes and location is set
     if (reportLocation) {
       fetchTideData(
         reportLocation.latitude,
@@ -281,19 +282,21 @@ const OrganizeEvents = ({ navigation }: Props) => {
   const handleTimeFromChange = (event: any, selectedDate: Date | undefined) => {
     const currentDate = selectedDate || timeFrom;
     setShowTimeFromPicker(false);
-    setTimeFrom(currentDate);
-
-    // Reset tide data when time changes
-    setTideDetails(null);
+    const staticDate = new Date(date);
+    const hours = currentDate.getHours();
+    const minutes = currentDate.getMinutes();
+    const combinedDate = new Date(staticDate.setHours(hours, minutes));
+    setTimeFrom(combinedDate);
   };
 
   const handleTimeToChange = (event: any, selectedDate: Date | undefined) => {
-    const currentDate = selectedDate || timeTo;
+    const currentDate = selectedDate || timeFrom;
     setShowTimeToPicker(false);
-    setTimeTo(currentDate);
-
-    // Reset tide data when time changes
-    setTideDetails(null);
+    const staticDate = new Date(date);
+    const hours = currentDate.getHours();
+    const minutes = currentDate.getMinutes();
+    const combinedDate = new Date(staticDate.setHours(hours, minutes));
+    setTimeTo(combinedDate);
   };
 
   return (
@@ -340,64 +343,80 @@ const OrganizeEvents = ({ navigation }: Props) => {
         </TouchableOpacity>
 
         <Text style={styles.sectionTitle}>Date</Text>
-        <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-          <TextInput
-            style={styles.input}
-            value={date.toLocaleDateString()} // Format the date to a readable format
-            editable={false}
-            placeholder="Select Date"
-          />
-        </TouchableOpacity>
-        {showDatePicker && (
-          <DateTimePicker
-            value={date}
-            mode="date"
-            display="default"
-            onChange={handleDateChange}
-          />
-        )}
+        <View style={styles.dateContainer}>
+          <TouchableOpacity style={{ flex: 1 }}>
+            <TextInput
+              onTouchStart={() => setShowDatePicker(!showDatePicker)}
+              style={styles.input}
+              value={date.toLocaleDateString()} // Format the date to a readable format
+              editable={false}
+              placeholder="Select Date"
+            />
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              style={styles.date}
+              value={date}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+            />
+          )}
+        </View>
 
         <Text style={styles.sectionTitle}>Time From</Text>
-        <TouchableOpacity onPress={() => setShowTimeFromPicker(true)}>
-          <TextInput
-            style={styles.input}
-            value={timeFrom.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })} // Format the time
-            editable={false}
-            placeholder="Select Time From"
-          />
-        </TouchableOpacity>
-        {showTimeFromPicker && (
-          <DateTimePicker
-            value={timeFrom}
-            mode="time"
-            display="default"
-            onChange={handleTimeFromChange}
-          />
-        )}
+        <View style={styles.dateContainer}>
+          <TouchableOpacity
+            onPress={() => setShowTimeFromPicker(true)}
+            style={{ flex: 1 }}
+          >
+            <TextInput
+              onTouchStart={() => setShowTimeFromPicker(!showTimeFromPicker)}
+              style={styles.input}
+              value={timeFrom.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })} // Format the time
+              editable={false}
+              placeholder="Select Time From"
+            />
+          </TouchableOpacity>
+          {showTimeFromPicker && (
+            <DateTimePicker
+              value={timeFrom}
+              mode="time"
+              display="default"
+              onChange={handleTimeFromChange}
+            />
+          )}
+        </View>
 
         <Text style={styles.sectionTitle}>Time To</Text>
-        <TouchableOpacity onPress={() => setShowTimeToPicker(true)}>
-          <TextInput
-            style={styles.input}
-            value={timeTo.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })} // Format the time
-            editable={false}
-            placeholder="Select Time To"
-          />
-        </TouchableOpacity>
-        {showTimeToPicker && (
-          <DateTimePicker
-            value={timeTo}
-            mode="time"
-            display="default"
-            onChange={handleTimeToChange}
-          />
-        )}
+        <View style={styles.dateContainer}>
+          <TouchableOpacity
+            onPress={() => setShowTimeToPicker(true)}
+            style={{ flex: 1 }}
+          >
+            <TextInput
+              onTouchStart={() => setShowTimeToPicker(!showTimeToPicker)}
+              style={styles.input}
+              value={timeTo.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })} // Format the time
+              editable={false}
+              placeholder="Select Time To"
+            />
+          </TouchableOpacity>
+          {showTimeToPicker && (
+            <DateTimePicker
+              value={timeTo}
+              mode="time"
+              display="default"
+              onChange={handleTimeToChange}
+            />
+          )}
+        </View>
 
         <Text style={styles.sectionTitle}>Transport Options</Text>
         <TouchableOpacity style={styles.imageButton}
@@ -561,6 +580,13 @@ const styles = StyleSheet.create({
     height: 100,
     margin: 5,
   },
+  dateContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+    width: "100%",
+  },
+  date: {},
 });
 
 export default OrganizeEvents;
