@@ -7,6 +7,7 @@ import SelectEventLocation from "../organize-event/organize/SelectEventLocation"
 import EventDetails from "../events-view/EventDetails";
 import OrganizedEvents from "../update-event/OrganizedEvents";
 import UpdateOrganizeEvents from "../update-event/UpdateOrganizeEvents";
+import UpdateEventLocation from "../update-event/UpdateEventLocation";
 const Stack = createStackNavigator();
 
 export const EventStack = () => {
@@ -40,6 +41,14 @@ export const EventStack = () => {
       <Stack.Screen
         name="SelectEventLocation"
         component={SelectEventLocation}
+        options={{
+          headerTitle: "Select Event Location",
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="UpdateEventLocation"
+        component={UpdateEventLocation}
         options={{
           headerTitle: "Select Event Location",
           headerTitleAlign: "center",
