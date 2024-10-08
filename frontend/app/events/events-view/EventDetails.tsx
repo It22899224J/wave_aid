@@ -12,15 +12,23 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, RouteProp } from "@react-navigation/native";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+  deleteDoc,
+} from "firebase/firestore"; // Import deleteDoc
 import { db } from "@/service/firebase"; // Replace with your Firebase config path
 import axios from "axios"; // Import axios for API calls
+import { useAuth } from "@/context/AuthContext";
 
 interface RouteParams {
   report?: {
     id: string;
   };
 }
+
 const apiKey = "ddb64a174007a68a4edc85f09f65f2e6";
 const tideApiKey = "6ac3d4f9-f559-4b96-b371-ae4871e75c01";
 
@@ -40,10 +48,10 @@ const EventDetails = () => {
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [tideDetails, setTideDetails] = useState<any | null>(null);
   const [loadingTide, setLoadingTide] = useState(false);
-  // Weather state
-  const [weather, setWeather] = useState<string | null>(null);
-  const [temperature, setTemperature] = useState<number | null>(null);
   const [guidelines, setGuidelines] = useState<string[]>([]);
+  const [isRegistered, setIsRegistered] = useState(false); // State for registration status
+  const { user } = useAuth();
+  const userId = user?.uid;
 
   useEffect(() => {
     const fetchReportDetails = async () => {
@@ -67,6 +75,15 @@ const EventDetails = () => {
             data.location.longitude,
             new Date(data.date)
           );
+
+          // Check if the user is already registered for the event
+          const registrationRef = doc(
+            db,
+            "registrations",
+            `${userId}_${report.id}`
+          );
+          const registrationSnap = await getDoc(registrationRef);
+          setIsRegistered(registrationSnap.exists()); // Set registration status
         } else {
           Alert.alert("Error", "Event not found.");
         }
@@ -74,7 +91,46 @@ const EventDetails = () => {
     };
 
     fetchReportDetails();
-  }, [report]);
+  }, [report, userId]); // Add userId to dependencies
+
+  const handleRegistration = async () => {
+    if (!userId) {
+      Alert.alert("Error", "You must be logged in to register.");
+      return;
+    }
+
+    const registrationData = {
+      userId: userId,
+      eventId: report?.id,
+      timestamp: serverTimestamp(),
+    };
+
+    try {
+      if (isRegistered) {
+        // Unregister the user
+        await deleteDoc(doc(db, "registrations", `${userId}_${report?.id}`));
+        setIsRegistered(false); // Update registration status
+        Alert.alert(
+          "Success",
+          "You have successfully unregistered from the event."
+        );
+      } else {
+        // Register the user
+        await setDoc(
+          doc(db, "registrations", `${userId}_${report?.id}`),
+          registrationData
+        );
+        setIsRegistered(true); // Update registration status
+        Alert.alert(
+          "Success",
+          "You have successfully registered for the event."
+        );
+      }
+    } catch (error) {
+      console.error("Error registering/unregistering for event: ", error);
+      Alert.alert("Error", "Unable to process your request.");
+    }
+  };
 
   const fetchWeatherData = async (latitude: number, longitude: number) => {
     setLoadingWeather(true);
@@ -203,42 +259,33 @@ const EventDetails = () => {
           {tideDetails && (
             <View style={styles.tideContainer}>
               <Text style={styles.sectionTitle}>Tide Details</Text>
-              {tideDetails.tides.map((tide: any, index: any) => (
-                <Text key={index}>
-                  Time: {new Date(tide.time).toLocaleString()} - Level:{" "}
-                  {tide.height} m
-                </Text>
-              ))}
+              <Text>Next High Tide: {tideDetails.data[0].high_tide}</Text>
+              <Text>Next Low Tide: {tideDetails.data[0].low_tide}</Text>
             </View>
           )}
 
-          {/* Transportation Options */}
-          <View style={styles.transportSection}>
-            <Text style={styles.sectionTitle}>Transportation Options</Text>
-            <TouchableOpacity style={styles.availableButton}>
-              <Text style={styles.availableText}>Available</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Registration */}
-          <View style={styles.registrationSection}>
-            <Text style={styles.sectionTitle}>Registration Status</Text>
-            <Text style={styles.descriptionText}>
-              Join with us and save the environment.
+          {/* Registration Button */}
+          <TouchableOpacity
+            style={[styles.registerButton,{backgroundColor: isRegistered ? "red" : "#007AFF"}]}
+            onPress={handleRegistration}
+          >
+            <Text style={styles.registerButtonText}>
+              {isRegistered ? "Unregister" : "Register"}
             </Text>
-            <TouchableOpacity style={styles.registerButton}>
-              <Text style={styles.registerText}>Register</Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
 
-          {/* Volunteer Guidelines */}
-          <View style={styles.volunteerSection}>
-            <Text style={styles.sectionTitle}>Volunteer Guidelines</Text>
-            {guidelines? guidelines.map((guideline, index) => (
-              <Text key={index} style={styles.descriptionText}>
-                {guideline}
-              </Text>
-            )):<Text>No guidelines available</Text>}
+          {/* Guidelines */}
+          <View style={styles.guidelinesContainer}>
+            <Text style={styles.sectionTitle}>Guidelines</Text>
+            {guidelines ? (
+              guidelines?.map((guideline, index) => (
+                <Text key={index} style={styles.guidelineText}>
+                  - {guideline}
+                </Text>
+              ))
+            ) : (
+              <Text style={styles.guidelineText}>No guidelines provided.</Text>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -249,24 +296,15 @@ const EventDetails = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "#fff",
   },
   content: {
     padding: 16,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  headerText: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
   eventTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 8,
+    marginBottom: 16,
   },
   organizer: {
     flexDirection: "row",
@@ -287,7 +325,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "600",
+    fontWeight: "bold",
     marginBottom: 8,
   },
   detailRow: {
@@ -301,85 +339,41 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   clickableText: {
-    color: "#1D4ED8",
-    textDecorationLine: "underline",
+    color: "#007AFF",
   },
   eventImage: {
     width: "100%",
     height: 180,
-    borderRadius: 10,
     marginBottom: 16,
-  },
-  infoContainer: {
-    marginBottom: 16,
-  },
-  infoBox: {
-    width: "100%",
-    backgroundColor: "#F0F0F0",
-    padding: 16,
-    borderRadius: 10,
-  },
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  infoSubtitle: {
-    fontSize: 12,
-    color: "#6B7280",
-    textAlign: "center",
-  },
-  transportSection: {
-    marginBottom: 16,
-  },
-  availableButton: {
-    backgroundColor: "#4ADE80",
-    padding: 12,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  availableText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  registrationSection: {
-    marginBottom: 16,
-  },
-  descriptionText: {
-    marginBottom: 8,
-    color: "#374151",
-  },
-  registerButton: {
-    backgroundColor: "#3B82F6",
-    padding: 12,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  registerText: {
-    color: "white",
-    fontWeight: "bold",
   },
   loadingContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 10,
+    marginBottom: 16,
   },
   weatherContainer: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    marginBottom: 10,
+    marginBottom: 16,
   },
   tideContainer: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  volunteerSection: {
     marginBottom: 16,
+  },
+  registerButton: {
+    // backgroundColor: "#007AFF",
+    padding: 12,
+    borderRadius: 5,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  registerButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  guidelinesContainer: {
+    marginBottom: 16,
+  },
+  guidelineText: {
+    fontSize: 14,
   },
 });
 
