@@ -115,7 +115,7 @@ const ReportMainView = ({ navigation }: Props) => {
               title={report.location.locationName}
               description={`Reported by ${report.fullName}`}
             >
-              <Callout onPress={() => navigation.navigate('ReportedAreasPage', { reportId: report.id })}>
+              <Callout onPress={() => navigation.navigate('ReportDetailsPage', { reportId: report.id })}>
                 <View style={styles.calloutContainer}>
                   <Text style={styles.calloutTitle}>{report.location.locationName}</Text>
                   <Text style={styles.calloutDescription}>Reported by {report.fullName}</Text>
