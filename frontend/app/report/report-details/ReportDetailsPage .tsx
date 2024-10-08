@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     borderColor: '#bdc3c7',
   },
   timestamp: {
-    fontSize: 18,
+    fontSize: 14,
     color: '#7f8c8d',
     marginBottom: 50,
     textAlign: 'center',
