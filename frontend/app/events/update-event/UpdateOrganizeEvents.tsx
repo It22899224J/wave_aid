@@ -39,6 +39,8 @@ interface RouteParams {
   };
 }
 
+const apiKey = "ddb64a174007a68a4edc85f09f65f2e6";
+const tideApiKey = "6ac3d4f9-f559-4b96-b371-ae4871e75c01";
 type Props = {
   navigation: NavigationProp<any>;
 };
@@ -47,7 +49,7 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
   const { user } = useAuth();
   const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
   const { location, locationName, report } = route.params || {};
-
+  const [loadingWeather, setLoadingWeather] = useState(false);
   const [organizerName, setOrganizerName] = useState("");
   const [date, setDate] = useState(new Date());
   const [timeFrom, setTimeFrom] = useState(new Date());
@@ -64,6 +66,7 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
   const [showTimeToPicker, setShowTimeToPicker] = useState(false);
   const [showTimeFromPicker, setShowTimeFromPicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [weatherDetails, setWeatherDetails] = useState<any | null>(null);
   useEffect(() => {
     const fetchReportDetails = async () => {
       if (report) {
@@ -89,6 +92,18 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
     fetchReportDetails();
   }, [report]);
 
+  useEffect(() => {
+    if (location) {
+      setReportLocation({
+        latitude: location.latitude,
+        longitude: location.longitude,
+      });
+      setReportLocationName(locationName || "Location not selected");
+      fetchWeatherData(location.latitude, location.longitude);
+      // fetchTideData(location.latitude, location.longitude, date);
+    }
+  }, [location, locationName]);
+
   const handlePickLocation = () => {
     navigation.navigate("UpdateEventLocation", { currentLocation: location });
   };
@@ -97,6 +112,20 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
     setVolunteerGuidelines((prev) => [...prev, ""]);
   };
 
+  const fetchWeatherData = async (latitude: number, longitude: number) => {
+    setLoadingWeather(true);
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`;
+
+    try {
+      const response = await axios.get(url);
+      setWeatherDetails(response.data);
+    } catch (error) {
+      console.error("Error fetching weather data: ", error);
+      Alert.alert("Error", "Unable to fetch weather data.");
+    } finally {
+      setLoadingWeather(false);
+    }
+  };
   const handleUpdateGuideline = (text: string, index: number) => {
     const updatedGuidelines = [...volunteerGuidelines];
     updatedGuidelines[index] = text;
@@ -113,6 +142,7 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
       organizerName,
       date: date.toISOString(),
       time: { from: timeFrom.toISOString(), to: timeTo.toISOString() },
+      weatherDetails,
       transportOptions,
       volunteerGuidelines,
       location: {
@@ -139,17 +169,28 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
 
   const handleDateChange = (event: any, selectedDate: Date | undefined) => {
     const currentDate = selectedDate || date;
+    setShowDatePicker(false);
     setDate(currentDate);
   };
 
   const handleTimeFromChange = (event: any, selectedDate: Date | undefined) => {
     const currentDate = selectedDate || timeFrom;
-    setTimeFrom(currentDate);
+    setShowTimeFromPicker(false);
+    const staticDate = new Date(date);
+    const hours = currentDate.getHours();
+    const minutes = currentDate.getMinutes();
+    const combinedDate = new Date(staticDate.setHours(hours, minutes));
+    setTimeFrom(combinedDate);
   };
 
   const handleTimeToChange = (event: any, selectedDate: Date | undefined) => {
-    const currentDate = selectedDate || timeTo;
-    setTimeTo(currentDate);
+    const currentDate = selectedDate || timeFrom;
+    setShowTimeToPicker(false);
+    const staticDate = new Date(date);
+    const hours = currentDate.getHours();
+    const minutes = currentDate.getMinutes();
+    const combinedDate = new Date(staticDate.setHours(hours, minutes));
+    setTimeTo(combinedDate);
   };
 
   return (
@@ -196,63 +237,87 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
         </TouchableOpacity>
 
         <Text style={styles.sectionTitle}>Date</Text>
-        <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-          <TextInput
-            style={styles.input}
-            value={date.toLocaleDateString()}
-            editable={false}
-            placeholder="Select Date"
-          />
-        </TouchableOpacity>
-        {showDatePicker && (
-          <DateTimePicker
-            value={date}
-            mode="date"
-            display="default"
-            onChange={handleDateChange}
-          />
-        )}
+        <View style={styles.dateContainer}>
+          <TouchableOpacity style={{ flex: 1 }}>
+            <TextInput
+              onTouchStart={() => setShowDatePicker(!showDatePicker)}
+              style={styles.input}
+              value={date.toLocaleDateString()} // Format the date to a readable format
+              editable={false}
+              placeholder="Select Date"
+            />
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              style={styles.date}
+              value={date}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+            />
+          )}
+        </View>
 
         <Text style={styles.sectionTitle}>Time From</Text>
-        <TouchableOpacity onPress={() => setShowTimeFromPicker(true)}>
-          <TextInput
-            style={styles.input}
-            value={timeFrom.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-            editable={false}
-            placeholder="Select Time From"
-          />
-        </TouchableOpacity>
-        {showTimeFromPicker && (
-          <DateTimePicker
-            value={timeFrom}
-            mode="time"
-            display="default"
-            onChange={handleTimeFromChange}
-          />
-        )}
+        <View style={styles.dateContainer}>
+          <TouchableOpacity
+            onPress={() => setShowTimeFromPicker(true)}
+            style={{ flex: 1 }}
+          >
+            <TextInput
+              onTouchStart={() => setShowTimeFromPicker(!showTimeFromPicker)}
+              style={styles.input}
+              value={timeFrom.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })} // Format the time
+              editable={false}
+              placeholder="Select Time From"
+            />
+          </TouchableOpacity>
+          {showTimeFromPicker && (
+            <DateTimePicker
+              value={timeFrom}
+              mode="time"
+              display="default"
+              onChange={handleTimeFromChange}
+            />
+          )}
+        </View>
 
         <Text style={styles.sectionTitle}>Time To</Text>
-        <TouchableOpacity onPress={() => setShowTimeToPicker(true)}>
-          <TextInput
-            style={styles.input}
-            value={timeTo.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-            editable={false}
-            placeholder="Select Time To"
-          />
-        </TouchableOpacity>
-        {showTimeToPicker && (
-          <DateTimePicker
-            value={timeTo}
-            mode="time"
-            display="default"
-            onChange={handleTimeToChange}
-          />
+        <View style={styles.dateContainer}>
+          <TouchableOpacity
+            onPress={() => setShowTimeToPicker(!showTimeToPicker)}
+            style={{ flex: 1 }}
+          >
+            <TextInput
+              onTouchStart={() => setShowTimeToPicker(!showTimeToPicker)}
+              style={styles.input}
+              value={timeTo.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })} // Format the time
+              editable={false}
+              placeholder="Select Time To"
+            />
+          </TouchableOpacity>
+          {showTimeToPicker && (
+            <DateTimePicker
+              value={timeTo}
+              mode="time"
+              display="default"
+              onChange={handleTimeToChange}
+            />
+          )}
+        </View>
+
+        {weatherDetails && (
+          <View style={styles.weatherContainer}>
+            <Text style={styles.sectionTitle}>Weather Details</Text>
+            <Text>Temperature: {weatherDetails.main.temp} °C</Text>
+            <Text>Condition: {weatherDetails.weather[0].description}</Text>
+          </View>
         )}
 
         <Text style={styles.sectionTitle}>Transport Options</Text>
@@ -336,6 +401,20 @@ const styles = StyleSheet.create({
   guidelineContainer: {
     marginVertical: 8,
   },
+  weatherContainer: {
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  dateContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+    width: "100%",
+  },
+  date: {},
 });
 
 export default UpdateOrganizeEvents;
