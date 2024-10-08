@@ -18,6 +18,7 @@ import { db } from "@/service/firebase";
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import MapView, { Marker } from "react-native-maps";
 
 interface RouteParams {
   location?: {
@@ -73,6 +74,8 @@ const OrganizeEvents = ({ navigation }: Props) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimeFromPicker, setShowTimeFromPicker] = useState(false);
   const [showTimeToPicker, setShowTimeToPicker] = useState(false);
+    const addressParts = reportLocationName.split(", ");
+    const shortenedAddress = addressParts.slice(0, 1).join(", ");
 
   useEffect(() => {
     const fetchReportDetails = async () => {
@@ -216,7 +219,7 @@ const OrganizeEvents = ({ navigation }: Props) => {
     };
 
     try {
-      await addDoc(collection(db, "reports"), reportData);
+      await addDoc(collection(db, "events"), reportData);
       Alert.alert("Success", "Your report has been submitted.");
       // Reset the form
       setOrganizerName("");
@@ -282,6 +285,24 @@ const OrganizeEvents = ({ navigation }: Props) => {
         />
 
         <Text style={styles.sectionTitle}>Location</Text>
+        <MapView
+          style={styles.map}
+          initialRegion={{
+            latitude: reportLocation?.latitude || 7.8731,
+            longitude: reportLocation?.longitude || 80.7718,
+            latitudeDelta: 5,
+            longitudeDelta: 5,
+          }}
+        >
+          {reportLocation && (
+            <Marker
+              coordinate={reportLocation}
+              title={shortenedAddress}
+              description={reportLocationName}
+            />
+          )}
+        </MapView>
+
         <TextInput
           style={styles.input}
           value={reportLocationName}
@@ -443,6 +464,12 @@ const OrganizeEvents = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+  },
+  map: {
+    width: "100%",
+    height: 300,
+    borderRadius: 10,
+    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
