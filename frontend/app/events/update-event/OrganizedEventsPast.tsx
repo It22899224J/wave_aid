@@ -35,7 +35,7 @@ interface Event {
   image: string;
 }
 
-const OrganizedEvents = ({
+const OrganizedEventsPast = ({
   navigation,
 }: {
   navigation: NavigationProp<any>;
@@ -47,12 +47,11 @@ const OrganizedEvents = ({
 
   useEffect(() => {
     const fetchReportedAreas = async () => {
-     
       const currentDate = new Date().toISOString();
       const q = query(
         collection(db, "events"),
         where("userId", "==", userId),
-        where("date",  ">=", currentDate)
+        where("date","<", currentDate)
       );
       const querySnapshot = await getDocs(q);
 
@@ -106,7 +105,7 @@ const OrganizedEvents = ({
   };
 
   const handleReportPress = (item: Event) => {
-    navigation.navigate("UpdateOrganizeEvents", { report: item });
+    navigation.navigate("UpdateOrganizeEventsPast", { report: item });
   };
 
   const confirmRemoveReport = (reportId: string) => {
@@ -192,4 +191,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OrganizedEvents;
+export default OrganizedEventsPast;
