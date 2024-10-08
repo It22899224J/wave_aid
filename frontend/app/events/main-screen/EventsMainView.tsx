@@ -15,6 +15,9 @@ import MapView, { Marker } from "react-native-maps";
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation
 import { RootStackParamList } from "@/types/navigation";
 import { StackNavigationProp } from "@react-navigation/stack";
+import UpcommingEvents from "../events-view/UpcommingEvents";
+import OrganizedEvents from "../update-event/OrganizedEvents";
+import OrganizeEvents from "../organize-event/organize/OrganizeEvents";
 
 const beaches = [
   {
@@ -49,29 +52,15 @@ const beaches = [
   },
 ];
 
-const cardData = [
-  {
-    _id: "1",
-    name: "Community Gathering",
-    date: "September 25, 2024",
-    locationName: "City Park",
-    location: "https://www.google.com/maps/place/City+Park",
-    weather: "Sunny",
-    organizer: "John Doe",
-    image: "test",
-    imageUrl: "https://via.placeholder.com/150",
-  },
-  // ... other card data
-];
 
 const MainScreen = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [searchText, setSearchText] = useState("");
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
-  const filteredData = cardData.filter((item) =>
-    item.name.toLowerCase().includes(searchText.toLowerCase())
-  );
+  // const filteredData = cardData.filter((item) =>
+  //   item.name.toLowerCase().includes(searchText.toLowerCase())
+  // );
 
   return (
     <View style={styles.container}>
@@ -130,10 +119,11 @@ const MainScreen = () => {
           </Text>
         </View>
         <View style={styles.cardsContainer}>
-          {filteredData.map((item) => (
-            <CardComponent key={item._id} details={item} />
-          ))}
+            <UpcommingEvents navigation={navigation} />
         </View>
+        <View style={styles.cardsContainer}>
+         <OrganizedEvents navigation={navigation}/>
+          </View>
       </ScrollView>
     </View>
   );
