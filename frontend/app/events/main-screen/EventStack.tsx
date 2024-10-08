@@ -4,6 +4,9 @@ import UpcommingEventsView from "./UpcommingEventsView";
 import UpcommingEventWrap from "./UpcommingEventWrap";
 import OrganizeEvents from "../organize-event/organize/OrganizeEvents";
 import SelectEventLocation from "../organize-event/organize/SelectEventLocation";
+import EventDetails from "../events-view/EventDetails";
+import OrganizedEvents from "../update-event/OrganizedEvents";
+import UpdateOrganizeEvents from "../update-event/UpdateOrganizeEvents";
 const Stack = createStackNavigator();
 
 export const EventStack = () => {
@@ -19,11 +22,21 @@ export const EventStack = () => {
         component={OrganizeEvents}
         options={{ headerTitle: "Organize Events", headerTitleAlign: "center" }}
       />
-      {/* <Stack.Screen
-        name="UpcommingEventWrap"
-        component={UpcommingEventWrap}
+      <Stack.Screen
+        name="EventDetails"
+        component={EventDetails}
+        options={{ headerTitle: "Organize Events", headerTitleAlign: "center" }}
+      />
+      <Stack.Screen
+        name="OrganizedEvents"
+        component={OrganizedEvents}
         options={{ headerTitle: "Reported Areas", headerTitleAlign: "center" }}
-      /> */}
+      />
+      <Stack.Screen
+        name="UpdateOrganizeEvents"
+        component={UpdateOrganizeEvents}
+        options={{ headerTitle: "Reported Areas", headerTitleAlign: "center" }}
+      />
       <Stack.Screen
         name="SelectEventLocation"
         component={SelectEventLocation}
