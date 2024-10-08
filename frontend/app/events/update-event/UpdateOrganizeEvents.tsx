@@ -90,7 +90,7 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
   }, [report]);
 
   const handlePickLocation = () => {
-    navigation.navigate("SelectEventLocation", { currentLocation: location });
+    navigation.navigate("UpdateEventLocation", { currentLocation: location });
   };
 
   const handleAddGuideline = () => {
