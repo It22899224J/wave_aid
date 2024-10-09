@@ -21,6 +21,7 @@
     "@mui/icons-material": "^6.0.2",
     "@mui/material": "^6.0.2",
     "@react-native-async-storage/async-storage": "^1.24.0",
+    "@react-native-community/blur": "^4.4.1",
     "@react-native-community/datetimepicker": "^8.2.0",
     "@react-native-community/masked-view": "^0.1.11",
     "@react-native-firebase/app": "^20.5.0",
@@ -37,6 +38,7 @@
     "expo-font": "~12.0.9",
     "expo-image-manipulator": "^12.0.5",
     "expo-image-picker": "~15.0.7",
+    "expo-linear-gradient": "^13.0.2",
     "expo-linking": "~6.3.1",
     "expo-router": "~3.5.23",
     "expo-splash-screen": "~0.27.5",
@@ -60,7 +62,8 @@
     "react-native-select-dropdown": "^4.0.1",
     "react-native-svg": "^15.7.1",
     "react-native-vector-icons": "^10.2.0",
-    "react-native-web": "~0.19.10"
+    "react-native-web": "~0.19.10",
+    "expo-blur": "~13.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

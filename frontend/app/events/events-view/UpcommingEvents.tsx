@@ -64,7 +64,7 @@ const UpcommingEvents = ({
           time: moment(data.time.from).format("hh:mm A"),
           weather: data.weather,
           tide: data.tide,
-          organizer: data.organizer,
+          organizer: data.organizerName,
           image: data.images[0] || "default-image-url.png",
         } as Event;
       });
@@ -163,18 +163,19 @@ const styles = StyleSheet.create({
   container: {
     display: "flex",
     flexDirection: "column",
-    padding: 15,
     gap: 10,
-    backgroundColor: "#ffffff",
+    paddingTop: 20,
   },
   topic: {
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
     marginVertical: 20,
+    color: "#333",
   },
   title: {
-    fontSize: 22,
+    color: "#333",
+    fontSize: 28,
     fontWeight: "bold",
     marginBottom: 20,
   },

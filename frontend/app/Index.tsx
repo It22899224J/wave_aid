@@ -58,7 +58,7 @@ const Index = () => {
             name="Home"
             component={EventStack}
             options={{
-              headerTitle: "Beach Cleanup Events",
+              headerShown: false,
               tabBarIcon: ({ color, size }) => (
                 <Icon name="home" color={color} size={size} />
               ),
