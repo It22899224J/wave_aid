@@ -100,49 +100,6 @@ const SeatBooking: React.FC = () => {
         }
     };
 
-    const handleCancelAllBookings = async () => {
-        if (userBookedSeats.length > 0) {
-            Alert.alert(
-                "Confirm Cancellation",
-                `Are you sure you want to cancel the bookings for seats: ${userBookedSeats.join(', ')}?`,
-                [
-                    {
-                        text: "Cancel",
-                        style: "cancel"
-                    },
-                    {
-                        text: "OK",
-                        onPress: async () => {
-                            try {
-                                const busRef = doc(db, 'buses', busId);
-                                const updatedSeats = busDetails.seats.map((seat: { seatNumber: number; userID?: string | null; status: string; }) => {
-                                    if (userBookedSeats.includes(seat.seatNumber) && seat.userID === user?.uid) {
-                                        return {
-                                            ...seat,
-                                            status: 'available', // Mark seat as available
-                                            userID: null
-                                        };
-                                    }
-                                    return seat;
-                                });
-
-                                await updateDoc(busRef, { seats: updatedSeats });
-                                console.log('Seats canceled:', userBookedSeats);
-
-                                setUserBookedSeats([]); // Clear user booked seats after cancellation
-                                navigation.navigate('BookingCanceled', { busId, userBookedSeats });
-                            } catch (error) {
-                                console.error(error);
-                            }
-                        }
-                    }
-                ]
-            );
-        } else {
-            Alert.alert("No booked seats", "You have no seats booked to cancel.");
-        }
-    };
-
     if (loading) {
         return <ActivityIndicator size="large" color="#0000ff" />;
     }
@@ -219,16 +176,6 @@ const SeatBooking: React.FC = () => {
                 <TouchableOpacity style={styles.bookButton} onPress={handleSeatBooking}>
                     <Text style={styles.bookButtonText}>Book Seat</Text>
                 </TouchableOpacity>
-
-                {/* Cancel All Bookings button */}
-                {userBookedSeats.length > 0 && ( // Only render if there are booked seats
-                    <TouchableOpacity
-                        style={styles.cancelButton}
-                        onPress={handleCancelAllBookings}
-                    >
-                        <Text style={styles.cancelButtonText}>Cancel All Bookings</Text>
-                    </TouchableOpacity>
-                )}
             </View>
         </View>
     );

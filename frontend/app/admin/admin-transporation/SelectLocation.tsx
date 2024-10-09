@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { NavigationProp } from "@react-navigation/native";
 
 type RootStackParamList = {
   BusSetup: {
-    location: { latitude: number; longitude: number } | undefined;
+    location: { latitude: number; longitude: number; name: string | null } | undefined;
   };
-  // ... other routes
 };
 
 type Props = {
@@ -18,12 +17,39 @@ const SelectLocation = ({ navigation }: Props) => {
   const [selectedLocation, setSelectedLocation] = useState<{
     latitude: number;
     longitude: number;
+    name: string | null;
   } | null>(null);
-  //   const navigation = useNavigation();
 
-  const handleMapPress = (event: any) => {
+  const handleMapPress = async (event: any) => {
     const { coordinate } = event.nativeEvent;
     setSelectedLocation(coordinate);
+
+    // Reverse geocode using Nominatim (OpenStreetMap)
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coordinate.latitude}&lon=${coordinate.longitude}`
+      );
+      const data = await response.json();
+      const address = data.display_name;
+
+      // Get the first 3 parts of the address
+      const addressParts = address.split(", ");
+      const shortenedAddress = addressParts.slice(0, 3).join(", ");
+
+      // Update selectedLocation with the address
+      setSelectedLocation({
+        latitude: coordinate.latitude,
+        longitude: coordinate.longitude,
+        name: shortenedAddress,
+      });
+    } catch (error) {
+      console.error("Error fetching location name:", error);
+      setSelectedLocation({
+        latitude: coordinate.latitude,
+        longitude: coordinate.longitude,
+        name: "Unknown location",
+      });
+    }
   };
 
   const handleSelect = () => {
@@ -50,6 +76,11 @@ const SelectLocation = ({ navigation }: Props) => {
         <Text style={styles.locationText}>
           Selected Location:{" "}
           {`(${selectedLocation.latitude}, ${selectedLocation.longitude})`}
+        </Text>
+      )}
+      {selectedLocation && selectedLocation.name && (
+        <Text style={styles.locationText}>
+          Location Name: {selectedLocation.name}
         </Text>
       )}
       <TouchableOpacity onPress={handleSelect}>

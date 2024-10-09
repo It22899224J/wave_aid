@@ -22,6 +22,7 @@ import {
 import { db } from "@/service/firebase";
 import { EventCard } from "../events-view/EventCard";
 import moment from "moment";
+import { onSnapshot } from "firebase/firestore";
 
 interface Event {
   id: string;
@@ -41,24 +42,25 @@ const MyEvents = ({ navigation }: { navigation: NavigationProp<any> }) => {
   const { user } = useAuth();
   const userId = user?.uid;
 
-  useEffect(() => {
-    const fetchRegisteredEvents = async () => {
-      if (!userId) return;
 
-      // Fetch registrations for the current user
-      const registrationsQuery = query(
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      query(
         collection(db, "registrations"),
         where("userId", "==", userId)
-      );
+      ),
+      (registrationsSnapshot) => {
+        const eventIds = registrationsSnapshot.docs.map((doc) => doc.data().eventId);
+        setRegisteredEventIds(eventIds);
+      },
+      (error) => {
+        console.error("Error fetching registrations: ", error);
+      }
+    );
 
-      const registrationsSnapshot = await getDocs(registrationsQuery);
-      const eventIds = registrationsSnapshot.docs.map(
-        (doc) => doc.data().eventId
-      );
-      setRegisteredEventIds(eventIds);
-    };
-
-    fetchRegisteredEvents();
+    // Clean up the listener on component unmount
+    return () => unsubscribe();
   }, [userId]);
 
   useEffect(() => {

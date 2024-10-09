@@ -1,20 +1,67 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Linking, Alert } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { BusContext } from '@/context/BusContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { db } from '@/service/firebase';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-const BookingConfirmation = () => {
-    const route = useRoute();
-    const { busId, bookedSeats } = route.params as { busId: string; bookedSeats: string[] };
+interface BookingConfirmationRouteParams {
+    busId: string;
+    bookedSeats: string[];
+    seatNumbers: number[];
+}
+
+interface BookingCanceledRouteParams {
+    busId: string;
+    canceledSeats: number[];
+}
+
+
+type BookingRoutes = {
+    BookingConfirmation: BookingConfirmationRouteParams;
+    BookingCanceled: BookingCanceledRouteParams;
+    SelectBus: {
+        eventId: string
+    };
+};
+
+
+type BookingConfirmationNavigationProp = StackNavigationProp<BookingRoutes, 'BookingConfirmation'>;
+type BookingConfirmationRouteProp = RouteProp<BookingRoutes, 'BookingConfirmation'>;
+
+const BookingConfirmation: React.FC = () => {
+    const navigation = useNavigation<BookingConfirmationNavigationProp>();
+    const route = useRoute<BookingConfirmationRouteProp>();
     const { buses } = useContext(BusContext);
-    const navigation = useNavigation();
+    const { busId, bookedSeats, seatNumbers } = route.params;
+    const [eventDate, setEventDate] = useState<Date>();
 
     const busDetails = buses.find(bus => bus.id === busId);
 
     if (!busDetails) {
         return <Text style={styles.errorText}>Bus not found</Text>;
     }
+
+    useEffect(() => {
+        const fetchEventDetails = async () => {
+            if (busDetails.eventID) {
+                const eventRef = doc(db, "events", busDetails.eventID);
+                const eventSnap = await getDoc(eventRef);
+
+                if (eventSnap.exists()) {
+                    const data = eventSnap.data();
+                    setEventDate(data.date)
+                } else {
+                    Alert.alert("Error", "Event not found.");
+                }
+            }
+        };
+
+        fetchEventDetails();
+    }, [busDetails.eventID]);
 
     const openLocationInMap = () => {
         const pickupLocation = busDetails.pickupLocation; // "(6.902516788817792, 79.87774953246117)"
@@ -31,6 +78,59 @@ const BookingConfirmation = () => {
             Alert.alert("Error", "Location information is not available.");
         }
     };
+
+    const handleCancelAllBookings = async () => {
+        if (seatNumbers.length > 0) {
+            Alert.alert(
+                "Confirm Cancellation",
+                `Are you sure you want to cancel the bookings for seats: ${seatNumbers.join(', ')}?`,
+                [
+                    {
+                        text: "Cancel",
+                        style: "cancel"
+                    },
+                    {
+                        text: "OK",
+                        onPress: async () => {
+                            try {
+                                const busRef = doc(db, 'buses', busId);
+
+                                // Update the seats in the bus by resetting the ones booked by the user
+                                const updatedSeats = busDetails.seats.map((seat: { seatNumber: number; userID?: string | null; status: string; }) => {
+                                    // If the seat is in the seatNumbers array and booked by this user, reset its status and userID
+                                    if (seatNumbers.includes(seat.seatNumber)) {
+                                        return {
+                                            ...seat,
+                                            status: 'available', // Mark seat as available
+                                            userID: null
+                                        };
+                                    }
+                                    return seat;
+                                });
+
+                                // Update Firestore with the modified seats array
+                                await updateDoc(busRef, { seats: updatedSeats });
+
+                                console.log('Seats canceled:', seatNumbers);
+
+                                // Clear the booked seats in the UI after cancellation
+
+                                navigation.navigate('BookingCanceled', { busId, canceledSeats: seatNumbers }); // Navigate to the BookingCanceled screen
+                            } catch (error) {
+                                console.error("Error canceling seats:", error);
+                                Alert.alert("Error", "There was a problem canceling your bookings.");
+                            }
+                        }
+                    }
+                ]
+            );
+        } else {
+            Alert.alert("No booked seats", "You have no seats booked to cancel.");
+        }
+    };
+
+
+
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -56,7 +156,9 @@ const BookingConfirmation = () => {
                     <FontAwesome5 name="chair" size={24} color="gray" />
                     <View style={styles.detailTextContainer}>
                         <Text style={styles.detailLabel}>Seat Numbers</Text>
-                        <Text style={styles.detailValue}>{bookedSeats.join(', ')}</Text>
+                        <Text style={styles.detailValue}>
+                            {bookedSeats && bookedSeats.length > 0 ? bookedSeats.join(', ') : seatNumbers.join(', ')}
+                        </Text>
                     </View>
                 </View>
 
@@ -72,7 +174,14 @@ const BookingConfirmation = () => {
                     <MaterialIcons name="event" size={24} color="gray" />
                     <View style={styles.detailTextContainer}>
                         <Text style={styles.detailLabel}>Event Date</Text>
-                        <Text style={styles.detailValue}></Text>
+                        <Text style={styles.detailValue}>
+                            {new Date(eventDate as any).toLocaleDateString(undefined, {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                            })}
+                        </Text>
+
                     </View>
                 </View>
 
@@ -80,25 +189,43 @@ const BookingConfirmation = () => {
                     <Ionicons name="location-outline" size={24} color="gray" />
                     <View style={styles.detailTextContainer}>
                         <Text style={styles.detailLabel}>Pick Up Location</Text>
-                        <Text style={styles.detailValue}>{busDetails.pickupLocation}</Text>
+                        <Text style={styles.detailValue}>{busDetails.pickupLocationName}</Text>
                     </View>
                     <TouchableOpacity onPress={openLocationInMap}>
                         <Text style={styles.viewText}>View</Text>
                     </TouchableOpacity>
                 </View>
             </View>
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                    onPress={() => {
+                        if (busDetails.eventID) {
+                            console.log(busDetails.eventID)
+                            navigation.navigate('SelectBus', { eventId: busDetails.eventID });
+                        } else {
+                            Alert.alert("Error", "Event ID is not available.");
+                        }
+                    }}
+                    style={styles.goBackButton}
+                >
+                    <Text style={styles.buttonText}>Go back</Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-                onPress={() => { navigation.navigate('MyEventsBooking' as never) }}
-                style={styles.goBackButton}>
-                <Text style={styles.goBackText}>Go back</Text>
-            </TouchableOpacity>
+                <View style={styles.buttonSpacing} />
+
+                <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={handleCancelAllBookings}
+                >
+                    <Text style={styles.buttonText}>Cancel All Bookings</Text>
+                </TouchableOpacity>
+            </View>
+
         </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
-    // Your existing styles...
     container: {
         flexGrow: 1,
         padding: 20,
@@ -160,13 +287,7 @@ const styles = StyleSheet.create({
         color: '#00acf0',
         fontWeight: 'bold',
     },
-    goBackButton: {
-        backgroundColor: '#00acf0',
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginBottom: 30,
-    },
+
     goBackText: {
         color: 'white',
         fontWeight: 'bold',
@@ -176,6 +297,58 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: 'red',
         marginTop: 20,
+    },
+
+    cancelButtonText: {
+        color: '#FFF',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    buttonContainer: {
+        flexDirection: 'row', // Align buttons in a row
+        justifyContent: 'space-between', // Distribute space between the buttons
+        marginTop: 30,
+        marginBottom: 20,
+    },
+    button: {
+        flex: 1, // Allow buttons to take equal space
+        paddingVertical: 10, // Adjusted padding for smaller button size
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 15,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+    },
+    buttonSpacing: {
+        marginLeft: 10, // Space between buttons
+    },
+    buttonText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 14, // Change font size to 15
+        textAlign: 'center', // Center the text
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+    },
+    goBackButton: {
+        backgroundColor: '#00acf0',
+        paddingVertical: 10, // Adjust padding for smaller button size
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center', // Ensure content is centered
+        flex: 1,
+    },
+    cancelButton: {
+        backgroundColor: '#FF0000',
+        paddingVertical: 10, // Adjust padding for smaller button size
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center', // Ensure content is centered
+        flex: 1,
     },
 });
 

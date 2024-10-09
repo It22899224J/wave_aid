@@ -78,12 +78,12 @@ export const EventStack = () => {
       <Stack.Screen
         name="MyEventDetails"
         component={EventDetails}
-        options={{ headerTitle: "PastEvents", headerTitleAlign: "center" }}
+        options={{ headerTitle: "MyEventDetails", headerTitleAlign: "center" }}
       />
       <Stack.Screen
         name="MyEvents"
         component={MyEvents}
-        options={{ headerTitle: "PastEvents", headerTitleAlign: "center" }}
+        options={{ headerTitle: "MyEvents", headerTitleAlign: "center" }}
       />
     </Stack.Navigator>
   );

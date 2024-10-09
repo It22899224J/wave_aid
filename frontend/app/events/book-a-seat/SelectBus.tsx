@@ -4,11 +4,14 @@ import { BusContext } from '@/context/BusContext';
 import { useNavigation, NavigationProp, useRoute } from '@react-navigation/native';
 import Loader from '@/components/loader/Loader';
 import { Bus } from '@/types/Bus';
-
+import { Ionicons } from '@expo/vector-icons'; // Make sure to install @expo/vector-icons
+import { useAuth } from '@/context/AuthContext';
 
 type RootStackParamList = {
   SelectBus: { eventId: string };
   BusLayout: { busId: string };
+  BookingDetails: { busId: string };
+  BookingConfirmation: { busId: string; seatNumbers: any };
 };
 
 type SelectBusNavigationProp = NavigationProp<RootStackParamList, 'SelectBus'>;
@@ -16,6 +19,7 @@ type SelectBusNavigationProp = NavigationProp<RootStackParamList, 'SelectBus'>;
 const SelectBus: React.FC = () => {
   const { buses, loading, error } = useContext(BusContext);
   const navigation = useNavigation<SelectBusNavigationProp>();
+  const { user } = useAuth();
 
   const route = useRoute();
   const { eventId } = route.params as { eventId: string };
@@ -26,6 +30,8 @@ const SelectBus: React.FC = () => {
     navigation.navigate('BusLayout', { busId });
   };
 
+
+
   if (loading) {
     return <Loader />;
   }
@@ -34,24 +40,80 @@ const SelectBus: React.FC = () => {
     return <Text style={styles.error}>{error}</Text>;
   }
 
-  const BusCard: React.FC<{ item: Bus }> = ({ item }) => (
-    <View style={styles.card}>
-      {item.imageUrl && <Image source={{ uri: item.imageUrl }} style={styles.image} />}
-      <View style={styles.cardContent}>
-        <Text style={styles.destination}>Bus to {item.busName}</Text>
-        <Text style={styles.info}>Departure: {item.departureTime}</Text>
-        <Text style={styles.info}>Pickup Location: {item.pickupLocation}</Text>
-        <Text style={styles.info}>Contact: {item.contactNumber}</Text>
-        <Text style={styles.info}>Rows: {item.rows}</Text>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => handleBusPress(item.id)}
-        >
-          <Text style={styles.buttonText}>Select</Text>
-        </TouchableOpacity>
+  const BusCard: React.FC<{ item: Bus }> = ({ item }) => {
+    // Calculate booked and available seats
+    const bookedSeats = item.seats.filter((seat: { status: string; }) => seat.status === 'booked');
+
+    const userBookedSeats = item.seats.filter((seat: { status: string; userID: string }) => {
+      return seat.status === 'booked' && seat.userID === user?.uid;
+    });
+
+    if (userBookedSeats) {
+      console.log(userBookedSeats);
+    }
+
+    const handleViewBookingDetails = (busId: string) => {
+      const seatNumbers = userBookedSeats.map((seat: { seatNumber: any; }) => seat.seatNumber);
+      navigation.navigate('BookingConfirmation', { busId, seatNumbers });
+    };
+
+    const totalSeats = item.totalSeats;
+    const availableSeats = totalSeats - bookedSeats.length;
+
+    return (
+      <View style={styles.card}>
+        {item.imageUrl && <Image source={{ uri: item.imageUrl }} style={styles.image} />}
+        <View style={styles.cardContent}>
+          <Text style={styles.destination}>{item.busName}</Text>
+          <View style={styles.infoRow}>
+            <Ionicons name="time-outline" size={16} color="#555" />
+            <Text style={styles.info}>Departure Time: {item.departureTime}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Ionicons name="location-outline" size={16} color="#555" />
+            <Text style={styles.info}>{item.pickupLocationName}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Ionicons name="call-outline" size={16} color="#555" />
+            <Text style={styles.info}>{item.contactNumber}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Ionicons name="grid-outline" size={16} color="#555" />
+            <Text style={styles.info}>{availableSeats} available seats</Text>
+          </View>
+          <View style={styles.buttonContainer}>
+            {userBookedSeats.length === 0 ? (
+              // Only display the Select Bus button centered
+              <View style={styles.centeredButtonContainer}>
+                <TouchableOpacity
+                  style={[styles.button, styles.selectButton]}
+                  onPress={() => handleBusPress(item.id)}
+                >
+                  <Text style={styles.buttonText}>Book a Seat</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              // Display both buttons as before
+              <>
+                <TouchableOpacity
+                  style={[styles.button, styles.selectButton]}
+                  onPress={() => handleBusPress(item.id)}
+                >
+                  <Text style={styles.buttonText}>Book a Seat</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.detailsButton]}
+                  onPress={() => handleViewBookingDetails(item.id)}
+                >
+                  <Text style={[styles.buttonText, styles.detailsButtonText]}>View Booking</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <FlatList
@@ -66,56 +128,84 @@ const SelectBus: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f5f7fa',
   },
   card: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     backgroundColor: 'white',
-    borderRadius: 8,
+    borderRadius: 16,
     overflow: 'hidden',
-    marginBottom: 16,
-    elevation: 3,
+    marginBottom: 20,
+    elevation: 5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
   },
   image: {
-    width: '30%',
-    height: 'auto',
-    aspectRatio: 1,
+    width: '100%',
+    height: 250,
+    resizeMode: 'cover',
   },
   cardContent: {
     flex: 1,
-    padding: 16,
-    justifyContent: 'center',
+    padding: 20,
   },
   destination: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 16,
+    color: '#2c3e50',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   info: {
-    fontSize: 14,
-    marginBottom: 4,
+    fontSize: 15,
+    marginLeft: 10,
+    color: '#34495e',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
   },
   button: {
-    backgroundColor: '#007BFF',
-    padding: 10,
-    borderRadius: 4,
+    padding: 12,
+    borderRadius: 25,
     alignItems: 'center',
-    marginTop: 8,
+    flex: 1,
+    marginHorizontal: 6,
+  },
+  selectButton: {
+    backgroundColor: '#3498db',
+  },
+  detailsButton: {
+    backgroundColor: 'white',
+    borderWidth: 2,
+    borderColor: '#3498db',
   },
   buttonText: {
-    color: 'white',
     fontWeight: 'bold',
+    fontSize: 16,
+    color: 'white',
+  },
+  detailsButtonText: {
+    color: '#3498db',
   },
   error: {
-    color: 'red',
+    color: '#e74c3c',
     textAlign: 'center',
     marginTop: 20,
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  centeredButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
   },
 });
-
 export default SelectBus;

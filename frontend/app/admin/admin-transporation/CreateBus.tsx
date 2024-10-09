@@ -33,7 +33,8 @@ interface Bus {
   eventID: string | null;
   totalSeats: number;
   contactNumber: number;
-  pickupLocation: string;
+  pickupLocation: string; // This will still hold the coordinates
+  pickupLocationName: string; // New field for the location name
   departureTime: string;
   imageUrl: string | null;
 }
@@ -42,6 +43,7 @@ interface RouteParams {
   location?: {
     latitude: number;
     longitude: number;
+    name: string
   };
 
 }
@@ -71,11 +73,15 @@ const BusSetup = ({ navigation }: Props) => {
   const [pickupLocation, setPickupLocation] = useState<string>("");
   const [departureTime, setDepartureTime] = useState<Date>(new Date());
   const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
+  const [pickupLocationName, setPickupLocationName] = useState<string>("");
+
 
   // Update pickupLocation when location changes
   useEffect(() => {
     if (location) {
       setPickupLocation(`(${location.latitude}, ${location.longitude})`);
+      console.log(location.name)
+      setPickupLocationName(location.name)
     }
   }, [location]);
 
@@ -153,6 +159,7 @@ const BusSetup = ({ navigation }: Props) => {
       contactNumber: parseInt(contactNumber),
       totalSeats: totalSeats,
       pickupLocation,
+      pickupLocationName,
       departureTime: departureTime.toTimeString().split(" ")[0],
       seats,
       imageUrl: imageUrl || null,
@@ -228,7 +235,7 @@ const BusSetup = ({ navigation }: Props) => {
           <Text style={styles.label}>Pickup Location:</Text>
           <TextInput
             style={styles.input}
-            value={pickupLocation}
+            value={location?.name}
             editable={false}
           />
           <Button title="Select Location" onPress={handleSelectLocation} />

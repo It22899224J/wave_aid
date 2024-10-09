@@ -1,4 +1,6 @@
 export interface Bus {
+    totalSeats: number;
+    seats: any;
     id: string;
     rows: number;
     busName: string;
@@ -7,4 +9,5 @@ export interface Bus {
     pickupLocation: string;
     departureTime: string;
     imageUrl: string;
+    pickupLocationName: string
 }

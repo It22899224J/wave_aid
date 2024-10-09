@@ -46,8 +46,8 @@ const MyEventDetails = () => {
   const [weather, setWeather] = useState<string | null>(null);
   const [temperature, setTemperature] = useState<number | null>(null);
   const [guidelines, setGuidelines] = useState<string[]>([]);
-    const { user } = useAuth();
-    const userId = user?.uid;
+  const { user } = useAuth();
+  const userId = user?.uid;
 
   useEffect(() => {
     const fetchReportDetails = async () => {
@@ -102,9 +102,8 @@ const MyEventDetails = () => {
     selectedDate: Date
   ) => {
     setLoadingTide(true);
-    const url = `https://www.worldtides.info/api/v2/tides?lat=${latitude}&lon=${longitude}&date=${
-      selectedDate.toISOString().split("T")[0]
-    }&key=${tideApiKey}`;
+    const url = `https://www.worldtides.info/api/v2/tides?lat=${latitude}&lon=${longitude}&date=${selectedDate.toISOString().split("T")[0]
+      }&key=${tideApiKey}`;
 
     try {
       const response = await axios.get(url);
@@ -207,7 +206,7 @@ const MyEventDetails = () => {
 
           {
             image && (
-             <ImageSlider images={image} />
+              <ImageSlider images={image} />
             )
           }
           {/* Weather Info */}
