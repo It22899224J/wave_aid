@@ -20,7 +20,7 @@ export const AdminMainStack = () => {
       <Stack.Screen
         name="MainScreen"
         component={AdminMainScreen}
-        options={{ headerTitle: "Events", headerTitleAlign: "center" }}
+        options={{ headerShown:false}}
       />
       <Stack.Screen
         name="OrganizeEvents"

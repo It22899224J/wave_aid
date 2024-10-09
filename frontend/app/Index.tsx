@@ -16,6 +16,7 @@ import BookingConfirmation from "./events/book-a-seat/BookingConfirmation";
 import { AdminMainStack } from "./events/admin-screens/AdminMainStack";
 import { Booking } from "./events/book-a-seat/BookingNav";
 import MyEvents from "./events/my-events/MyEvents";
+import AdminReportMain from "./admin/admin-report/admin-report-main/AdminReportMain";
 
 
 
@@ -114,18 +115,6 @@ const Index = () => {
           /> */}
 
           <Tab.Screen
-            name="Admin Home"
-            component={AdminMainStack}
-            options={{
-              // headerShown: false,
-              headerTitle: "Admin Home",
-              tabBarIcon: ({ color, size }) => (
-                <Icon name="home" color={color} size={size} />
-              ),
-            }}
-          />
-
-          <Tab.Screen
             name="Admin User Management"
             component={AdminUserManagementStack}
             options={{
@@ -134,7 +123,7 @@ const Index = () => {
               tabBarIcon: ({ color, size }) => (
                 <Icon name="people" color={color} size={size} />
               ),
-              tabBarLabel: "User Management",
+              tabBarLabel: "Manage Users",
             }}
           />
 
@@ -145,6 +134,32 @@ const Index = () => {
               headerShown: false,
               tabBarIcon: ({ color, size }) => (
                 <Icon name="analytics" color={color} size={size} />
+              ),
+            }}
+          />
+
+          <Tab.Screen
+            name="Home"
+            component={AdminMainStack}
+            options={{
+              // headerShown: false,
+              headerTitle: "Admin Home",
+              headerTitleAlign: "center",
+              tabBarIcon: ({ color, size }) => (
+                <Icon name="home" color={color} size={size} />
+              ),
+            }}
+          />
+
+          <Tab.Screen
+            name="Report"
+            component={AdminReportMain as never}
+            options={{
+              // headerShown: false,
+              headerTitle: "Report",
+              headerTitleAlign: "center",
+              tabBarIcon: ({ color, size }) => (
+                <Icon name="document" color={color} size={size} />
               ),
             }}
           />
