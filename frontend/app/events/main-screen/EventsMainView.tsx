@@ -1,7 +1,8 @@
+import { LinearGradient } from "expo-linear-gradient"; // Import LinearGradient
 import { capitalizeFirstLetter } from "@/utilities/capitalizeLetter";
 import React, { useEffect, useState } from "react";
 import {
-   Image,
+  Image,
   View,
   Text,
   StyleSheet,
@@ -9,6 +10,7 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  ImageBackground,
 } from "react-native";
 import MapView, { Callout, Marker } from "react-native-maps";
 import { useNavigation } from "@react-navigation/native";
@@ -22,6 +24,9 @@ import { useAuth } from "@/context/AuthContext";
 import moment from "moment"; // Moment.js for date handling
 import MyEvents from "../my-events/MyEvents";
 import PastEvents from "../past-events/PastEvents";
+import { BlurView } from "expo-blur";
+import Icon from "react-native-vector-icons/Ionicons";
+import coralImage from "../../../assets/images/bg3.jpg";
 
 interface Event {
   id: string;
@@ -76,102 +81,136 @@ const MainScreen = () => {
     fetchReportedAreas();
   }, [userId]);
 
-  // Determine color based on the event date
-const getMarkerColor = (eventDate:string) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Start of today (set time to midnight)
+  const getMarkerColor = (eventDate: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const eventDateObj = new Date(eventDate); // Convert event date string to Date object
+    const eventDateObj = new Date(eventDate);
 
-  if (eventDateObj < today) {
-    return "#FF0000"; // Blue for past events
-  } else if (eventDateObj.getTime() === today.getTime()) {
-    return "#0000FF"; // Blue for today's event
-  } else {
-    return "#008000"; // Green for future events
-  }
-};
-
+    if (eventDateObj < today) {
+      return "#FF0000"; // Red for past events
+    } else if (eventDateObj.getTime() === today.getTime()) {
+      return "#0000FF"; // Blue for today's event
+    } else {
+      return "#008000"; // Green for future events
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <View>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search Events..."
-          value={searchText}
-          onChangeText={setSearchText}
-        />
-      </View>
-      <ScrollView style={styles.scrollContainer}>
-        <View style={styles.tabsContainer}>
-          {["Upcoming", "My Events", "Past"].map((tab, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.tab,
-                activeTab === tab.toLowerCase() && styles.activeTab,
-              ]}
-              onPress={() => setActiveTab(tab.toLowerCase())}
-            >
-              <Text style={styles.tabText}>{tab}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        <View style={styles.mapContainer}>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: 7.8731,
-              longitude: 80.7718,
-              latitudeDelta: 0.5,
-              longitudeDelta: 0.5,
-            }}
-          >
-            {reportData.map((event) => (
-              <Marker
-                key={event.id}
-                coordinate={event.location}
-                title={event.beachName}
-                pinColor={getMarkerColor(event.date)} // Set marker color based on date
-              >
-                <Callout>
-                  <View style={{ width: 200, alignItems: "center"}}>
-                   
-                    <Image
-                      source={{ uri: event.image }}
-                      style={{ width:250, height:155 }}
-                    />
-                    <Text style={{ padding: 10, fontWeight: "600",textAlign:"center"}}>{event.beachName}</Text>
-                  </View>
-                </Callout>
-              </Marker>
-            ))}
-          </MapView>
-        </View>
-        <TouchableOpacity
-          style={styles.organizeButton}
-          onPress={() => navigation.navigate("OrganizeEvents")}
+      {/* Apply Linear Gradient to the background */}
+      <ImageBackground
+        blurRadius={10}
+        source={coralImage}
+        resizeMode="cover"
+        style={styles.gradientBackground}
+      >
+        <BlurView intensity={50} tint="light" style={styles.blurContainer}>
+          <View style={styles.inputContainer}>
+            <Icon
+              name="search"
+              size={20}
+              color="#000"
+              style={styles.searchIcon}
+            />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search Events..."
+              value={searchText}
+              onChangeText={setSearchText}
+            />
+          </View>
+        </BlurView>
+        <ScrollView
+          style={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
         >
-          <Text style={styles.buttonText}>Organize Event</Text>
-        </TouchableOpacity>
+          <BlurView intensity={50} tint="light" style={styles.blurContainer}>
+            <View style={styles.tabsContainer}>
+              {["Upcoming", "My Events", "Past"].map((tab, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.tab,
+                    activeTab === tab.toLowerCase() && styles.activeTab,
+                  ]}
+                  onPress={() => setActiveTab(tab.toLowerCase())}
+                >
+                  <Text style={activeTab === tab.toLowerCase() ? styles.activeTabText:styles.tabText}>{tab}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </BlurView>
+          <View style={styles.mapContainer}>
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                latitude: 7.8731,
+                longitude: 80.7718,
+                latitudeDelta: 0.5,
+                longitudeDelta: 0.5,
+              }}
+            >
+              {reportData.map((event) => (
+                <Marker
+                  key={event.id}
+                  coordinate={event.location}
+                  title={event.beachName}
+                  pinColor={getMarkerColor(event.date)}
+                >
+                  <Callout>
+                    <View style={{ width: 200, alignItems: "center" }}>
+                      <Image
+                        source={{ uri: event.image }}
+                        style={{ width: 250, height: 155 }}
+                      />
+                      <Text
+                        style={{
+                          padding: 10,
+                          fontWeight: "600",
+                          textAlign: "center",
+                        }}
+                      >
+                        {event.beachName}
+                      </Text>
+                    </View>
+                  </Callout>
+                </Marker>
+              ))}
+            </MapView>
+          </View>
 
-        {activeTab == "upcoming" && (
-          <View style={styles.cardsContainer}>
-            <UpcommingEvents navigation={navigation} />
-          </View>
-        )}
-        {activeTab == "my events" && (
-          <View style={styles.cardsContainer}>
-            <MyEvents navigation={navigation} />
-          </View>
-        )}
-        {activeTab == "past" && (
-          <View style={styles.cardsContainer}>
-            <PastEvents navigation={navigation} />
-          </View>
-        )}
-      </ScrollView>
+          <BlurView
+            intensity={50}
+            tint="light"
+            style={styles.blurButtonContainer}
+          >
+            <TouchableOpacity
+              style={styles.organizeButton}
+              onPress={() => navigation.navigate("OrganizeEvents")}
+            >
+              <Text style={styles.buttonText}>Organize Event</Text>
+            </TouchableOpacity>
+          </BlurView>
+
+          {activeTab == "upcoming" && (
+            <View style={styles.cardsContainer}>
+              <UpcommingEvents navigation={navigation} />
+            </View>
+          )}
+          {activeTab == "my events" && (
+            <View style={styles.cardsContainer}>
+              <MyEvents navigation={navigation} />
+            </View>
+          )}
+          {activeTab == "past" && (
+            <View style={styles.cardsContainer}>
+              <PastEvents navigation={navigation} />
+            </View>
+          )}
+        </ScrollView>
+      </ImageBackground>
     </View>
   );
 };
@@ -179,22 +218,38 @@ const getMarkerColor = (eventDate:string) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 15,
-    backgroundColor: "#ffffff",
+  },
+  gradientBackground: {
+    flex: 1,
+    paddingTop: 20,
+    paddingHorizontal: 10,
+    position: "relative",
+  },
+  blurContainer: {
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 15,
+    overflow: "hidden",
+  },
+  inputContainer: {
+    height: 50,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.3)", // You can adjust the background opacity
+    borderRadius: 8,
+    paddingHorizontal: 10,
+  },
+  searchIcon: {
+    marginRight: 10, // Adjust the spacing between the icon and text input
   },
   searchInput: {
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 10,
+    flex: 1,
+    fontSize: 16,
+    color: "#000",
   },
   tabsContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginBottom: 10,
-    backgroundColor: "#DFE7FF",
-    padding: 5,
     borderRadius: 10,
   },
   tab: {
@@ -205,9 +260,15 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     backgroundColor: "#007BFF",
+    color: "#fff",
   },
   tabText: {
     color: "#333",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+ activeTabText: {
+    color: "#fff",
     fontWeight: "700",
     fontSize: 15,
   },
@@ -230,16 +291,32 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "left",
   },
+  blurButtonContainer: {
+    marginTop: 15,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
   organizeButton: {
-    backgroundColor: "#007BFF",
-    padding: 10,
-    borderRadius: 5,
+    backgroundColor: "rgba(255, 255, 255, 0.2)", // Transparent background for a glassy look
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    height: 50,
     alignItems: "center",
-    marginBottom: 10,
+    justifyContent: "center",
   },
   buttonText: {
-    color: "#fff",
+    color: "#333", // Text color that contrasts with the background
+    fontSize: 20,
     fontWeight: "bold",
+    textAlign: "center",
+  },
+  blurView: {
+    padding: 10,
+    borderRadius: 10,
+    overflow: "hidden",
+    marginBottom: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
   },
 });
 
