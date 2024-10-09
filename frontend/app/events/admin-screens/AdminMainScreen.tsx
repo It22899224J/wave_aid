@@ -22,6 +22,7 @@ import moment from "moment"; // Moment.js for date handling
 import PastEvents from "../past-events/PastEvents";
 import MyEvents from "../my-events/MyEvents";
 import OrganizedEventsPast from "../update-event/OrganizedEventsPast";
+import { ReportProvider } from "@/context/ReportContext";
 
 interface Event {
   id: string;
@@ -91,64 +92,68 @@ const AdminMainScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search Events..."
-          value={searchText}
-          onChangeText={setSearchText}
-        />
-      </View>
-      <ScrollView style={styles.scrollContainer}>
-        <View style={styles.tabsContainer}>
-          {["Upcoming", "Past"].map((tab, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.tab,
-                activeTab === tab.toLowerCase() && styles.activeTab,
-              ]}
-              onPress={() => setActiveTab(tab.toLowerCase())}
-            >
-              <Text style={styles.tabText}>{tab}</Text>
-            </TouchableOpacity>
-          ))}
+      <View style={styles.container}>
+        <View>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search Events..."
+            value={searchText}
+            onChangeText={setSearchText}
+          />
         </View>
-        <View style={styles.mapContainer}>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: 7.8731,
-              longitude: 80.7718,
-              latitudeDelta: 0.5,
-              longitudeDelta: 0.5,
-            }}
-          >
-            {reportData.map((event) => (
-              <Marker
-                key={event.id}
-                coordinate={event.location}
-                title={event.beachName}
-                pinColor={getMarkerColor(event.date)} // Set marker color based on date
-              />
+        <ScrollView style={styles.scrollContainer}>
+          <View style={styles.tabsContainer}>
+            {["Upcoming", "Past"].map((tab, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.tab,
+                  activeTab === tab.toLowerCase() && styles.activeTab,
+                ]}
+                onPress={() => setActiveTab(tab.toLowerCase())}
+              >
+                <Text style={styles.tabText}>{tab}</Text>
+              </TouchableOpacity>
             ))}
-          </MapView>
-        </View>
-        <TouchableOpacity
-          style={styles.organizeButton}
-          onPress={() => navigation.navigate("OrganizeEvents")}
-        >
-          <Text style={styles.buttonText}>Organize Event</Text>
-        </TouchableOpacity>
-        {activeTab =="upcoming" &&<View style={styles.cardsContainer}>
-          <OrganizedEvents navigation={navigation}  />
-        </View>}
-        {activeTab =="past" &&<View style={styles.cardsContainer}>
-          <OrganizedEventsPast navigation={navigation} />
-        </View>}
-      </ScrollView>
-    </View>
+          </View>
+          <View style={styles.mapContainer}>
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                latitude: 7.8731,
+                longitude: 80.7718,
+                latitudeDelta: 0.5,
+                longitudeDelta: 0.5,
+              }}
+            >
+              {reportData.map((event) => (
+                <Marker
+                  key={event.id}
+                  coordinate={event.location}
+                  title={event.beachName}
+                  pinColor={getMarkerColor(event.date)} // Set marker color based on date
+                />
+              ))}
+            </MapView>
+          </View>
+          <TouchableOpacity
+            style={styles.organizeButton}
+            onPress={() => navigation.navigate("OrganizeEvents")}
+          >
+            <Text style={styles.buttonText}>Organize Event</Text>
+          </TouchableOpacity>
+          {activeTab == "upcoming" && (
+            <View style={styles.cardsContainer}>
+              <OrganizedEvents navigation={navigation} />
+            </View>
+          )}
+          {activeTab == "past" && (
+            <View style={styles.cardsContainer}>
+              <OrganizedEventsPast navigation={navigation} />
+            </View>
+          )}
+        </ScrollView>
+      </View>
   );
 };
 

@@ -88,7 +88,7 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
         const reportSnap = await getDoc(reportRef);
         if (reportSnap.exists()) {
           const data = reportSnap.data();
-          setReportId(reportSnap.id);
+          setReportId(report.id);
           setOrganizerName(data.organizerName);
           setDate(new Date(data.date));
           setTimeFrom(new Date(data.time.from));

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ import {
 } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useReportContext } from "@/context/ReportContext";
 
 interface RouteParams {
   location?: {
@@ -100,43 +101,49 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
   const [showTimeFromPicker, setShowTimeFromPicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [weatherDetails, setWeatherDetails] = useState<any | null>(null);
-  const [reportId, setReportId] = useState<string|null>(null);
-  // New fields for weight and total participants
   const [weight, setWeight] = useState<string>("");
   const [totalParticipants, setTotalParticipants] = useState<string>("");
 
-  useEffect(() => {
-    const fetchReportDetails = async () => {
-      if (report) {
-        const reportRef = doc(db, "events", report.id);
-        const reportSnap = await getDoc(reportRef);
-        if (reportSnap.exists()) {
-          const data = reportSnap.data();
-          setReportId(reportSnap.id);
-          setOrganizerName(data.organizerName);
-          setDate(new Date(data.date));
-          setTimeFrom(new Date(data.time.from));
-          setTimeTo(new Date(data.time.to));
-          setTransportOptions(data.transportOptions);
-          setImages(data.images || []);
-          setVolunteerGuidelines(data.volunteerGuidelines || [""]);
-          setReportLocationName(data.location.locationName);
-          setReportLocation({
-            latitude: data.location.latitude,
-            longitude: data.location.longitude,
-          });
-          // Set the values of new fields if they exist
-          setWeight(data.weight || "");
-          setTotalParticipants(data.totalParticipants || "");
-          setImages(data.images || []);
+  const { reportId } = useReportContext();
+      const fetchReportDetails = async () => {
+        if (reportId) {
+          let id = reportId;
+          if (!id) {
+            return;
+          }
+          console.log("reportId", id, "location", locationName);
+          const reportRef = doc(db, "events", id);
+          const reportSnap = await getDoc(reportRef);
+          if (reportSnap.exists()) {
+            const data = reportSnap.data();
+            setOrganizerName(data.organizerName);
+            setDate(new Date(data.date));
+            setTimeFrom(new Date(data.time.from));
+            setTimeTo(new Date(data.time.to));
+            setTransportOptions(data.transportOptions);
+            setImages(data.images || []);
+            setVolunteerGuidelines(data.volunteerGuidelines || [""]);
+            setReportLocationName(locationName || data.location.locationName);
+            setReportLocation({
+              latitude: location?.latitude || data.location.latitude,
+              longitude: location?.longitude || data.location.longitude,
+            });
+            // Set the values of new fields if they exist
+            setWeight(data.weight || "");
+            setTotalParticipants(data.totalParticipants || "");
+            setImages(data.images || []);
+          }
         }
-      }
-    };
+      };
+  useEffect(() => {
+
     fetchReportDetails();
-  }, [report]);
+  }, [report,reportId]);
 
   useEffect(() => {
     if (location) {
+      console.log("Location", location,"id",reportId);
+      fetchReportDetails();
       setReportLocation({
         latitude: location.latitude,
         longitude: location.longitude,
@@ -158,42 +165,42 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
       await uploadImage(imageUri);
     }
   };
-const uploadImage = async (uri: string) => {
-  setUploading(true);
+  const uploadImage = async (uri: string) => {
+    setUploading(true);
 
-  try {
-    // Compress the image before uploading
-    const manipResult = await ImageManipulator.manipulateAsync(
-      uri,
-      [{ resize: { width: 800 } }],
-      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } 
-    );
+    try {
+      // Compress the image before uploading
+      const manipResult = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
 
-    // Fetch and convert the image to blob format
-    const response = await fetch(manipResult.uri);
-    const blob = await response.blob();
+      // Fetch and convert the image to blob format
+      const response = await fetch(manipResult.uri);
+      const blob = await response.blob();
 
-    const metadata = {
-      contentType: blob.type || "image/jpeg", 
-    };
+      const metadata = {
+        contentType: blob.type || "image/jpeg",
+      };
 
-    const fileName = `${new Date().getTime()}-report-image.jpg`;
-    const storageRef = ref(storage, `reports/${fileName}`);
+      const fileName = `${new Date().getTime()}-report-image.jpg`;
+      const storageRef = ref(storage, `reports/${fileName}`);
 
-    // Upload the image blob to Firebase Storage
-    await uploadBytes(storageRef, blob, metadata);
+      // Upload the image blob to Firebase Storage
+      await uploadBytes(storageRef, blob, metadata);
 
-    // Get the download URL after upload
-    const downloadURL = await getDownloadURL(storageRef);
+      // Get the download URL after upload
+      const downloadURL = await getDownloadURL(storageRef);
 
-    // Update state with new image URL
-    setImages((prevImages) => [...prevImages, downloadURL]);
-  } catch (error) {
-    console.error("Error uploading image: ", error);
-  } finally {
-    setUploading(false);
-  }
-};
+      // Update state with new image URL
+      setImages((prevImages) => [...prevImages, downloadURL]);
+    } catch (error) {
+      console.error("Error uploading image: ", error);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const removeImage = async (imageUrl: string) => {
     const imageRef = ref(storage, imageUrl);
@@ -205,7 +212,9 @@ const uploadImage = async (uri: string) => {
     }
   };
   const handlePickLocation = () => {
-    navigation.navigate("UpdateEventLocation", { currentLocation: location });
+    navigation.navigate("UpdateEventLocationPast", {
+      currentLocation: location,
+    });
   };
 
   const handleAddGuideline = () => {

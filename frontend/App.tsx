@@ -14,6 +14,7 @@ import SelectLocation from "./app/admin/admin-transporation/SelectLocation";
 import Loader from "./components/loader/Loader";
 import BusProvider from "./context/BusContext";
 import BookingConfirmation from "./app/events/book-a-seat/BookingConfirmation";
+import { ReportProvider } from "./context/ReportContext";
 
 const Stack = createStackNavigator();
 
@@ -22,9 +23,11 @@ export default function App() {
     <AuthProvider>
       <AllUserProvider>
         <BusProvider>
-          <NavigationContainer>
-            <RootLayout />
-          </NavigationContainer>
+          <ReportProvider>
+            <NavigationContainer>
+              <RootLayout />
+            </NavigationContainer>
+          </ReportProvider>
         </BusProvider>
       </AllUserProvider>
     </AuthProvider>

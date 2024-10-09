@@ -11,6 +11,7 @@ import UpdateOrganizeEventsPast from "../update-event/UpdateOrganizeEventsPast";
 import PastEvents from "../past-events/PastEvents";
 import PastEventDetails from "../past-events/PastEventDetails";
 import MyEvents from "../my-events/MyEvents";
+import UpdateEventLocationPast from "../update-event/UpdateEventLocationPast";
 const Stack = createStackNavigator();
 
 export const AdminMainStack = () => {
@@ -67,6 +68,12 @@ export const AdminMainStack = () => {
           headerTitleAlign: "center",
         }}
       />
+      <Stack.Screen
+        name="UpdateEventLocationPast"
+        component={UpdateEventLocationPast}
+        options={{ headerShown:false, headerTitleAlign: "center" }}
+      />
+
       <Stack.Screen
         name="PastEvents"
         component={PastEvents}

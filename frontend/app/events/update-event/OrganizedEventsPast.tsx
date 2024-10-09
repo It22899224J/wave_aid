@@ -22,7 +22,7 @@ import {
 import { db } from "@/service/firebase";
 import { EventCard } from "../events-view/EventCard";
 import moment from "moment";
-
+import { useReportContext } from "@/context/ReportContext";
 
 interface Event {
   id: string;
@@ -45,13 +45,22 @@ const OrganizedEventsPast = ({
   const { user } = useAuth();
   const userId = user?.uid;
 
+  const { reportId, setReportId } = useReportContext();
+
+  useEffect(() => {
+    if (reportId) {
+      console.log("Updated reportId:", reportId);
+    }
+  }, [reportId]);
+
+
   useEffect(() => {
     const fetchReportedAreas = async () => {
       const currentDate = new Date().toISOString();
       const q = query(
         collection(db, "events"),
         where("userId", "==", userId),
-        where("date","<", currentDate)
+        where("date", "<", currentDate)
       );
       const querySnapshot = await getDocs(q);
 
@@ -105,6 +114,8 @@ const OrganizedEventsPast = ({
   };
 
   const handleReportPress = (item: Event) => {
+    setReportId(item.id);
+    console.log("reportId", reportId, "+++", item.id);
     navigation.navigate("UpdateOrganizeEventsPast", { report: item });
   };
 
