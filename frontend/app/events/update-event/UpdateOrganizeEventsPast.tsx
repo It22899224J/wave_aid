@@ -8,15 +8,46 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
+  Image,
   ActivityIndicator,
 } from "react-native";
 import { NavigationProp, RouteProp, useRoute } from "@react-navigation/native";
 import { updateDoc, doc, getDoc } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/service/firebase";
+import { db, storage } from "@/service/firebase";
 import axios from "axios";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import MapView, { Marker } from "react-native-maps";
+import * as ImageManipulator from "expo-image-manipulator";
+import {
+  deleteObject,
+  getDownloadURL,
+  uploadBytes,
+  ref,
+} from "firebase/storage";
+import * as ImagePicker from "expo-image-picker";
+import Icon from "react-native-vector-icons/Ionicons";
+
+interface RouteParams {
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+  locationName?: string;
+  report?: {
+    id: string;
+    organizerName: string;
+    date: string;
+    time: { from: string; to: string };
+    transportOptions: string;
+    volunteerGuidelines: string[];
+    location: {
+      latitude: number;
+      longitude: number;
+      locationName: string;
+    };
+  };
+}
 
 interface RouteParams {
   location?: {
@@ -50,6 +81,7 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
   const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
   const { location, locationName, report } = route.params || {};
   const [loadingWeather, setLoadingWeather] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [organizerName, setOrganizerName] = useState("");
   const [date, setDate] = useState(new Date());
   const [timeFrom, setTimeFrom] = useState(new Date());
@@ -63,11 +95,12 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
     longitude: number;
   }>(null);
   const [reportLocationName, setReportLocationName] = useState<string>("");
+  const [images, setImages] = useState<string[]>([]);
   const [showTimeToPicker, setShowTimeToPicker] = useState(false);
   const [showTimeFromPicker, setShowTimeFromPicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [weatherDetails, setWeatherDetails] = useState<any | null>(null);
-
+  const [reportId, setReportId] = useState<string|null>(null);
   // New fields for weight and total participants
   const [weight, setWeight] = useState<string>("");
   const [totalParticipants, setTotalParticipants] = useState<string>("");
@@ -79,11 +112,13 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
         const reportSnap = await getDoc(reportRef);
         if (reportSnap.exists()) {
           const data = reportSnap.data();
+          setReportId(reportSnap.id);
           setOrganizerName(data.organizerName);
           setDate(new Date(data.date));
           setTimeFrom(new Date(data.time.from));
           setTimeTo(new Date(data.time.to));
           setTransportOptions(data.transportOptions);
+          setImages(data.images || []);
           setVolunteerGuidelines(data.volunteerGuidelines || [""]);
           setReportLocationName(data.location.locationName);
           setReportLocation({
@@ -93,6 +128,7 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
           // Set the values of new fields if they exist
           setWeight(data.weight || "");
           setTotalParticipants(data.totalParticipants || "");
+          setImages(data.images || []);
         }
       }
     };
@@ -109,7 +145,65 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
       fetchWeatherData(location.latitude, location.longitude);
     }
   }, [location, locationName]);
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const imageUri = result.assets[0].uri;
+      await uploadImage(imageUri);
+    }
+  };
+const uploadImage = async (uri: string) => {
+  setUploading(true);
+
+  try {
+    // Compress the image before uploading
+    const manipResult = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 800 } }],
+      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } 
+    );
+
+    // Fetch and convert the image to blob format
+    const response = await fetch(manipResult.uri);
+    const blob = await response.blob();
+
+    const metadata = {
+      contentType: blob.type || "image/jpeg", 
+    };
+
+    const fileName = `${new Date().getTime()}-report-image.jpg`;
+    const storageRef = ref(storage, `reports/${fileName}`);
+
+    // Upload the image blob to Firebase Storage
+    await uploadBytes(storageRef, blob, metadata);
+
+    // Get the download URL after upload
+    const downloadURL = await getDownloadURL(storageRef);
+
+    // Update state with new image URL
+    setImages((prevImages) => [...prevImages, downloadURL]);
+  } catch (error) {
+    console.error("Error uploading image: ", error);
+  } finally {
+    setUploading(false);
+  }
+};
+
+  const removeImage = async (imageUrl: string) => {
+    const imageRef = ref(storage, imageUrl);
+    try {
+      await deleteObject(imageRef);
+      setImages(images.filter((url) => url !== imageUrl));
+    } catch (error) {
+      console.error("Error deleting image:", error);
+    }
+  };
   const handlePickLocation = () => {
     navigation.navigate("UpdateEventLocation", { currentLocation: location });
   };
@@ -150,7 +244,8 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
       date: date.toISOString(),
       time: { from: timeFrom.toISOString(), to: timeTo.toISOString() },
       weatherDetails,
-      transportOptions,
+      images,
+      // transportOptions,
       volunteerGuidelines,
       location: {
         latitude: reportLocation?.latitude || null,
@@ -162,9 +257,9 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
       totalParticipants,
     };
 
-    if (report) {
+    if (reportId) {
       try {
-        const reportRef = doc(db, "events", report.id);
+        const reportRef = doc(db, "events", reportId);
         await updateDoc(reportRef, reportData);
         Alert.alert("Success", "Your report has been updated.");
         navigation.goBack();
@@ -319,7 +414,27 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
             />
           )}
         </View>
-
+        {/* Image Upload */}
+        <Text style={styles.sectionTitle}>Images</Text>
+        <Text style={styles.sectionDescription}>
+          Upload Images of the reporting area
+        </Text>
+        <View style={styles.imagesContainer}>
+          <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
+            <Text style={styles.addImageText}>+</Text>
+          </TouchableOpacity>
+          {images.map((imageUrl, index) => (
+            <View key={index} style={styles.imageWrapper}>
+              <Image source={{ uri: imageUrl }} style={styles.uploadedImage} />
+              <TouchableOpacity
+                style={styles.removeIcon}
+                onPress={() => removeImage(imageUrl)}
+              >
+                <Icon name="close" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
         <Text style={styles.sectionTitle}>Weight (in kg)</Text>
         <TextInput
           style={styles.input}
@@ -393,7 +508,52 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  date: {
+  date: {},
+  sectionDescription: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 10,
+  },
+  imagesContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  imagePlaceholder: {
+    width: 170,
+    height: 100,
+    backgroundColor: "#ddd",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    marginBottom: 10,
+    borderRadius: 8,
+  },
+  addImageText: {
+    fontSize: 24,
+    color: "#888",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#007AFF",
+  },
+  imageWrapper: {
+    position: "relative",
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  uploadedImage: {
+    width: 170,
+    height: 100,
+    borderRadius: 8,
+  },
+  removeIcon: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 12,
+    padding: 2,
   },
 });
 
