@@ -12,14 +12,22 @@ import {
   Image,
 } from "react-native";
 import { NavigationProp, RouteProp, useRoute } from "@react-navigation/native";
+import Icon from "react-native-vector-icons/Ionicons";
 import { addDoc, collection, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/service/firebase";
+import { db, storage } from "@/service/firebase";
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import MapView, { Marker } from "react-native-maps";
 import { BusContext } from "@/context/BusContext";
+import * as ImageManipulator from "expo-image-manipulator";
+import {
+  deleteObject,
+  getDownloadURL,
+  uploadBytes,
+  ref,
+} from "firebase/storage";
 
 interface RouteParams {
   location?: {
@@ -54,7 +62,8 @@ const OrganizeEvents = ({ navigation }: Props) => {
   const { user } = useAuth();
   const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
   const { location, locationName, report, busId } = route.params || {};
-
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [organizerName, setOrganizerName] = useState("");
   const [date, setDate] = useState(new Date());
   const [timeFrom, setTimeFrom] = useState(new Date());
@@ -72,7 +81,6 @@ const OrganizeEvents = ({ navigation }: Props) => {
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [tideDetails, setTideDetails] = useState<any | null>(null);
   const [loadingTide, setLoadingTide] = useState(false);
-  const [images, setImages] = useState<string[]>([]);
   const [showDatePicker, setShowDatePicker] = useState(true);
   const [showTimeFromPicker, setShowTimeFromPicker] = useState(false);
   const [showTimeToPicker, setShowTimeToPicker] = useState(false);
@@ -179,17 +187,54 @@ const OrganizeEvents = ({ navigation }: Props) => {
     setVolunteerGuidelines(updatedGuidelines);
   };
 
-  const handleImagePick = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
+      allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
 
-    if (!result.canceled) {
-      const newImages = result.assets.map((asset) => asset.uri);
-      setImages((prev) => [...prev, ...newImages]);
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const imageUri = result.assets[0].uri;
+      await uploadImage(imageUri);
+    }
+  };
+const uploadImage = async (uri: string) => {
+  setUploading(true);
+
+  try {
+
+    const manipResult = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 800 } }], 
+      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } 
+    );
+    const response = await fetch(manipResult.uri);
+    const blob = await response.blob();
+
+    const metadata = {
+      contentType: blob.type || "image/jpeg", 
+    };
+    const fileName = `${new Date().getTime()}-report-image.jpg`;
+    const storageRef = ref(storage, `reports/${fileName}`);
+    await uploadBytes(storageRef, blob, metadata);
+    const downloadURL = await getDownloadURL(storageRef);
+    setImages((prevImages) => [...prevImages, downloadURL]);
+  } catch (error) {
+    console.error("Error uploading image: ", error);
+  } finally {
+    setUploading(false);
+  }
+};
+
+  const removeImage = async (imageUrl: string) => {
+    const imageRef = ref(storage, imageUrl);
+    try {
+      await deleteObject(imageRef);
+      setImages(images.filter((url) => url !== imageUrl));
+    } catch (error) {
+      console.error("Error deleting image:", error);
     }
   };
 
@@ -205,20 +250,20 @@ const OrganizeEvents = ({ navigation }: Props) => {
     }
 
     // Fetch tide data
-    if (reportLocation) {
-      await fetchTideData(
-        reportLocation.latitude,
-        reportLocation.longitude,
-        date
-      );
-    }
+    // if (reportLocation) {
+    //   await fetchTideData(
+    //     reportLocation.latitude,
+    //     reportLocation.longitude,
+    //     date
+    //   );
+    // }
 
     const reportData = {
       userId: user ? user.uid : null,
       organizerName,
       date: date.toISOString(),
       time: { from: timeFrom.toISOString(), to: timeTo.toISOString() },
-      transportOptions: busId,
+      // transportOptions: busId,
       volunteerGuidelines,
       location: {
         latitude: reportLocation?.latitude || null,
@@ -233,12 +278,9 @@ const OrganizeEvents = ({ navigation }: Props) => {
     };
 
     try {
-      await addDoc(collection(db, "events"), reportData);
-      console.log("Document written with ID: ", reportData);
       const docRef = await addDoc(collection(db, "events"), reportData);
       const eventId = docRef.id;
       Alert.alert("Success", "Your report has been submitted.");
-
 
       if (busId) {
         const busRef = doc(db, "buses", busId);
@@ -269,14 +311,14 @@ const OrganizeEvents = ({ navigation }: Props) => {
     console.log("Date changed: ", currentDate);
 
     // Reset tide data when date changes
-    setTideDetails(null);
-    if (reportLocation) {
-      fetchTideData(
-        reportLocation.latitude,
-        reportLocation.longitude,
-        currentDate
-      );
-    }
+    // setTideDetails(null);
+    // if (reportLocation) {
+    //   fetchTideData(
+    //     reportLocation.latitude,
+    //     reportLocation.longitude,
+    //     currentDate
+    //   );
+    // }
   };
 
   const handleTimeFromChange = (event: any, selectedDate: Date | undefined) => {
@@ -419,14 +461,19 @@ const OrganizeEvents = ({ navigation }: Props) => {
         </View>
 
         <Text style={styles.sectionTitle}>Transport Options</Text>
-        <TouchableOpacity style={styles.imageButton}
-          onPress={() => { navigation.navigate('BusSetup' as never) }}
+        <TouchableOpacity
+          style={styles.imageButton}
+          onPress={() => {
+            navigation.navigate("BusSetup" as never);
+          }}
         >
-          <Text style={
-            {
-              color: "#ffffff"
-            }
-          }>Add</Text>
+          <Text
+            style={{
+              color: "#ffffff",
+            }}
+          >
+            Add
+          </Text>
         </TouchableOpacity>
 
         <Text style={styles.sectionTitle}>Volunteer Guidelines</Text>
@@ -478,22 +525,27 @@ const OrganizeEvents = ({ navigation }: Props) => {
           </View>
         )}
 
-        <Text style={styles.sectionTitle}>Upload Images</Text>
-        <TouchableOpacity style={styles.imageButton} onPress={handleImagePick}>
-          <Text style={styles.submitButtonText}>Select Images</Text>
-        </TouchableOpacity>
-
-        {images.length > 0 && (
-          <View style={styles.imagePreviewContainer}>
-            {images.map((image, index) => (
-              <Image
-                key={index}
-                source={{ uri: image }}
-                style={styles.imagePreview}
-              />
-            ))}
-          </View>
-        )}
+        {/* Image Upload */}
+        <Text style={styles.sectionTitle}>Images</Text>
+        <Text style={styles.sectionDescription}>
+          Upload Images of the reporting area
+        </Text>
+        <View style={styles.imagesContainer}>
+          <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
+            <Text style={styles.addImageText}>+</Text>
+          </TouchableOpacity>
+          {images.map((imageUrl, index) => (
+            <View key={index} style={styles.imageWrapper}>
+              <Image source={{ uri: imageUrl }} style={styles.uploadedImage} />
+              <TouchableOpacity
+                style={styles.removeIcon}
+                onPress={() => removeImage(imageUrl)}
+              >
+                <Icon name="close" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
 
         <TouchableOpacity
           style={styles.locationButton}
@@ -587,6 +639,52 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   date: {},
+  sectionDescription: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 10,
+  },
+  imagesContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  imagePlaceholder: {
+    width: 170,
+    height: 100,
+    backgroundColor: "#ddd",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    marginBottom: 10,
+    borderRadius: 8,
+  },
+  addImageText: {
+    fontSize: 24,
+    color: "#888",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#007AFF",
+  },
+  imageWrapper: {
+    position: "relative",
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  uploadedImage: {
+    width: 170,
+    height: 100,
+    borderRadius: 8,
+  },
+  removeIcon: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 12,
+    padding: 2,
+  },
 });
 
 export default OrganizeEvents;
