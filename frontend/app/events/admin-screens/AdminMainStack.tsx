@@ -5,13 +5,12 @@ import EventDetails from "../events-view/EventDetails";
 import OrganizedEvents from "../update-event/OrganizedEvents";
 import UpdateOrganizeEvents from "../update-event/UpdateOrganizeEvents";
 import UpdateEventLocation from "../update-event/UpdateEventLocation";
-import PastEvents from "../past-events/PastEvents";
-import PastEventDetails from "../past-events/PastEventDetails";
-import MyEventDetails from "../my-events/MyEventDetails";
-import MyEvents from "../my-events/MyEvents";
 import OrganizedEventsPast from "../update-event/OrganizedEventsPast";
 import AdminMainScreen from "./AdminMainScreen";
 import UpdateOrganizeEventsPast from "../update-event/UpdateOrganizeEventsPast";
+import PastEvents from "../past-events/PastEvents";
+import PastEventDetails from "../past-events/PastEventDetails";
+import MyEvents from "../my-events/MyEvents";
 const Stack = createStackNavigator();
 
 export const AdminMainStack = () => {

@@ -1,6 +1,7 @@
 import { capitalizeFirstLetter } from "@/utilities/capitalizeLetter";
 import React, { useEffect, useState } from "react";
 import {
+   Image,
   View,
   Text,
   StyleSheet,
@@ -9,7 +10,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Callout, Marker } from "react-native-maps";
 import { useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types/navigation";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -19,8 +20,8 @@ import { collection, getDocs, query } from "firebase/firestore";
 import { db } from "@/service/firebase";
 import { useAuth } from "@/context/AuthContext";
 import moment from "moment"; // Moment.js for date handling
-import PastEvents from "../past-events/PastEvents";
 import MyEvents from "../my-events/MyEvents";
+import PastEvents from "../past-events/PastEvents";
 
 interface Event {
   id: string;
@@ -57,8 +58,8 @@ const MainScreen = () => {
         return {
           id: doc.id,
           beachName,
-          date: data.timestamp.toDate().toLocaleDateString(),
-          time: data.timestamp.toDate().toLocaleTimeString(),
+          date: new Date(data.date).toLocaleDateString(),
+          time: new Date(data.time.from).toLocaleDateString(),
           weather: data.weather,
           tide: data.tide,
           organizer: data.organizer,
@@ -76,18 +77,21 @@ const MainScreen = () => {
   }, [userId]);
 
   // Determine color based on the event date
-  const getMarkerColor = (eventDate: string) => {
-    const today = moment().startOf("day"); // Get today's date (start of the day)
-    const eventMoment = moment(eventDate, "MM/DD/YYYY"); // Event date
+const getMarkerColor = (eventDate:string) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Start of today (set time to midnight)
 
-    if (eventMoment.isBefore(today)) {
-      return "red"; // Past event
-    } else if (eventMoment.isSame(today)) {
-      return "blue"; // Current event (today)
-    } else {
-      return "green"; // Future event
-    }
-  };
+  const eventDateObj = new Date(eventDate); // Convert event date string to Date object
+
+  if (eventDateObj < today) {
+    return "#FF0000"; // Blue for past events
+  } else if (eventDateObj.getTime() === today.getTime()) {
+    return "#0000FF"; // Blue for today's event
+  } else {
+    return "#008000"; // Green for future events
+  }
+};
+
 
   return (
     <View style={styles.container}>
@@ -101,7 +105,7 @@ const MainScreen = () => {
       </View>
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.tabsContainer}>
-          {["Upcoming","My Events", "Past"].map((tab, index) => (
+          {["Upcoming", "My Events", "Past"].map((tab, index) => (
             <TouchableOpacity
               key={index}
               style={[
@@ -130,7 +134,18 @@ const MainScreen = () => {
                 coordinate={event.location}
                 title={event.beachName}
                 pinColor={getMarkerColor(event.date)} // Set marker color based on date
-              />
+              >
+                <Callout>
+                  <View style={{ width: 200, alignItems: "center"}}>
+                   
+                    <Image
+                      source={{ uri: event.image }}
+                      style={{ width:250, height:155 }}
+                    />
+                    <Text style={{ padding: 10, fontWeight: "600",textAlign:"center"}}>{event.beachName}</Text>
+                  </View>
+                </Callout>
+              </Marker>
             ))}
           </MapView>
         </View>
@@ -141,19 +156,21 @@ const MainScreen = () => {
           <Text style={styles.buttonText}>Organize Event</Text>
         </TouchableOpacity>
 
-       {activeTab=="upcoming" && <View style={styles.cardsContainer}>
-          <UpcommingEvents navigation={navigation} />
-        </View>}
-        {
-          activeTab=="my events" && <View style={styles.cardsContainer}>
+        {activeTab == "upcoming" && (
+          <View style={styles.cardsContainer}>
+            <UpcommingEvents navigation={navigation} />
+          </View>
+        )}
+        {activeTab == "my events" && (
+          <View style={styles.cardsContainer}>
             <MyEvents navigation={navigation} />
           </View>
-        }
-        {
-          activeTab=="past" && <View style={styles.cardsContainer}>
+        )}
+        {activeTab == "past" && (
+          <View style={styles.cardsContainer}>
             <PastEvents navigation={navigation} />
-            </View>
-        }
+          </View>
+        )}
       </ScrollView>
     </View>
   );
