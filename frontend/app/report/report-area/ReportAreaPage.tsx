@@ -8,6 +8,7 @@ import { db, storage } from "./../../../service/firebase";
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { useAuth } from '@/context/AuthContext';
 import Icon from 'react-native-vector-icons/Ionicons';
+import * as ImageManipulator from "expo-image-manipulator";
 
 interface RouteParams {
   location?: {
@@ -89,15 +90,22 @@ const ReportAreaPage = ({ navigation }: Props) => {
 
   const uploadImage = async (uri: string) => {
     setUploading(true);
-    const response = await fetch(uri);
-    const blob = await response.blob();
-    const metadata = {
-      contentType: 'image/jpeg',
-    };
-    const fileName = `${new Date().getTime()}-report-image.jpg`;
-    const storageRef = ref(storage, `reports/${fileName}`);
 
     try {
+
+      const manipResult = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
+      const response = await fetch(manipResult.uri);
+      const blob = await response.blob();
+
+      const metadata = {
+        contentType: blob.type || "image/jpeg",
+      };
+      const fileName = `${new Date().getTime()}-report-image.jpg`;
+      const storageRef = ref(storage, `reports/${fileName}`);
       await uploadBytes(storageRef, blob, metadata);
       const downloadURL = await getDownloadURL(storageRef);
       setImages((prevImages) => [...prevImages, downloadURL]);
