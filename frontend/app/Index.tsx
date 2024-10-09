@@ -115,7 +115,7 @@ const Index = () => {
 
           <Tab.Screen
             name="Admin Home"
-            component={AdminHome}
+            component={AdminMainStack}
             options={{
               // headerShown: false,
               headerTitle: "Admin Home",

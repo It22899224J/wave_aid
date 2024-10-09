@@ -13,7 +13,7 @@ import {
   ImageBackground,
 } from "react-native";
 import MapView, { Callout, Marker } from "react-native-maps";
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types/navigation";
 import { StackNavigationProp } from "@react-navigation/stack";
 import UpcommingEvents from "../events-view/UpcommingEvents";
@@ -40,13 +40,16 @@ interface Event {
   location: {
     latitude: number;
     longitude: number;
+    locationName: string;
   };
 }
+interface Props {
+  navigation: NavigationProp<any>;
+}
 
-const MainScreen = () => {
+const MainScreen = ({ navigation }: Props) => {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [searchText, setSearchText] = useState("");
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [reportData, setReportData] = useState<Event[]>([]);
   const { user } = useAuth();
   const userId = user?.uid;
@@ -72,6 +75,7 @@ const MainScreen = () => {
           location: {
             latitude: data.location.latitude,
             longitude: data.location.longitude,
+            locationName: data.location.locationName,
           },
         } as Event;
       });
@@ -96,16 +100,28 @@ const MainScreen = () => {
     }
   };
 
+
+  const handleEventPress = (item: Event) => {
+    const eventDate = new Date(item.date);
+    const currentDate = new Date();
+
+    if (eventDate < currentDate) {
+      navigation.navigate("PastEventDetails", { report: item });
+    } else {
+      navigation.navigate("MyEventDetails", { report: item });
+    }
+  };
+    
   return (
     <View style={styles.container}>
       {/* Apply Linear Gradient to the background */}
       <ImageBackground
-        blurRadius={10}
+        blurRadius={1}
         source={coralImage}
         resizeMode="cover"
         style={styles.gradientBackground}
       >
-        <BlurView intensity={50} tint="light" style={styles.blurContainer}>
+        <BlurView intensity={90} tint="light" style={styles.blurContainer}>
           <View style={styles.inputContainer}>
             <Icon
               name="search"
@@ -126,7 +142,7 @@ const MainScreen = () => {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
         >
-          <BlurView intensity={50} tint="light" style={styles.blurContainer}>
+          <BlurView intensity={90} tint="light" style={styles.blurContainer}>
             <View style={styles.tabsContainer}>
               {["Upcoming", "My Events", "Past"].map((tab, index) => (
                 <TouchableOpacity
@@ -137,7 +153,15 @@ const MainScreen = () => {
                   ]}
                   onPress={() => setActiveTab(tab.toLowerCase())}
                 >
-                  <Text style={activeTab === tab.toLowerCase() ? styles.activeTabText:styles.tabText}>{tab}</Text>
+                  <Text
+                    style={
+                      activeTab === tab.toLowerCase()
+                        ? styles.activeTabText
+                        : styles.tabText
+                    }
+                  >
+                    {tab}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -159,21 +183,22 @@ const MainScreen = () => {
                   title={event.beachName}
                   pinColor={getMarkerColor(event.date)}
                 >
-                  <Callout>
-                    <View style={{ width: 200, alignItems: "center" }}>
-                      <Image
-                        source={{ uri: event.image }}
-                        style={{ width: 250, height: 155 }}
-                      />
-                      <Text
-                        style={{
-                          padding: 10,
-                          fontWeight: "600",
-                          textAlign: "center",
-                        }}
-                      >
-                        {event.beachName}
+                  <Callout
+                    onPress={() => handleEventPress(event)
+                    }
+                  >
+                    <View style={styles.calloutContainer}>
+                      <Text style={styles.calloutTitle}>
+                        {event.location.locationName}
                       </Text>
+                      <Text style={styles.calloutDescription}>
+                        Reported by {event.organizer}
+                      </Text>
+                      <TouchableOpacity style={styles.dialogButton}>
+                        <Text style={styles.dialogButtonText}>
+                          View Details
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   </Callout>
                 </Marker>
@@ -182,7 +207,7 @@ const MainScreen = () => {
           </View>
 
           <BlurView
-            intensity={50}
+            intensity={90}
             tint="light"
             style={styles.blurButtonContainer}
           >
@@ -267,7 +292,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 15,
   },
- activeTabText: {
+  activeTabText: {
     color: "#fff",
     fontWeight: "700",
     fontSize: 15,
@@ -317,6 +342,33 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 20,
     backgroundColor: "rgba(255, 255, 255, 0.3)",
+  },
+  calloutContainer: {
+    width: 250,
+    height: "100%",
+    padding: 5,
+  },
+  calloutTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  calloutDescription: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 5,
+    marginBottom: 10,
+  },
+  dialogButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  dialogButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
 

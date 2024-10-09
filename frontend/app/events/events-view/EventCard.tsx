@@ -19,7 +19,7 @@ interface EventCard {
 
 export const EventCard: React.FC<EventCard> = ({ item, onRemove }) => {
   return (
-    <BlurView style={[styles.card,{borderRadius:10}]} intensity={50} tint="light">
+    <BlurView style={[styles.card,{borderRadius:10}]} intensity={90} tint="light">
      
         <View style={styles.cardInfo}>
           <Text style={styles.beachName}>{item.beachName}</Text>
