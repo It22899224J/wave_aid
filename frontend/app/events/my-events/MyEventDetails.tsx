@@ -16,6 +16,7 @@ import { deleteDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "@/service/firebase"; // Replace with your Firebase config path
 import axios from "axios"; // Import axios for API calls
 import { useAuth } from "@/context/AuthContext";
+import { ImageSlider } from "@/components/Image-slider/ImageSlider";
 
 interface RouteParams {
   report?: {
@@ -36,7 +37,7 @@ const MyEventDetails = () => {
   const [reportLocationName, setReportLocationName] = useState<string>("");
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
-  const [image, setImage] = useState<string | null>(null);
+  const [image, setImage] = useState<string[] | null>(null);
   const [weatherDetails, setWeatherDetails] = useState<any | null>(null);
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [tideDetails, setTideDetails] = useState<any | null>(null);
@@ -64,7 +65,7 @@ const MyEventDetails = () => {
           setLatitude(data.location.latitude);
           setLongitude(data.location.longitude);
           setGuidelines(data.guidelines);
-          setImage(data.images[0]);
+          setImage(data.images);
           fetchWeatherData(data.location.latitude, data.location.longitude);
           fetchTideData(
             data.location.latitude,
@@ -199,11 +200,16 @@ const MyEventDetails = () => {
           </View>
 
           {/* Event Image */}
-          <Image
+          {/* <Image
             source={{ uri: image || "https://via.placeholder.com/180" }} // Placeholder event image
             style={styles.eventImage}
-          />
+          /> */}
 
+          {
+            image && (
+             <ImageSlider images={image} />
+            )
+          }
           {/* Weather Info */}
           {loadingWeather && (
             <View style={styles.loadingContainer}>
