@@ -8,11 +8,11 @@ import EventDetails from "../events-view/EventDetails";
 import OrganizedEvents from "../update-event/OrganizedEvents";
 import UpdateOrganizeEvents from "../update-event/UpdateOrganizeEvents";
 import UpdateEventLocation from "../update-event/UpdateEventLocation";
-import PastEvents from "../past-events/PastEvents";
-import PastEventDetails from "../past-events/PastEventDetails";
 import MyEventDetails from "../my-events/MyEventDetails";
 import MyEvents from "../my-events/MyEvents";
 import OrganizedEventsPast from "../update-event/OrganizedEventsPast";
+import PastEvents from "../past-events/PastEvents";
+import PastEventDetails from "../past-events/PastEventDetails";
 const Stack = createStackNavigator();
 
 export const EventStack = () => {
@@ -36,17 +36,17 @@ export const EventStack = () => {
       <Stack.Screen
         name="OrganizedEvents"
         component={OrganizedEvents}
-        options={{ headerTitle: "Reported Areas", headerTitleAlign: "center" }}
+        options={{ headerTitle: "PastEvents", headerTitleAlign: "center" }}
       />
       <Stack.Screen
         name="OrganizedEventsPast"
         component={OrganizedEventsPast}
-        options={{ headerTitle: "Reported Areas", headerTitleAlign: "center" }}
+        options={{ headerTitle: "PastEvents", headerTitleAlign: "center" }}
       />
       <Stack.Screen
         name="UpdateOrganizeEvents"
         component={UpdateOrganizeEvents}
-        options={{ headerTitle: "Reported Areas", headerTitleAlign: "center" }}
+        options={{ headerTitle: "PastEvents", headerTitleAlign: "center" }}
       />
       <Stack.Screen
         name="SelectEventLocation"
@@ -67,22 +67,22 @@ export const EventStack = () => {
       <Stack.Screen
         name="PastEvents"
         component={PastEvents}
-        options={{ headerTitle: "Reported Areas", headerTitleAlign: "center" }}
+        options={{ headerTitle: "PastEvents", headerTitleAlign: "center" }}
       />
       <Stack.Screen
         name="PastEventDetails"
         component={PastEventDetails}
-        options={{ headerTitle: "Reported Areas", headerTitleAlign: "center" }}
+        options={{ headerTitle: "PastEvents", headerTitleAlign: "center" }}
       />
       <Stack.Screen
         name="MyEventDetails"
         component={EventDetails}
-        options={{ headerTitle: "Reported Areas", headerTitleAlign: "center" }}
+        options={{ headerTitle: "PastEvents", headerTitleAlign: "center" }}
       />
       <Stack.Screen
         name="MyEvents"
         component={MyEvents}
-        options={{ headerTitle: "Reported Areas", headerTitleAlign: "center" }}
+        options={{ headerTitle: "PastEvents", headerTitleAlign: "center" }}
       />
     </Stack.Navigator>
   );
