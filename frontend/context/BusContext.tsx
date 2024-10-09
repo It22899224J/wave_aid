@@ -1,10 +1,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../service/firebase';
 import { Bus } from '@/types/Bus';
-
-
-
 
 interface BusContextProps {
     buses: Bus[];
@@ -18,31 +15,34 @@ export const BusContext = createContext<BusContextProps>({
     error: null,
 });
 
-
 const BusProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [buses, setBuses] = useState<Bus[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchBuses = async () => {
-            try {
-                const busCollection = collection(db, 'buses');
-                const busSnapshot = await getDocs(busCollection);
-                const busList: Bus[] = busSnapshot.docs.map((doc) => ({
+        // Set up a real-time listener for the "buses" collection
+        const busCollection = collection(db, 'buses');
+
+        const unsubscribe = onSnapshot(
+            busCollection,
+            (snapshot) => {
+                const busList: Bus[] = snapshot.docs.map((doc) => ({
                     id: doc.id,
                     ...doc.data(),
                 })) as Bus[];
                 setBuses(busList);
-            } catch (err) {
+                setLoading(false);
+            },
+            (err) => {
                 setError('Failed to fetch buses');
                 console.error(err);
-            } finally {
                 setLoading(false);
             }
-        };
+        );
 
-        fetchBuses();
+        // Clean up the listener when the component unmounts
+        return () => unsubscribe();
     }, []);
 
     return (

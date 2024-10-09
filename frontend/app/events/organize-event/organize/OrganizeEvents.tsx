@@ -200,33 +200,33 @@ const OrganizeEvents = ({ navigation }: Props) => {
       await uploadImage(imageUri);
     }
   };
-const uploadImage = async (uri: string) => {
-  setUploading(true);
+  const uploadImage = async (uri: string) => {
+    setUploading(true);
 
-  try {
+    try {
 
-    const manipResult = await ImageManipulator.manipulateAsync(
-      uri,
-      [{ resize: { width: 800 } }], 
-      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } 
-    );
-    const response = await fetch(manipResult.uri);
-    const blob = await response.blob();
+      const manipResult = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
+      const response = await fetch(manipResult.uri);
+      const blob = await response.blob();
 
-    const metadata = {
-      contentType: blob.type || "image/jpeg", 
-    };
-    const fileName = `${new Date().getTime()}-report-image.jpg`;
-    const storageRef = ref(storage, `reports/${fileName}`);
-    await uploadBytes(storageRef, blob, metadata);
-    const downloadURL = await getDownloadURL(storageRef);
-    setImages((prevImages) => [...prevImages, downloadURL]);
-  } catch (error) {
-    console.error("Error uploading image: ", error);
-  } finally {
-    setUploading(false);
-  }
-};
+      const metadata = {
+        contentType: blob.type || "image/jpeg",
+      };
+      const fileName = `${new Date().getTime()}-report-image.jpg`;
+      const storageRef = ref(storage, `reports/${fileName}`);
+      await uploadBytes(storageRef, blob, metadata);
+      const downloadURL = await getDownloadURL(storageRef);
+      setImages((prevImages) => [...prevImages, downloadURL]);
+    } catch (error) {
+      console.error("Error uploading image: ", error);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const removeImage = async (imageUrl: string) => {
     const imageRef = ref(storage, imageUrl);
@@ -263,7 +263,7 @@ const uploadImage = async (uri: string) => {
       organizerName,
       date: date.toISOString(),
       time: { from: timeFrom.toISOString(), to: timeTo.toISOString() },
-      // transportOptions: busId,
+      transportOptions: busId ? busId : null,
       volunteerGuidelines,
       location: {
         latitude: reportLocation?.latitude || null,

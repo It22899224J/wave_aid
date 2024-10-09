@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRoute, RouteProp } from "@react-navigation/native";
+import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 import {
   doc,
   getDoc,
@@ -22,11 +22,25 @@ import {
 import { db } from "@/service/firebase"; // Replace with your Firebase config path
 import axios from "axios"; // Import axios for API calls
 import { useAuth } from "@/context/AuthContext";
+import { CompositeNavigationProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+
+
+export type RootStackParamList = {
+  EventDetails: undefined;
+  SelectBus: { eventId: any };
+};
+
+export type EventDetailsNavigationProp = CompositeNavigationProp<
+  StackNavigationProp<RootStackParamList, 'EventDetails'>,
+  StackNavigationProp<RootStackParamList>
+>;
+
 
 interface RouteParams {
   report?: {
     id: string;
-  };
+  }
 }
 
 const apiKey = "ddb64a174007a68a4edc85f09f65f2e6";
@@ -35,6 +49,7 @@ const tideApiKey = "6ac3d4f9-f559-4b96-b371-ae4871e75c01";
 const EventDetails = () => {
   const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
   const { report } = route.params || {};
+  const navigation = useNavigation<EventDetailsNavigationProp>();
 
   const [organizerName, setOrganizerName] = useState("");
   const [date, setDate] = useState(new Date());
@@ -49,7 +64,8 @@ const EventDetails = () => {
   const [tideDetails, setTideDetails] = useState<any | null>(null);
   const [loadingTide, setLoadingTide] = useState(false);
   const [guidelines, setGuidelines] = useState<string[]>([]);
-  const [isRegistered, setIsRegistered] = useState(false); // State for registration status
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [transportOptions, setTransportOptions] = useState(); // State for registration status
   const { user } = useAuth();
   const userId = user?.uid;
 
@@ -69,12 +85,14 @@ const EventDetails = () => {
           setLongitude(data.location.longitude);
           setGuidelines(data.guidelines);
           setImage(data.images[0]);
+          setTransportOptions(data.transportOptions);
           fetchWeatherData(data.location.latitude, data.location.longitude);
           fetchTideData(
             data.location.latitude,
             data.location.longitude,
             new Date(data.date)
           );
+          console.log("Transport Options:", data.transportOptions);
 
           // Check if the user is already registered for the event
           const registrationRef = doc(
@@ -153,9 +171,8 @@ const EventDetails = () => {
     selectedDate: Date
   ) => {
     setLoadingTide(true);
-    const url = `https://www.worldtides.info/api/v2/tides?lat=${latitude}&lon=${longitude}&date=${
-      selectedDate.toISOString().split("T")[0]
-    }&key=${tideApiKey}`;
+    const url = `https://www.worldtides.info/api/v2/tides?lat=${latitude}&lon=${longitude}&date=${selectedDate.toISOString().split("T")[0]
+      }&key=${tideApiKey}`;
 
     try {
       const response = await axios.get(url);
@@ -178,7 +195,6 @@ const EventDetails = () => {
       Alert.alert("Error", "Location information is not available.");
     }
   };
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -227,6 +243,29 @@ const EventDetails = () => {
             </TouchableOpacity>
           </View>
 
+          {/* Transport Availability */}
+          <View style={styles.detailRow}>
+            <Image
+              source={{ uri: "https://via.placeholder.com/24" }} // Placeholder transport icon
+              style={styles.icon}
+            />
+            <Text style={styles.transportText}>
+              Transport: {transportOptions === null ? "Not Available" : "Available"}
+            </Text>
+
+            {isRegistered && transportOptions !== null && (
+              <TouchableOpacity
+                style={styles.bookSeatButton} // Style for the button
+                onPress={() => navigation.navigate("SelectBus", { eventId: report?.id })}
+              >
+                <Text style={styles.bookSeatButtonText}>Book a Seat</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+
+
+
           {/* Event Image */}
           <Image
             source={{ uri: image || "https://via.placeholder.com/180" }} // Placeholder event image
@@ -266,7 +305,10 @@ const EventDetails = () => {
 
           {/* Registration Button */}
           <TouchableOpacity
-            style={[styles.registerButton,{backgroundColor: isRegistered ? "red" : "#007AFF"}]}
+            style={[
+              styles.registerButton,
+              { backgroundColor: isRegistered ? "red" : "#007AFF" },
+            ]}
             onPress={handleRegistration}
           >
             <Text style={styles.registerButtonText}>
@@ -291,6 +333,7 @@ const EventDetails = () => {
       </ScrollView>
     </SafeAreaView>
   );
+
 };
 
 const styles = StyleSheet.create({
@@ -375,6 +418,25 @@ const styles = StyleSheet.create({
   guidelineText: {
     fontSize: 14,
   },
+  transportText: {
+    marginRight: 10, // Space between text and button
+  },
+
+  bookSeatButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 4, // Reduced vertical padding
+    paddingHorizontal: 8, // Reduced horizontal padding
+    borderRadius: 5,
+    alignItems: "center",
+    marginLeft: 10, // Space between text and button
+  },
+
+  bookSeatButtonText: {
+    color: "white",
+    fontSize: 14, // Smaller font size for the button text
+    fontWeight: "bold",
+  },
+
 });
 
 export default EventDetails;

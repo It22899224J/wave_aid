@@ -1,13 +1,13 @@
 import React, { useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { BusContext } from '@/context/BusContext';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp, useRoute } from '@react-navigation/native';
 import Loader from '@/components/loader/Loader';
 import { Bus } from '@/types/Bus';
 
-// Define the navigation param list
+
 type RootStackParamList = {
-  SelectBus: undefined;
+  SelectBus: { eventId: string };
   BusLayout: { busId: string };
 };
 
@@ -16,6 +16,11 @@ type SelectBusNavigationProp = NavigationProp<RootStackParamList, 'SelectBus'>;
 const SelectBus: React.FC = () => {
   const { buses, loading, error } = useContext(BusContext);
   const navigation = useNavigation<SelectBusNavigationProp>();
+
+  const route = useRoute();
+  const { eventId } = route.params as { eventId: string };
+
+  const filteredBuses = buses.filter(bus => bus.eventID === eventId);
 
   const handleBusPress = (busId: string) => {
     navigation.navigate('BusLayout', { busId });
@@ -50,7 +55,7 @@ const SelectBus: React.FC = () => {
 
   return (
     <FlatList
-      data={buses}
+      data={filteredBuses}
       renderItem={({ item }) => <BusCard item={item} />}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.container}

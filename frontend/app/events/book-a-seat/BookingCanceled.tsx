@@ -58,7 +58,7 @@ const BookingCanceledScreen = () => {
 
             {/* Go Back Button */}
             <TouchableOpacity
-                onPress={() => { navigation.navigate('SelectBus' as never) }}
+                onPress={() => { navigation.navigate('MyEventsBooking' as never) }}
                 style={styles.goBackButton}>
                 <Text style={styles.goBackText}>Go back</Text>
             </TouchableOpacity>

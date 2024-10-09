@@ -13,6 +13,7 @@ import MyEvents from "../my-events/MyEvents";
 import OrganizedEventsPast from "../update-event/OrganizedEventsPast";
 import PastEvents from "../past-events/PastEvents";
 import PastEventDetails from "../past-events/PastEventDetails";
+import { Booking } from "../book-a-seat/BookingNav";
 const Stack = createStackNavigator();
 
 export const EventStack = () => {

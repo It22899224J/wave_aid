@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Linking, Alert } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { BusContext } from '@/context/BusContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -10,12 +10,27 @@ const BookingConfirmation = () => {
     const { buses } = useContext(BusContext);
     const navigation = useNavigation();
 
-
     const busDetails = buses.find(bus => bus.id === busId);
 
     if (!busDetails) {
         return <Text style={styles.errorText}>Bus not found</Text>;
     }
+
+    const openLocationInMap = () => {
+        const pickupLocation = busDetails.pickupLocation; // "(6.902516788817792, 79.87774953246117)"
+        const coordinates = pickupLocation.replace(/[()]/g, '').split(','); // ["6.902516788817792", " 79.87774953246117"]
+
+        if (coordinates.length === 2) {
+            const latitude = coordinates[0].trim();
+            const longitude = coordinates[1].trim();
+            const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+            Linking.openURL(url).catch(() =>
+                Alert.alert("Error", "Unable to open the map.")
+            );
+        } else {
+            Alert.alert("Error", "Location information is not available.");
+        }
+    };
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -67,14 +82,14 @@ const BookingConfirmation = () => {
                         <Text style={styles.detailLabel}>Pick Up Location</Text>
                         <Text style={styles.detailValue}>{busDetails.pickupLocation}</Text>
                     </View>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={openLocationInMap}>
                         <Text style={styles.viewText}>View</Text>
                     </TouchableOpacity>
                 </View>
             </View>
 
             <TouchableOpacity
-                onPress={() => { navigation.navigate('SelectBus' as never) }}
+                onPress={() => { navigation.navigate('MyEventsBooking' as never) }}
                 style={styles.goBackButton}>
                 <Text style={styles.goBackText}>Go back</Text>
             </TouchableOpacity>
@@ -83,6 +98,7 @@ const BookingConfirmation = () => {
 };
 
 const styles = StyleSheet.create({
+    // Your existing styles...
     container: {
         flexGrow: 1,
         padding: 20,
@@ -155,28 +171,6 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: 'bold',
         fontSize: 16,
-    },
-    bottomNav: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        backgroundColor: '#fff',
-        borderTopWidth: 1,
-        borderTopColor: '#ddd',
-        paddingVertical: 10,
-    },
-    navItem: {
-        alignItems: 'center',
-        flex: 1,
-    },
-    navText: {
-        fontSize: 12,
-        color: 'gray',
-        marginTop: 5,
-    },
-    navTextActive: {
-        fontSize: 12,
-        color: '#00acf0',
-        marginTop: 5,
     },
     errorText: {
         textAlign: 'center',

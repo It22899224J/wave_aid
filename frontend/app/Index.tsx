@@ -15,6 +15,7 @@ import Loader from "@/components/loader/Loader";
 import BookingConfirmation from "./events/book-a-seat/BookingConfirmation";
 import { AdminMainStack } from "./events/admin-screens/AdminMainStack";
 import { Booking } from "./events/book-a-seat/BookingNav";
+import MyEvents from "./events/my-events/MyEvents";
 
 
 
@@ -77,12 +78,12 @@ const Index = () => {
           />
 
           <Tab.Screen
-            name="Booking"
+            name="Events"
             component={Booking}
             options={{
               headerShown: false,
               tabBarIcon: ({ color, size }) => (
-                <Icon name="bus" color={color} size={size} />
+                <Icon name="calendar" color={color} size={size} />
               ),
             }}
           />
