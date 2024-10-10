@@ -171,10 +171,16 @@ exports.getUserLastLoginTime = async (req, res) => {
         const userRecord = await admin.auth().getUser(uid);
 
         // Access last sign-in time
-        const lastLoginTime = userRecord.metadata.lastSignInTime;
+        const lastLoginTime = new Date(userRecord.metadata.lastSignInTime);
 
-        // Send the response with user ID and last login time
-        res.status(200).json(lastLoginTime);
+        // Convert to your time zone (+5:30) and format it
+        const lastLoginTimeInIST = lastLoginTime.toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata', // +5:30 time zone
+            // hour12: true,             // Optional: to format time in 12-hour format
+        });
+
+        // Send the response with formatted last login time
+        res.status(200).json(lastLoginTimeInIST);
     } catch (error) {
         // Log the error details for troubleshooting
         console.error('Error fetching user data:', error);

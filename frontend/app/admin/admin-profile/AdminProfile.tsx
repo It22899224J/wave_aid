@@ -48,7 +48,7 @@ const AdminProfile = () => {
       const response = await axios.get(
         `http://192.168.1.5:3000/adminUser/getUserLastLoginTime/${uid}`
       );
-      console.log("Last login time:", response.data);
+      // console.log("Last login time:", response.data);
       return response.data; // Return the data for further processing if needed
     } catch (error) {
       console.error("Error fetching last login time:", error);
@@ -66,15 +66,16 @@ const AdminProfile = () => {
       if (user) {
         try {
           const lastLoginTime = await getUserLastLoginTime(user?.uid);
-          const lastLogin = new Date(lastLoginTime);
-          setLastLogin(
-            `${lastLogin.getUTCDate()} ${lastLogin.toLocaleString("en-US", {
-              month: "short",
-            })} ${lastLogin.getUTCFullYear()} | ${lastLogin.getUTCHours()}:${lastLogin
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, "0")}`
-          );
+          // const lastLogin = new Date(lastLoginTime);
+          // setLastLogin(
+          //   `${lastLogin.getUTCDate()} ${lastLogin.toLocaleString("en-US", {
+          //     month: "short",
+          //   })} ${lastLogin.getUTCFullYear()} | ${lastLogin.getUTCHours()}:${lastLogin
+          //     .getUTCMinutes()
+          //     .toString()
+          //     .padStart(2, "0")}`
+          // );
+          setLastLogin(lastLoginTime);
         } catch (error) {
           console.error("Error fetching last login time:", error);
         }
@@ -176,7 +177,9 @@ const AdminProfile = () => {
 
               <Pressable
                 style={styles.actionButton}
-                onPress={() => navigation.navigate("Analysis Dashboard" as never)}
+                onPress={() =>
+                  navigation.navigate("Analysis Dashboard" as never)
+                }
               >
                 <Ionicons name="bar-chart" size={24} color="#FFF" />
                 <Text style={styles.actionButtonText}>Analytics</Text>

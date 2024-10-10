@@ -12,6 +12,7 @@ import PastEvents from "../past-events/PastEvents";
 import PastEventDetails from "../past-events/PastEventDetails";
 import MyEvents from "../my-events/MyEvents";
 import UpdateEventLocationPast from "../update-event/UpdateEventLocationPast";
+import EventCompletionForm from "../events-view/EventCompleteForm";
 const Stack = createStackNavigator();
 
 export const AdminMainStack = () => {
@@ -57,6 +58,14 @@ export const AdminMainStack = () => {
         component={SelectEventLocation}
         options={{
           headerTitle: "Select Event Location",
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="EventCompleteForm"
+        component={EventCompletionForm}
+        options={{
+          headerTitle: "Event Completion Form",
           headerTitleAlign: "center",
         }}
       />

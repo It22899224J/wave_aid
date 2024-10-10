@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { BlurView } from "expo-blur";
+import { useNavigation } from "@react-navigation/native";
 
 interface EventCard {
   item: {
@@ -18,33 +19,47 @@ interface EventCard {
 }
 
 export const EventCard: React.FC<EventCard> = ({ item, onRemove }) => {
-  return (
-    <BlurView style={[styles.card,{borderRadius:10}]} intensity={90} tint="light">
-     
-        <View style={styles.cardInfo}>
-          <Text style={styles.beachName}>{item.beachName}</Text>
-          <View style={styles.row}>
-            <Icon name="calendar" size={24} color="#000" />
-            <Text style={styles.date}>{item.date}</Text>
-          </View>
-          <View style={styles.row}>
-            <Icon name="time" size={24} color="#000" />
-            <Text style={[styles.status]}>{item.time}</Text>
-          </View>
-          <View style={styles.row}>
-            <Icon name="person" size={24} color="#000" />
-            <Text style={[styles.wasteLevel]}>{item.organizer}</Text>
-          </View>
-        </View>
 
-        <Image source={{ uri: item.image }} style={styles.cardImage} />
-        <TouchableOpacity
-          style={styles.removeButton}
-          onPress={() => onRemove(item.id)}
-        >
-          <Icon name="trash" size={24} color="#FF0000" />
-        </TouchableOpacity>
-      
+  const navigate = useNavigation()
+  const markAsComplete= () => {
+    navigate.navigate("EventCompleteForm" as never)
+  }
+
+  return (
+    <BlurView
+      style={[styles.card, { borderRadius: 10 }]}
+      intensity={90}
+      tint="light"
+    >
+      <View style={styles.cardInfo}>
+        <Text style={styles.beachName}>{item.beachName}</Text>
+        <View style={styles.row}>
+          <Icon name="calendar" size={24} color="#000" />
+          <Text style={styles.date}>{item.date}</Text>
+        </View>
+        <View style={styles.row}>
+          <Icon name="time" size={24} color="#000" />
+          <Text style={[styles.status]}>{item.time}</Text>
+        </View>
+        <View style={styles.row}>
+          <Icon name="person" size={24} color="#000" />
+          <Text style={[styles.wasteLevel]}>{item.organizer}</Text>
+        </View>
+      </View>
+
+      <Image source={{ uri: item.image }} style={styles.cardImage} />
+      <TouchableOpacity
+        style={styles.removeButton}
+        onPress={() => onRemove(item.id)}
+      >
+        <Icon name="trash" size={24} color="#FF0000" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.completeButton}
+        onPress={() => markAsComplete()}
+      >
+        <Icon name="checkmark-circle" size={35} color="#11DD11" />
+      </TouchableOpacity>
     </BlurView>
   );
 };
@@ -107,7 +122,15 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 10,
     right: 10,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    // backgroundColor: "rgba(255, 255, 255, 0.8)",
+    borderRadius: 12,
+    padding: 5,
+  },
+  completeButton:{
+    position: "absolute",
+    bottom: 5,
+    right: 45,
+    // backgroundColor: "rgba(255, 255, 255, 0.8)",
     borderRadius: 12,
     padding: 5,
   },
