@@ -15,6 +15,16 @@ import {
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import axios from "axios";
+import { db } from "@/service/firebase";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import Loader from "@/components/loader/Loader";
 
 const { width } = Dimensions.get("window");
 
@@ -32,7 +42,8 @@ const AdminProfile = () => {
   const [userDetails, setUserDetails] = useState<User | undefined>();
   const navigation = useNavigation();
   const [backgroundImage, setBackgroundImage] = useState(undefined);
-  const [lastLogin, setLastLogin] = useState("");
+  const [lastLogin, setLastLogin] = useState(undefined);
+  const [loading, setLoading] = useState(false);
 
   const initializeUserDetails = useCallback(() => {
     if (!allUserLoading && !authLoading) {
@@ -51,7 +62,7 @@ const AdminProfile = () => {
       // console.log("Last login time:", response.data);
       return response.data; // Return the data for further processing if needed
     } catch (error) {
-      console.error("Error fetching last login time:", error);
+      console.log("Error fetching last login time:", error);
     }
   };
 
@@ -77,7 +88,8 @@ const AdminProfile = () => {
           // );
           setLastLogin(lastLoginTime);
         } catch (error) {
-          console.error("Error fetching last login time:", error);
+          console.log("Error fetching last login time:", error);
+          setLastLogin(undefined);
         }
       }
 
@@ -90,23 +102,48 @@ const AdminProfile = () => {
     fetchUserDetails();
   }, [initializeUserDetails]);
 
-  const AdminCard = ({
-    title,
-    value,
-    icon,
-  }: {
-    title: string;
-    value: string | number;
-    icon: any;
-  }) => (
-    <View style={styles.adminCard}>
-      <Ionicons name={icon} size={24} color="#2196F3" />
-      <View>
-        <Text style={styles.adminCardTitle}>{title}</Text>
-        <Text style={styles.adminCardValue}>{value}</Text>
-      </View>
-    </View>
-  );
+  if (loading) return <Loader />;
+
+  const deleteProfile = async () => {
+    Alert.alert(
+      "Delete Profile",
+      "Are you sure you want to delete your profile? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            if (user) {
+              setLoading(true);
+              try {
+                const userCollection = collection(db, "users");
+                const q = query(
+                  userCollection,
+                  where("userId", "==", user.uid)
+                );
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach(async (docSnapshot) => {
+                  await deleteDoc(doc(db, "users", docSnapshot.id));
+                });
+                await user.delete();
+                await signOut();
+                Alert.alert("Success", "Account deleted successfully!");
+              } catch (error) {
+                console.error("Error deleting user account:", error);
+              } finally {
+                setLoading(false);
+              }
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const navigateToUpdateProfile = () => {
+    navigation.navigate("AdminUpdateProfile" as never);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -149,7 +186,7 @@ const AdminProfile = () => {
             />
             <AdminCard
               title="Last Login"
-              value={lastLogin ?? ""}
+              value={lastLogin ? lastLogin : ""}
               icon="time-outline"
             />
           </View>
@@ -168,21 +205,19 @@ const AdminProfile = () => {
               </Pressable>
 
               <Pressable
-                style={styles.actionButton}
-                onPress={() => navigation.navigate("Settings" as never)}
+                style={[styles.actionButton, { backgroundColor: "#4CAF50" }]}
+                onPress={navigateToUpdateProfile}
               >
-                <Ionicons name="settings" size={24} color="#FFF" />
-                <Text style={styles.actionButtonText}>System Settings</Text>
+                <Ionicons name="create" size={24} color="#FFF" />
+                <Text style={styles.actionButtonText}>Update Profile</Text>
               </Pressable>
 
               <Pressable
-                style={styles.actionButton}
-                onPress={() =>
-                  navigation.navigate("Analysis Dashboard" as never)
-                }
+                style={[styles.actionButton, { backgroundColor: "#F44336" }]}
+                onPress={deleteProfile}
               >
-                <Ionicons name="bar-chart" size={24} color="#FFF" />
-                <Text style={styles.actionButtonText}>Analytics</Text>
+                <Ionicons name="trash" size={24} color="#FFF" />
+                <Text style={styles.actionButtonText}>Delete Profile</Text>
               </Pressable>
             </View>
           </View>
@@ -208,6 +243,24 @@ const AdminProfile = () => {
     </SafeAreaView>
   );
 };
+
+const AdminCard = ({
+  title,
+  value,
+  icon,
+}: {
+  title: string;
+  value: string | number;
+  icon: any;
+}) => (
+  <View style={styles.adminCard}>
+    <Ionicons name={icon} size={24} color="#2196F3" />
+    <View>
+      <Text style={styles.adminCardTitle}>{title}</Text>
+      <Text style={styles.adminCardValue}>{value}</Text>
+    </View>
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {

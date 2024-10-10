@@ -15,6 +15,7 @@ import Loader from "./components/loader/Loader";
 import BusProvider from "./context/BusContext";
 import BookingConfirmation from "./app/events/book-a-seat/BookingConfirmation";
 import { ReportProvider } from "./context/ReportContext";
+import SplashScreen from "./components/splash-screen/SplashScreen";
 
 const Stack = createStackNavigator();
 
@@ -37,7 +38,7 @@ export default function App() {
 function RootLayout() {
   const { user, loading } = useAuth(); // Use user and loading from AuthContext
 
-  if (loading) return <Loader />;
+  if (loading) return <SplashScreen />;
 
   return (
     <Stack.Navigator>
@@ -82,12 +83,12 @@ function RootLayout() {
           <Stack.Screen
             name="signin"
             component={SignIn}
-            options={{ headerTitle: "Sign In" }}
+            options={{ headerTitle: "Sign In", headerShown: false }}
           />
           <Stack.Screen
             name="signup"
             component={SignUp}
-            options={{ headerTitle: "Sign Up" }}
+            options={{ headerTitle: "Sign Up", headerShown: false }}
           />
         </>
       )}

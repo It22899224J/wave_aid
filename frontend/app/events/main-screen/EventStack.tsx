@@ -14,6 +14,7 @@ import OrganizedEventsPast from "../update-event/OrganizedEventsPast";
 import PastEvents from "../past-events/PastEvents";
 import PastEventDetails from "../past-events/PastEventDetails";
 import { Booking } from "../book-a-seat/BookingNav";
+import EventCompletionForm from "../events-view/EventCompleteForm";
 const Stack = createStackNavigator();
 
 export const EventStack = () => {
@@ -84,6 +85,14 @@ export const EventStack = () => {
         name="MyEvents"
         component={MyEvents}
         options={{ headerTitle: "MyEvents", headerTitleAlign: "center" }}
+      />
+      <Stack.Screen
+        name="EventCompleteForm"
+        component={EventCompletionForm}
+        options={{
+          headerTitle: "Event Completion Form",
+          headerTitleAlign: "center",
+        }}
       />
     </Stack.Navigator>
   );

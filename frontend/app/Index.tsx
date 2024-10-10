@@ -2,11 +2,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MainScreen from "./events/main-screen/EventsMainView";
 import Icon from "react-native-vector-icons/Ionicons";
-import Profile from "./profile/Profile";
+import { ProfileStack } from "./profile/ProfileStack";
 import { useAuth } from "@/context/AuthContext";
 import { AllUserProvider, useAllUser } from "@/context/AllUserContext";
-import AdminProfile from "./admin/admin-profile/AdminProfile";
-import AdminHome from "./admin/admin-home/AdminHome";
 import { AnalysisStack } from "./analysis/AnalysisStack";
 import { ReportStack } from "./report/ReportStack";
 import { EventStack } from "./events/main-screen/EventStack";
@@ -17,13 +15,10 @@ import { AdminMainStack } from "./events/admin-screens/AdminMainStack";
 import { Booking } from "./events/book-a-seat/BookingNav";
 import MyEvents from "./events/my-events/MyEvents";
 import AdminReportMain from "./admin/admin-report/admin-report-main/AdminReportMain";
-
-
+import { AdminProfileStack } from "./admin/admin-profile/AdminProfileStack";
+import SplashScreen from "@/components/splash-screen/SplashScreen";
 
 const Tab = createBottomTabNavigator();
-
-
-
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
@@ -48,8 +43,8 @@ const Index = () => {
     setLoading(false);
   }, [initializeUserDetails]);
 
-  if (loading) return <Loader />;
-  if (allUserLoading || authLoading) return <Loader />;
+  if (allUserLoading) return <Loader />;
+  if (loading || authLoading) return <SplashScreen />;
 
   return (
     <Tab.Navigator>
@@ -90,8 +85,8 @@ const Index = () => {
           />
 
           <Tab.Screen
-            name="Profile"
-            component={Profile}
+            name="ProfileStack"
+            component={ProfileStack}
             options={{
               // headerShown: false,
               tabBarIcon: ({ color, size }) => (
@@ -166,7 +161,7 @@ const Index = () => {
 
           <Tab.Screen
             name="Admin Profile"
-            component={AdminProfile}
+            component={AdminProfileStack}
             options={{
               // headerShown: false,
               headerTitle: "Admin Profile",

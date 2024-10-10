@@ -1,166 +1,171 @@
-import Loader from "@/components/loader/Loader";
-import { useAuth } from "@/context/AuthContext";
-import { auth, db } from "@/service/firebase";
-import { useNavigation } from "@react-navigation/native";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { addDoc, collection } from "firebase/firestore";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
-  Button,
-  KeyboardAvoidingView,
+  View,
   Text,
   TextInput,
-  View,
-  StyleSheet,
   TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "@/context/AuthContext";
+import Loader from "@/components/loader/Loader";
 
-interface formData {
-  email?: string | undefined;
-  password?: string | undefined;
+interface FormData {
+  email: string;
+  password: string;
 }
 
-const SignIn = () => {
-  const [formData, setFormData] = useState<formData>({
+const SignIn: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigation();
+  const navigation = useNavigation();
   const { signIn } = useAuth();
 
-  const signin = async () => {
+  const handleSignIn = async () => {
     setLoading(true);
     try {
-      if (formData.email == "") {
-        throw Error("Please Enter an Email");
-      }
-      if (formData.password == "") {
-        throw Error("Please Enter a Password");
-      }
-      if (formData.email && formData.password) {
-        signIn(formData.email, formData.password);
-      }
+      if (!formData.email) throw new Error("Please enter an email");
+      if (!formData.password) throw new Error("Please enter a password");
+      await signIn(formData.email, formData.password);
     } catch (err: any) {
-      console.log("Error in signup: " + err);
+      console.log("Error in signin:", err);
       alert(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    // Show loading spinner while checking user authentication state
-    return (
-      <Loader />
-    );
-  }
+  if (loading) return <Loader />;
 
   return (
-    <>
-      <SafeAreaView>
-        <View style={style.view}>
-          <KeyboardAvoidingView behavior="padding">
-            {loading && <Text>Loading...</Text>}
-            <Text>Email</Text>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardAvoidingView}
+      >
+        <View style={styles.formContainer}>
+          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.subtitle}>Sign in to your account</Text>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email</Text>
             <TextInput
-              style={style.textInput}
+              style={styles.input}
               value={formData.email}
-              onChangeText={(e) =>
-                setFormData((existingFormData) => ({
-                  ...existingFormData,
-                  email: e,
-                }))
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, email: text }))
               }
               autoCapitalize="none"
               keyboardType="email-address"
+              placeholder="Enter your email"
+              placeholderTextColor="#A0AEC0"
             />
-            <Text>Password</Text>
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Password</Text>
             <TextInput
-              style={style.textInput}
+              style={styles.input}
               value={formData.password}
-              onChangeText={(e) => {
-                setFormData((existingFormData) => ({
-                  ...existingFormData,
-                  password: e,
-                }));
-              }}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, password: text }))
+              }
               secureTextEntry
+              placeholder="Enter your password"
+              placeholderTextColor="#A0AEC0"
             />
-            <Button title="Sign Up" onPress={signin} />
-          </KeyboardAvoidingView>
-          <TouchableOpacity onPress={() => navigate.navigate("signup" as never)}>
-            <Text style={{ color: "#888", marginTop: 20 }}>
-              Don't have an account? Sign Up
+          </View>
+
+          <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+            <Text style={styles.buttonText}>Sign In</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate("signup" as never)}
+          >
+            <Text style={styles.signUpText}>
+              Don't have an account?{" "}
+              <Text style={styles.signUpTextBold}>Sign Up</Text>
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
-    </>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
-export default SignIn;
-
-const style = StyleSheet.create({
-  view: {
-    height: "95%",
-    width: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  textInput: {
-    width: 300,
-    marginBottom: 50,
-    borderBottomColor: "#aaa",
-    borderBottomWidth: 1,
-  },
-  dropdownButtonStyle: {
-    width: 300,
-    height: 50,
-    marginBottom: 35,
-    backgroundColor: "#DDD",
-    borderRadius: 10,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 5,
-  },
-  dropdownButtonTxtStyle: {
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#151E26",
+    backgroundColor: "#F7FAFC",
   },
-  dropdownButtonArrowStyle: {
-    fontSize: 23,
+  keyboardAvoidingView: {
+    flex: 1,
   },
-  dropdownButtonIconStyle: {
+  formContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  title: {
     fontSize: 28,
-    marginRight: 8,
+    fontWeight: "bold",
+    color: "#2D3748",
+    marginBottom: 8,
   },
-  dropdownMenuStyle: {
-    backgroundColor: "#E9ECEF",
-    borderRadius: 8,
-  },
-  dropdownItemStyle: {
-    width: "100%",
-    flexDirection: "row",
-    paddingHorizontal: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  dropdownItemTxtStyle: {
-    flex: 1,
+  subtitle: {
     fontSize: 16,
-    fontWeight: "500",
-    color: "#151E26",
+    color: "#718096",
+    marginBottom: 32,
   },
-  dropdownItemIconStyle: {
-    fontSize: 28,
-    marginRight: 8,
+  inputContainer: {
+    width: "100%",
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#4A5568",
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: "#EDF2F7",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: "#2D3748",
+  },
+  button: {
+    backgroundColor: "#4299E1",
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    marginTop: 16,
+    width: "100%",
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  signUpText: {
+    marginTop: 24,
+    fontSize: 14,
+    color: "#718096",
+  },
+  signUpTextBold: {
+    fontWeight: "600",
+    color: "#4299E1",
   },
 });
+
+export default SignIn;

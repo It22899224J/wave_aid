@@ -3,6 +3,7 @@ import { useAllUser, User } from "@/context/AllUserContext";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/service/firebase";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native";
 import {
   collection,
   deleteDoc,
@@ -40,6 +41,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [userDetails, setUserDetails] = useState<User | undefined>(undefined);
   const [backgroundImage, setBackgroundImage] = useState(undefined);
+  const navigate = useNavigation();
 
   const deleteProfile = async () => {
     if (user) {
@@ -72,6 +74,10 @@ const Profile = () => {
         { text: "Delete", onPress: deleteProfile, style: "destructive" },
       ]
     );
+  };
+
+  const onClickUpdateProfile = () => {
+    navigate.navigate("ProfileUpdate" as never);
   };
 
   const initializeUserDetails = useCallback(() => {
@@ -126,7 +132,23 @@ const Profile = () => {
         </View>
 
         <View style={styles.buttonContainer}>
-          <Pressable style={styles.editButton} onPress={() => {}}>
+          <Pressable
+            style={styles.editButton}
+            onPress={() => {
+              Alert.alert(
+                "Sign Out",
+                "Are you sure you want to edit user details?",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Edit",
+                    onPress: onClickUpdateProfile,
+                    style: "destructive",
+                  },
+                ]
+              );
+            }}
+          >
             <Ionicons name="create-outline" size={20} color="#FFF" />
             <Text style={styles.buttonText}>Edit Profile</Text>
           </Pressable>

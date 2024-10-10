@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,65 +7,66 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
-} from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+} from "react-native";
+import { Picker } from "@react-native-picker/picker";
 
 const EventCompletionForm = () => {
   const [formData, setFormData] = useState({
-    totalParticipants: '',
-    newParticipants: '',
-    wasteCollected: '',
+    totalParticipants: "",
+    newParticipants: "",
+    wasteCollected: "",
     wasteTypes: [],
-    busUsers: '',
+    busUsers: "",
     otherTransportMethods: [],
-    busFuelConsumption: '',
+    busFuelConsumption: "",
   });
 
-  const [currentWasteType, setCurrentWasteType] = useState('');
-  const [currentTransportMethod, setCurrentTransportMethod] = useState('');
+  const [currentWasteType, setCurrentWasteType] = useState("");
+  const [currentTransportMethod, setCurrentTransportMethod] = useState("");
 
-  const handleInputChange = (name, value) => {
-    setFormData(prevState => ({
+  const handleInputChange = (name: string, value: string) => {
+    setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
   };
 
   const addWasteType = () => {
-    if (currentWasteType.trim() !== '') {
-      setFormData(prevState => ({
+    if (currentWasteType.trim() !== "") {
+      setFormData((prevState) => ({
         ...prevState,
         wasteTypes: [...prevState.wasteTypes, currentWasteType.trim()],
       }));
-      setCurrentWasteType('');
+      setCurrentWasteType("");
     }
   };
 
   const addTransportMethod = () => {
-    if (currentTransportMethod.trim() !== '') {
-      setFormData(prevState => ({
+    if (currentTransportMethod.trim() !== "") {
+      setFormData((prevState) => ({
         ...prevState,
-        otherTransportMethods: [...prevState.otherTransportMethods, currentTransportMethod.trim()],
+        otherTransportMethods: [
+          ...prevState.otherTransportMethods,
+          currentTransportMethod.trim(),
+        ],
       }));
-      setCurrentTransportMethod('');
+      setCurrentTransportMethod("");
     }
   };
 
   const handleSubmit = async () => {
     try {
-    //   const analysisData = {
-    //     ...formData,
-    //     eventId,
-    //     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-    //   };
 
-    //   await firebase.firestore().collection('analysisData').add(analysisData);
-
-      Alert.alert('Success', 'Event completion data submitted successfully!');
+      //TODO make the firebase create record
+      
+      Alert.alert("Success", "Event completion data submitted successfully!");
       // Reset form or navigate away
     } catch (error) {
-      console.error('Error submitting data:', error);
-      Alert.alert('Error', 'Failed to submit event completion data. Please try again.');
+      console.error("Error submitting data:", error);
+      Alert.alert(
+        "Error",
+        "Failed to submit event completion data. Please try again."
+      );
     }
   };
 
@@ -78,7 +79,9 @@ const EventCompletionForm = () => {
         <TextInput
           style={styles.input}
           value={formData.totalParticipants}
-          onChangeText={(value) => handleInputChange('totalParticipants', value)}
+          onChangeText={(value) =>
+            handleInputChange("totalParticipants", value)
+          }
           keyboardType="numeric"
           placeholder="Enter total participants"
         />
@@ -89,7 +92,7 @@ const EventCompletionForm = () => {
         <TextInput
           style={styles.input}
           value={formData.newParticipants}
-          onChangeText={(value) => handleInputChange('newParticipants', value)}
+          onChangeText={(value) => handleInputChange("newParticipants", value)}
           keyboardType="numeric"
           placeholder="Enter new participants"
         />
@@ -100,7 +103,7 @@ const EventCompletionForm = () => {
         <TextInput
           style={styles.input}
           value={formData.wasteCollected}
-          onChangeText={(value) => handleInputChange('wasteCollected', value)}
+          onChangeText={(value) => handleInputChange("wasteCollected", value)}
           keyboardType="numeric"
           placeholder="Enter amount of waste collected"
         />
@@ -120,7 +123,9 @@ const EventCompletionForm = () => {
           </TouchableOpacity>
         </View>
         {formData.wasteTypes.map((type, index) => (
-          <Text key={index} style={styles.listItem}>{type}</Text>
+          <Text key={index} style={styles.listItem}>
+            {type}
+          </Text>
         ))}
       </View>
 
@@ -129,7 +134,7 @@ const EventCompletionForm = () => {
         <TextInput
           style={styles.input}
           value={formData.busUsers}
-          onChangeText={(value) => handleInputChange('busUsers', value)}
+          onChangeText={(value) => handleInputChange("busUsers", value)}
           keyboardType="numeric"
           placeholder="Enter number of bus users"
         />
@@ -144,12 +149,17 @@ const EventCompletionForm = () => {
             onChangeText={setCurrentTransportMethod}
             placeholder="Enter transport method"
           />
-          <TouchableOpacity style={styles.addButton} onPress={addTransportMethod}>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={addTransportMethod}
+          >
             <Text style={styles.buttonText}>Add</Text>
           </TouchableOpacity>
         </View>
         {formData.otherTransportMethods.map((method, index) => (
-          <Text key={index} style={styles.listItem}>{method}</Text>
+          <Text key={index} style={styles.listItem}>
+            {method}
+          </Text>
         ))}
       </View>
 
@@ -158,7 +168,9 @@ const EventCompletionForm = () => {
         <TextInput
           style={styles.input}
           value={formData.busFuelConsumption}
-          onChangeText={(value) => handleInputChange('busFuelConsumption', value)}
+          onChangeText={(value) =>
+            handleInputChange("busFuelConsumption", value)
+          }
           keyboardType="numeric"
           placeholder="Enter bus fuel consumption"
         />
@@ -176,13 +188,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     marginVertical: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   inputContainer: {
     marginBottom: 15,
@@ -190,41 +202,41 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 5,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     padding: 10,
     borderRadius: 5,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   rowContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   addButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     padding: 10,
     borderRadius: 5,
     marginLeft: 10,
   },
   submitButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     padding: 15,
     borderRadius: 5,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   listItem: {
     padding: 10,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0",
     borderRadius: 5,
     marginTop: 5,
   },
