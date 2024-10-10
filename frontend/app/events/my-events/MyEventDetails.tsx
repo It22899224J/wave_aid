@@ -64,7 +64,7 @@ const MyEventDetails = () => {
           setReportLocationName(data.location.locationName);
           setLatitude(data.location.latitude);
           setLongitude(data.location.longitude);
-          setGuidelines(data.guidelines);
+          setGuidelines(data.volunteerGuidelines);
           setImage(data.images);
           fetchWeatherData(data.location.latitude, data.location.longitude);
           fetchTideData(
