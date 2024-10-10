@@ -43,8 +43,7 @@ const Index = () => {
     setLoading(false);
   }, [initializeUserDetails]);
 
-  if (allUserLoading) return <Loader />;
-  if (loading || authLoading) return <SplashScreen />;
+  if (loading || authLoading || allUserLoading) return <SplashScreen />;
 
   return (
     <Tab.Navigator>
