@@ -29,6 +29,8 @@ const PastEventDetails = () => {
   const [weather, setWeather] = useState<string | null>(null);
   const [temperature, setTemperature] = useState<number | null>(null);
   const [guidelines, setGuidelines] = useState<string[]>([]);
+  const [weight, setWeight] = useState<string>("");
+  const [totalParticipants, setTotalParticipants] = useState<string>("");
 
   useEffect(() => {
     const fetchReportDetails = async () => {
@@ -44,8 +46,11 @@ const PastEventDetails = () => {
           setReportLocationName(data.location.locationName);
           setLatitude(data.location.latitude);
           setLongitude(data.location.longitude);
-          setGuidelines(data.guidelines);
+          setGuidelines(data.volunteerGuidelines);
           setImage(data.images[0]);
+          setWeatherDetails(data.weatherDetails);
+          setWeight(data.weight || "");
+          setTotalParticipants(data.totalParticipants || "");
           // fetchWeatherData(data.location.latitude, data.location.longitude);
         } else {
           Alert.alert("Error", "Event not found.");
