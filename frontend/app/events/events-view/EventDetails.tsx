@@ -83,7 +83,7 @@ const EventDetails = () => {
           setReportLocationName(data.location.locationName);
           setLatitude(data.location.latitude);
           setLongitude(data.location.longitude);
-          setGuidelines(data.guidelines);
+          setGuidelines(data.volunteerGuidelines);
           setImage(data.images[0]);
           setTransportOptions(data.transportOptions);
           fetchWeatherData(data.location.latitude, data.location.longitude);
