@@ -24,7 +24,7 @@ const AdminUserManagementStack = () => {
         options={{
           // headerShown: false,
           headerTitle: "User Dashboard",
-          headerTitleStyle: styles.headerTitle,
+          // headerTitleStyle: styles.headerTitle,
         }}
       />
 

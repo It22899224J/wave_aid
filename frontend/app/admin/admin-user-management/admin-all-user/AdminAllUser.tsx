@@ -15,154 +15,11 @@ import { useAuth } from "@/context/AuthContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState, useCallback } from "react";
 import axios from "axios";
+import UserCard from "../components/UserCard";
 
 const { width } = Dimensions.get("window");
 
-const UserListItem = ({
-  user,
-  onUserDeleted,
-}: {
-  user: User;
-  onUserDeleted: () => void;
-}) => {
-  const [loading, setLoading] = useState(false);
-  const navigation = useNavigation();
-
-  const safeNavigate = (navigate: any, route: string, params: any) => {
-    navigate.navigate(route, params);
-  };
-
-  const navigate = useNavigation();
-  const deleteProfile = async () => {
-    if (user) {
-      setLoading(true);
-      try {
-        await axios.delete(
-          `http://192.168.1.5:3000/delete-user/${user.userId}`
-        );
-        onUserDeleted(); // Callback to refresh the list
-      } catch (error) {
-        console.error("Error deleting user account:", error);
-        Alert.alert("Error", "Failed to delete user account");
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
-  const onClickDelete = () => {
-    Alert.alert(
-      "Delete User",
-      `Are you sure you want to delete ${user.name}?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          onPress: deleteProfile,
-          style: "destructive",
-        },
-      ],
-      { cancelable: true }
-    );
-  };
-
-  const onClickUpdate = () => {
-    Alert.alert(
-      "Update User",
-      `Do you want to update ${user.name}'s details?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Update",
-          onPress: () =>
-            safeNavigate(navigate, "Admin Update User", {
-              userId: user.userId,
-            }),
-          style: "default",
-        },
-      ],
-      { cancelable: true }
-    );
-  };
-
-  if (loading) return <Loader />;
-
-  return (
-    <View style={styles.userCard}>
-      <View style={styles.userAvatarContainer}>
-        <View
-          style={[
-            styles.userAvatar,
-            { backgroundColor: getRandomColor(user.name) },
-          ]}
-        >
-          <Text style={styles.userInitials}>
-            {user.name
-              .split(" ")
-              .map((n: string) => n[0])
-              .join("")
-              .toUpperCase()}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.userInfo}>
-        <Text style={styles.userName}>{user.name}</Text>
-        <Text style={styles.userEmail}>{user.email}</Text>
-        <Text style={styles.userContact}>{user.contactNo}</Text>
-        <View style={styles.userRoleContainer}>
-          <Ionicons
-            name={user.role === "Admin" ? "shield-checkmark" : "person"}
-            size={14}
-            color={user.role === "Admin" ? "#4CAF50" : "#666"}
-          />
-          <Text
-            style={[styles.userRole, user.role === "Admin" && styles.adminRole]}
-          >
-            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.actionButtons}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
-          onPress={onClickUpdate}
-        >
-          <Ionicons name="create-outline" size={20} color="#2196F3" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={onClickDelete}
-        >
-          <Ionicons name="trash-outline" size={20} color="#FF5252" />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-};
-
 // Function to generate consistent random colors based on name
-const getRandomColor = (name: string) => {
-  const colors = [
-    "#FF9800",
-    "#2196F3",
-    "#4CAF50",
-    "#9C27B0",
-    "#F44336",
-    "#009688",
-  ];
-  const index =
-    name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) %
-    colors.length;
-  return colors[index];
-};
 
 const AdminAllUser = () => {
   const { users, loading: allUserLoading } = useAllUser();
@@ -213,7 +70,7 @@ const AdminAllUser = () => {
       <FlatList
         data={filteredUsers}
         renderItem={({ item }) => (
-          <UserListItem user={item} onUserDeleted={onRefresh} />
+          <UserCard user={item} onUserDeleted={onRefresh} />
         )}
         keyExtractor={(item) => item.userId}
         contentContainerStyle={styles.listContainer}
