@@ -320,10 +320,10 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
         <MapView
           style={styles.map}
           initialRegion={{
-            latitude: reportLocation?.latitude || 7.8731,
-            longitude: reportLocation?.longitude || 80.7718,
-            latitudeDelta: 5,
-            longitudeDelta: 5,
+            latitude: report?.location?.latitude||reportLocation?.latitude || location?.latitude || 7.8731,
+            longitude: report?.location?.longitude||reportLocation?.longitude || 80.7718,
+            latitudeDelta: 4,
+            longitudeDelta: 4,
           }}
         >
           {reportLocation && (
@@ -341,12 +341,12 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
           editable={false}
           placeholder="Location not selected"
         />
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.locationButton}
           onPress={handlePickLocation}
         >
           <Text style={styles.submitButtonText}>Select Location</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <Text style={styles.sectionTitle}>Date</Text>
         <View style={styles.dateContainer}>
