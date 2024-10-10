@@ -26,7 +26,7 @@ import MyEvents from "../my-events/MyEvents";
 import PastEvents from "../past-events/PastEvents";
 import { BlurView } from "expo-blur";
 import Icon from "react-native-vector-icons/Ionicons";
-import coralImage from "../../../assets/images/bg3.jpg";
+// import coralImage from "../../../assets/images/bg3.jpg";
 
 interface Event {
   id: string;
@@ -115,12 +115,12 @@ const MainScreen = ({ navigation }: Props) => {
   return (
     <View style={styles.container}>
       {/* Apply Linear Gradient to the background */}
-      <ImageBackground
+      {/* <ImageBackground
         blurRadius={1}
         source={coralImage}
         resizeMode="cover"
         style={styles.gradientBackground}
-      >
+      > */}
         <BlurView intensity={90} tint="light" style={styles.blurContainer}>
           <View style={styles.inputContainer}>
             <Icon
@@ -235,7 +235,7 @@ const MainScreen = ({ navigation }: Props) => {
             </View>
           )}
         </ScrollView>
-      </ImageBackground>
+      {/* </ImageBackground> */}
     </View>
   );
 };
@@ -243,6 +243,7 @@ const MainScreen = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginHorizontal: 20,
   },
   gradientBackground: {
     flex: 1,
