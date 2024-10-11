@@ -30,11 +30,13 @@ interface RouteParams {
       locationName: string;
     };
   };
+  reportId: string
 }
 
 type RootStackParamList = {
   UpdateReportLocation: {
     currentLocation: { latitude: number; longitude: number } | undefined;
+    reportId:string
   };
 };
 
@@ -45,9 +47,10 @@ type Props = {
 const UpdateReportPage = ({ navigation }: Props) => {
 
   const { user } = useAuth();
+  
 
   const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
-  const { location, locationName, report } = route.params || {};
+  const { location, locationName,reportId} = route.params || {};
 
   const [pollutionLevel, setPollutionLevel] = useState('Low');
   const [priorityLevel, setPriorityLevel] = useState('Low');
@@ -56,7 +59,7 @@ const UpdateReportPage = ({ navigation }: Props) => {
   const [email, setEmail] = useState('');
   const [description, setDescription] = useState('');
 
-  const [reportLocation, setReportLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [reportLocation, setReportLocation] = useState<{ latitude: number; longitude: number } | undefined>(undefined);
   const [reportLocationName, setReportLocationName] = useState<string>('');
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -64,11 +67,17 @@ const UpdateReportPage = ({ navigation }: Props) => {
 
   const addressParts = reportLocationName.split(", ");
   const shortenedAddress = addressParts.slice(0, 1).join(", ");
+ 
+
+  
+  useEffect(()=>{
+    console.log(reportLocationName,reportLocation,reportId)
+  })
 
   useEffect(() => {
     const fetchReportDetails = async () => {
-      if (report) {
-        const reportRef = doc(db, 'reports', report.id);
+      if (reportId) {
+        const reportRef = doc(db, 'reports', reportId);
         const reportSnap = await getDoc(reportRef);
         if (reportSnap.exists()) {
           const data = reportSnap.data();
@@ -86,7 +95,7 @@ const UpdateReportPage = ({ navigation }: Props) => {
     };
 
     fetchReportDetails();
-  }, [report]);
+  }, [reportId]);
 
   useEffect(() => {
     if (location && location.latitude && location.longitude) {
@@ -141,7 +150,11 @@ const UpdateReportPage = ({ navigation }: Props) => {
   };
 
   const handlePickLocation = () => {
-    navigation.navigate('UpdateReportLocation', { currentLocation: location });
+    if (reportId) {
+      navigation.navigate('UpdateReportLocation', { currentLocation: reportLocation, reportId: reportId });
+    } else {
+      Alert.alert('Error', 'Report data not foun.');
+    }
   };
 
   const handleUpdateReport = async () => {
@@ -162,7 +175,7 @@ const UpdateReportPage = ({ navigation }: Props) => {
       location: {
         latitude: reportLocation?.latitude || null,
         longitude: reportLocation?.longitude || null,
-        locationName: reportLocationName,
+        locationName:reportLocationName,
       },
       images,
       status: 'pending',
@@ -170,8 +183,14 @@ const UpdateReportPage = ({ navigation }: Props) => {
     };
 
     try {
-        if (report) {
-          await updateDoc(doc(db, 'reports', report.id), reportData);
+      console.log(reportData)
+        if (reportData) {
+          console.log(reportId)
+          if (reportId) {
+            await updateDoc(doc(db, 'reports', reportId), reportData);
+          } else {
+            Alert.alert('Error', 'Report ID is missing.');
+          }
         } else {
           Alert.alert('Error', 'Report data is missing.');
         }

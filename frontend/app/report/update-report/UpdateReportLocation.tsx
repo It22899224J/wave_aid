@@ -4,8 +4,9 @@ import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import MapView, { Marker } from 'react-native-maps';
 
 interface RouteParams {
-  location: { latitude: number; longitude: number } | undefined;
-  locationName: string;
+  currentLocation: { latitude: number; longitude: number } | undefined;
+    locationName: string;
+    reportId:string
 }
 
 type RootStackParamList = {
@@ -16,6 +17,7 @@ type RootStackParamList = {
   UpdateReportPage: {
     location: { latitude: number; longitude: number };
     locationName: string;
+    reportId: string;
   };
 };
 
@@ -24,14 +26,18 @@ type Props = {
 };
 
 const UpdateReportLocation = ({ navigation }: Props) => {
-  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-  const { location } = route.params || {};
+
+  const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
+  const { currentLocation,reportId } = route.params || {};
+
+  console.log(currentLocation,reportId)
 
   const [selectedLocation, setSelectedLocation] = useState<{
     latitude: number;
     longitude: number;
-  } | null>(null);
-  const [locationName, setLocationName] = useState<string>('');
+  } | null>(currentLocation || null);
+
+  const [locationName, setLocationName] = useState<string>("");
 
   const handleMapPress = async (event: any) => {
     const { coordinate } = event.nativeEvent;
@@ -54,10 +60,7 @@ const UpdateReportLocation = ({ navigation }: Props) => {
 
   const handleSelect = () => {
     if (selectedLocation) {
-      navigation.navigate('UpdateReportPage', {
-        location: selectedLocation,
-        locationName: locationName,
-      });
+        navigation.navigate('UpdateReportPage', { location: selectedLocation, locationName: locationName,reportId:reportId });
     }
   };
 
