@@ -32,14 +32,14 @@ const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) 
 
       const reports = querySnapshot.docs.map(doc => {
         const data = doc.data();
-        const beachName = data.location.locationName.split(',')[0]; // Get first part of locationName
+        const beachName = data.location.locationName.split(',')[0];
         const wasteLevelColor = getWasteLevelColor(data.pollutionLevel);
         const statusColor = getStatusColor(data.status);
 
         return {
           id: doc.id,
           beachName,
-          date: data.timestamp.toDate().toLocaleDateString(), // Format date if needed
+          date: data.timestamp.toDate().toLocaleDateString(),
           wasteLevel: data.pollutionLevel,
           wasteLevelColor,
           status: data.status,
@@ -76,6 +76,8 @@ const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) 
         return 'green';
       case 'rejected':
         return 'red';
+      case 'completed':
+        return '#0D92F4';
       default:
         return 'gray';
     }

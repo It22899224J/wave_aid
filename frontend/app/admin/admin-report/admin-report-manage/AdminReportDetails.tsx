@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, Modal, TouchableOpacity, Dimensions } from 'react-native';
-import { RouteProp, useRoute } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/native';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/service/firebase';
 import MapView, { Marker } from 'react-native-maps';
@@ -37,26 +37,34 @@ const ReportDetailsPage = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
 
-  useEffect(() => {
-    const fetchReportDetails = async () => {
-      try {
-        const docRef = doc(db, 'reports', reportId);
-        const docSnap = await getDoc(docRef);
+  const fetchReportDetails = useCallback(async () => {
+    try {
+      setLoading(true);
+      const docRef = doc(db, 'reports', reportId);
+      const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists()) {
-          setReport(docSnap.data() as Report);
-        } else {
-          console.log('No such document!');
-        }
-      } catch (error) {
-        console.log('Error getting document:', error);
-      } finally {
-        setLoading(false);
+      if (docSnap.exists()) {
+        setReport(docSnap.data() as Report);
+      } else {
+        console.log('No such document!');
       }
-    };
-
-    fetchReportDetails();
+    } catch (error) {
+      console.log('Error getting document:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [reportId]);
+
+  useEffect(() => {
+    fetchReportDetails();
+  }, [fetchReportDetails]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchReportDetails();
+    }, [fetchReportDetails])
+  );
+
 
   if (loading) {
     return <ActivityIndicator size="large" color="#007AFF" style={{ marginTop: 20 }} />;

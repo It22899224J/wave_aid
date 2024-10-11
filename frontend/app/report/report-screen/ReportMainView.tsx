@@ -13,6 +13,7 @@ interface Report {
     locationName: string;
   };
   fullName: string;
+  status: string;
 }
 
 interface Props {
@@ -28,7 +29,7 @@ const ReportMainView = ({ navigation }: Props) => {
       
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        if (data.location) {
+        if (data.location && (data.status === 'completed' || data.status === 'accepted')) {
           fetchedReports.push({
             id: doc.id,
             location: {
@@ -37,6 +38,7 @@ const ReportMainView = ({ navigation }: Props) => {
               locationName: data.location.locationName,
             },
             fullName: data.fullName,
+            status: data.status,
           });
         }
       });

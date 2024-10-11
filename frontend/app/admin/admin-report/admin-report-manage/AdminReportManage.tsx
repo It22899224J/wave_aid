@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { collection, updateDoc, doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/service/firebase';
-import { SafeAreaView, ScrollView, Text, View, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  TextInput,
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Ensure you have this package installed
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { NavigationProp } from '@react-navigation/native';
 
 interface Report {
@@ -25,10 +34,10 @@ interface Report {
 }
 
 interface Props {
-    navigation: NavigationProp<any>;
+  navigation: NavigationProp<any>;
 }
 
-const ManageReportsPage = ({navigation} : Props) => {
+const ManageReportsPage = ({ navigation }: Props) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [activeTab, setActiveTab] = useState<string>('pending');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
@@ -82,9 +91,56 @@ const ManageReportsPage = ({navigation} : Props) => {
     await updateDoc(reportDoc, { status: newStatus });
   };
 
+  const renderReportCard = (report: Report) => {
+    const locationParts = report.location.locationName.split(',').map(part => part.trim());
+    const displayTitle = locationParts.slice(0, 2).join(', ');
+    const truncatedTitle = displayTitle.length > 30 ? `${displayTitle.substring(0, 30)}...` : displayTitle;
+
+    return (
+      <View key={report.id} style={styles.reportCard}>
+        <TouchableOpacity 
+          style={styles.reportTitleContainer} 
+          onPress={() => setExpandedReportId(expandedReportId === report.id ? null : report.id)}
+        >
+          <Text style={styles.reportTitle} numberOfLines={1}>{truncatedTitle}</Text>
+          <Icon name={expandedReportId === report.id ? "expand-less" : "expand-more"} size={24} color="#007AFF" />
+        </TouchableOpacity>
+        
+        {expandedReportId === report.id && (
+          <View style={styles.expandedDetails}>
+            <ReportDetail label="Reported by" value={report.fullName} />
+            <ReportDetail label="Description" value={report.description} />
+            <ReportDetail label="Pollution Level" value={report.pollutionLevel} />
+            <ReportDetail label="Priority Level" value={report.priorityLevel} />
+            <ReportDetail label="Contact" value={report.contactNumber} />
+            <ReportDetail label="Email" value={report.email} />
+            <ReportDetail label="Current Status" value={report.status} />
+
+            <Picker
+              selectedValue={selectedStatus || report.status}
+              style={styles.picker}
+              onValueChange={(itemValue) => setSelectedStatus(itemValue)}
+            >
+              <Picker.Item label="Pending" value="pending" />
+              <Picker.Item label="Accepted" value="accepted" />
+              <Picker.Item label="Rejected" value="rejected" />
+              <Picker.Item label="Completed" value="completed" />
+            </Picker>
+
+            <TouchableOpacity
+              style={styles.updateButton}
+              onPress={() => updateReportStatus(report.id, selectedStatus || report.status)}
+            >
+              <Text style={styles.buttonText}>Update Status</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Search Bar */}
       <TextInput
         style={styles.searchInput}
         placeholder="Search Reports..."
@@ -92,7 +148,6 @@ const ManageReportsPage = ({navigation} : Props) => {
         onChangeText={setSearchQuery}
       />
 
-      {/* Tab Navigation */}
       <View style={styles.tabsContainer}>
         {["Pending", "Accepted", "Rejected", "Completed"].map((tab, index) => (
           <TouchableOpacity
@@ -100,7 +155,7 @@ const ManageReportsPage = ({navigation} : Props) => {
             style={[styles.tab, activeTab === tab.toLowerCase() && styles.activeTab]}
             onPress={() => setActiveTab(tab.toLowerCase())}
           >
-            <Text style={activeTab === tab.toLowerCase() ? styles.activeTabText : styles.tabText}>
+            <Text style={[styles.tabText, activeTab === tab.toLowerCase() && styles.activeTabText]}>
               {tab}
             </Text>
           </TouchableOpacity>
@@ -116,83 +171,43 @@ const ManageReportsPage = ({navigation} : Props) => {
           </Text>
         </View>
       ) : (
-        <ScrollView style={styles.container}>
-          {filteredReports.map((report) => (
-            <View key={report.id} style={styles.reportCard}>
-              {/* Title and Dropdown Icon */}
-              <TouchableOpacity 
-                style={styles.reportTitleContainer} 
-                onPress={() => setExpandedReportId(expandedReportId === report.id ? null : report.id)}
-              >
-                {/* Split the location name by commas and join the first two parts */}
-                {(() => {
-                  const locationParts = report.location.locationName.split(',').map(part => part.trim());
-                  const displayTitle = locationParts.slice(0, 2).join(', ');
-                  return (
-                    <Text style={styles.reportTitle} numberOfLines={1}>
-                      {displayTitle.length > 30 ? `${displayTitle.substring(0, 30)}...` : displayTitle}
-                    </Text>
-                  );
-                })()}
-                <Icon name={expandedReportId === report.id ? "expand-less" : "expand-more"} size={20} />
-              </TouchableOpacity>
-              
-              {/* Expanded Details */}
-              {expandedReportId === report.id && (
-                <View style={styles.expandedDetails}>
-                  <Text style={styles.reportDetails}>Reported by: {report.fullName}</Text>
-                  <Text style={styles.reportDetails}>Description: {report.description}</Text>
-                  <Text style={styles.reportDetails}>Pollution Level: {report.pollutionLevel}</Text>
-                  <Text style={styles.reportDetails}>Priority Level: {report.priorityLevel}</Text>
-                  <Text style={styles.reportDetails}>Contact: {report.contactNumber}</Text>
-                  <Text style={styles.reportDetails}>Email: {report.email}</Text>
-                  <Text style={styles.reportDetails}>Current Status: {report.status}</Text>
-
-                  {/* Status Picker */}
-                  <Picker
-                    selectedValue={selectedStatus || report.status}
-                    style={styles.picker}
-                    onValueChange={(itemValue) => setSelectedStatus(itemValue)}
-                  >
-                    <Picker.Item label="Pending" value="pending" />
-                    <Picker.Item label="Accepted" value="accepted" />
-                    <Picker.Item label="Rejected" value="rejected" />
-                    <Picker.Item label="Completed" value="completed" />
-                  </Picker>
-
-                  {/* Button to update the status */}
-                  <TouchableOpacity
-                    style={styles.updateButton}
-                    onPress={() => updateReportStatus(report.id, selectedStatus || report.status)}
-                  >
-                    <Text style={styles.buttonText}>Update Status</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          ))}
+        <ScrollView style={styles.scrollView}>
+          {filteredReports.map(renderReportCard)}
         </ScrollView>
       )}
     </SafeAreaView>
   );
 };
 
+const ReportDetail = ({ label, value }: { label: string; value: string }) => (
+  <View style={styles.detailRow}>
+    <Text style={styles.detailLabel}>{label}:</Text>
+    <Text style={styles.detailValue}>{value}</Text>
+  </View>
+);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
+  scrollView: {
+    flex: 1,
+  },
   loader: {
-    marginTop: 20,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   searchInput: {
     height: 50,
-    borderColor: '#ccc',
+    borderColor: '#E0E0E0',
     borderWidth: 1,
     borderRadius: 8,
     margin: 15,
-    paddingLeft: 10,
+    paddingHorizontal: 15,
     backgroundColor: '#fff',
+    fontSize: 16,
   },
   tabsContainer: {
     flexDirection: 'row',
@@ -200,14 +215,14 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: '#E0E0E0',
   },
   tab: {
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#E0E0E0',
   },
   activeTab: {
     backgroundColor: '#007AFF',
@@ -220,20 +235,18 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: '#fff',
-    fontSize: 14,
-    fontWeight: '500',
   },
   reportCard: {
-    backgroundColor: '#f8f8f8',
-    padding: 15,
-    borderRadius: 10,
-    marginVertical: 10,
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 12,
+    marginVertical: 8,
     marginHorizontal: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   reportTitleContainer: {
     flexDirection: 'row',
@@ -244,31 +257,44 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     flex: 1,
-    overflow: 'hidden',
-    textAlign: 'left',
+    color: '#333',
   },
   expandedDetails: {
-    marginTop: 10,
+    marginTop: 15,
   },
-  reportDetails: {
-    fontSize: 14,
-    color: '#666',
+  detailRow: {
+    flexDirection: 'row',
     marginBottom: 8,
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#555',
+    width: 120,
+  },
+  detailValue: {
+    fontSize: 14,
+    color: '#333',
+    flex: 1,
   },
   picker: {
     height: 50,
     width: '100%',
     marginVertical: 10,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 8,
   },
   updateButton: {
     backgroundColor: '#007AFF',
-    padding: 10,
-    borderRadius: 5,
+    padding: 12,
+    borderRadius: 8,
     alignItems: 'center',
+    marginTop: 10,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 16,
   },
   noReportsContainer: {
     flex: 1,

@@ -5,6 +5,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/service/firebase';
 import MapView, { Marker } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import ReanimatedCarousel from 'react-native-reanimated-carousel';
 
 interface Report {
   id: string;
@@ -36,6 +37,9 @@ const ReportDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const screenWidth = Dimensions.get('window').width;
 
   useEffect(() => {
     const fetchReportDetails = async () => {
@@ -75,22 +79,40 @@ const ReportDetailsPage = () => {
     setModalVisible(true);
   };
 
+  const renderCarouselItem = ({ item }: { item: string }) => (
+    <TouchableOpacity onPress={() => handleImagePress(item)}>
+      <Image source={{ uri: item }} style={styles.carouselImage} />
+    </TouchableOpacity>
+  );
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.section}>
-        <ScrollView horizontal={report.images.length > 1} showsHorizontalScrollIndicator={false} style={styles.imageContainer}>
-            {report.images.map((image, index) => (
-                <TouchableOpacity key={index} onPress={() => handleImagePress(image)}>
-                <Image
-                    source={{ uri: image }}
-                    style={[
-                    styles.image,
-                    { width: report.images.length === 1 ? Dimensions.get('window').width : 350 },
-                    ]}
+        {report.images && report.images.length > 0 ? (
+          <View style={styles.carouselContainer}>
+            <ReanimatedCarousel
+              loop
+              width={screenWidth}
+              height={260}
+              mode="parallax"
+              data={report.images}
+              scrollAnimationDuration={1000}
+              onSnapToItem={(index) => setCurrentIndex(index)}
+              renderItem={renderCarouselItem}
+            />
+            <View style={styles.pagination}>
+              {report.images.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.dot,
+                    currentIndex === index ? styles.activeDot : styles.inactiveDot,
+                  ]}
                 />
-                </TouchableOpacity>
-            ))}
-        </ScrollView>
+              ))}
+            </View>
+          </View>
+        ) : null}
       </View>
 
       <Text style={styles.title}>{report.location.locationName}</Text>
@@ -139,12 +161,12 @@ const ReportDetailsPage = () => {
       {/* Modal to view the selected image */}
       <Modal visible={modalVisible} transparent={true} animationType="fade">
         <View style={styles.modalContainer}>
-            <TouchableOpacity style={styles.modalCloseButton} onPress={() => setModalVisible(false)}>
+          <TouchableOpacity style={styles.modalCloseButton} onPress={() => setModalVisible(false)}>
             <Icon name="close" size={24} color="black" />
-            </TouchableOpacity>
-            <Image source={{ uri: selectedImage }} style={styles.modalImage} />
+          </TouchableOpacity>
+          <Image source={{ uri: selectedImage }} style={styles.modalImage} />
         </View>
-       </Modal>
+      </Modal>
     </ScrollView>
   );
 };
@@ -181,16 +203,32 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
     lineHeight: 22,
   },
-  imageContainer: {
-    flexDirection: 'row',
+  carouselContainer: {
+    marginBottom: 20,
   },
-  image: {
-    width: 350,
-    height: 250, 
+  carouselImage: {
+    width: '100%',
+    height: 260,
+    borderRadius: 12,
     resizeMode: 'cover',
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: '#bdc3c7',
+  },
+  pagination: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#bdc3c7',
+    marginHorizontal: 5,
+  },
+  activeDot: {
+    backgroundColor: '#007AFF',
+  },
+  inactiveDot: {
+    backgroundColor: '#bdc3c7',
   },
   map: {
     width: '100%',
@@ -223,7 +261,7 @@ const styles = StyleSheet.create({
     top: 40,
     right: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 50, 
+    borderRadius: 50,
     padding: 10,
   },
   modalImage: {
