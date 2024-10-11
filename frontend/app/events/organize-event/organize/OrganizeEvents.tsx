@@ -462,7 +462,7 @@ const OrganizeEvents = ({ navigation }: Props) => {
 
         <Text style={styles.sectionTitle}>Transport Options</Text>
         <TouchableOpacity
-          style={styles.imageButton}
+          style={styles.locationButton}
           onPress={() => {
             navigation.navigate("BusSetup" as never);
           }}
@@ -470,6 +470,7 @@ const OrganizeEvents = ({ navigation }: Props) => {
           <Text
             style={{
               color: "#ffffff",
+              fontWeight: "bold",
             }}
           >
             Add
@@ -528,7 +529,7 @@ const OrganizeEvents = ({ navigation }: Props) => {
         {/* Image Upload */}
         <Text style={styles.sectionTitle}>Images</Text>
         <Text style={styles.sectionDescription}>
-          Upload Images of the reporting area
+          Upload Images of the event area
         </Text>
         <View style={styles.imagesContainer}>
           <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
@@ -551,7 +552,7 @@ const OrganizeEvents = ({ navigation }: Props) => {
           style={styles.locationButton}
           onPress={handleSubmitReport}
         >
-          <Text style={styles.submitButtonText}>Submit Report</Text>
+          <Text style={styles.submitButtonText}>Organize Event</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -585,6 +586,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     alignItems: "center",
+    marginVertical: 25,
   },
   submitButtonText: {
     color: "#fff",
