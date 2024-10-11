@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -14,9 +14,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { deleteDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "@/service/firebase"; // Replace with your Firebase config path
-import axios from "axios"; // Import axios for API calls
-import { useAuth } from "@/context/AuthContext";
+import axios from "axios";
 import { ImageSlider } from "@/components/Image-slider/ImageSlider";
+import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "@/context/AuthContext";
+import { useAllUser, User } from "@/context/AllUserContext";
 
 interface RouteParams {
   report?: {
@@ -46,8 +48,23 @@ const MyEventDetails = () => {
   const [weather, setWeather] = useState<string | null>(null);
   const [temperature, setTemperature] = useState<number | null>(null);
   const [guidelines, setGuidelines] = useState<string[]>([]);
-  const { user } = useAuth();
+
+  const navigate = useNavigation();
+  const { signOut, user, loading: authLoading } = useAuth();
+  const { users, loading: allUserLoading } = useAllUser();
+  const [loading, setLoading] = useState(false);
+  const [userDetails, setUserDetails] = useState<User | undefined>(undefined);
   const userId = user?.uid;
+  const markAsComplete = () => {
+    navigate.navigate("EventCompleteForm" as never);
+  };
+
+  const initializeUserDetails = useCallback(() => {
+    if (!allUserLoading && !authLoading && users && user) {
+      return users.find((userDoc) => userDoc.userId === user.uid);
+    }
+    return undefined;
+  }, [allUserLoading, authLoading, users, user]);
 
   useEffect(() => {
     const fetchReportDetails = async () => {
@@ -100,8 +117,7 @@ const MyEventDetails = () => {
     latitude: number,
     longitude: number,
     selectedDate: Date
-  ) => {
-  };
+  ) => {};
 
   const openLocationInMap = () => {
     if (latitude && longitude) {
@@ -135,7 +151,6 @@ const MyEventDetails = () => {
       Alert.alert("Error", "Unable to delete your registration.");
     }
   };
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -191,11 +206,7 @@ const MyEventDetails = () => {
             style={styles.eventImage}
           /> */}
 
-          {
-            image && (
-              <ImageSlider images={image} />
-            )
-          }
+          {image && <ImageSlider images={image} />}
           {/* Weather Info */}
           {loadingWeather && (
             <View style={styles.loadingContainer}>
@@ -240,16 +251,20 @@ const MyEventDetails = () => {
           </View>
 
           {/* Registration */}
-          <View style={styles.registrationSection}>
-            <Text style={styles.sectionTitle}>Registration Status</Text>
-            <Text style={styles.descriptionText}>
-              Join with us and save the environment.
-            </Text>
-            <TouchableOpacity style={styles.registerButton} onPress={removeRegistration}>
-              <Text style={styles.registerText}>Unregister</Text>
-            </TouchableOpacity>
-          </View>
-
+          {userDetails?.role === "User" && (
+            <View style={styles.registrationSection}>
+              <Text style={styles.sectionTitle}>Registration Status</Text>
+              <Text style={styles.descriptionText}>
+                Join with us and save the environment.
+              </Text>
+              <TouchableOpacity
+                style={styles.registerButton}
+                onPress={removeRegistration}
+              >
+                <Text style={styles.registerText}>Unregister</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           {/* Volunteer Guidelines */}
           <View style={styles.volunteerSection}>
             <Text style={styles.sectionTitle}>Volunteer Guidelines</Text>
