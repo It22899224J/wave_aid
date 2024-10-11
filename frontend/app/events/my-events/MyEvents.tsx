@@ -196,9 +196,9 @@ const styles = StyleSheet.create({
   container: {
     display: "flex",
     flexDirection: "column",
-    padding: 15,
+    padding: 5,
     gap: 10,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#F2F2F7",
   },
   title: {
     fontSize: 22,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    backgroundColor: "F2F2F7",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1,
