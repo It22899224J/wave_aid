@@ -1,11 +1,19 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { NavigationProp } from "@react-navigation/native";
+import { NavigationProp, RouteProp, useRoute } from "@react-navigation/native";
 
 type RootStackParamList = {
+  SelectLocation: {
+    location: string | undefined;
+    transportOptions?: string; 
+  };
   BusSetup: {
-    location: { latitude: number; longitude: number; name: string | null } | undefined;
+    location: { latitude: number; longitude: number; name: string | null };
+  };
+  UpdateTransport: {
+    location: { latitude: number; longitude: number; name: string | null };
+    transportOptions?: string;
   };
 };
 
@@ -14,17 +22,39 @@ type Props = {
 };
 
 const SelectLocation = ({ navigation }: Props) => {
+  const route = useRoute<RouteProp<RootStackParamList, "SelectLocation">>();
+  const pickupLocation = route.params?.location; 
+  const transportOptions=route.params?.transportOptions
+
+  
+  const parseLocation = (locationString: string) => {
+    if (!locationString) return null;
+
+   
+    const trimmedLocation = locationString.replace(/[()]/g, '').trim();
+    const [lat, long] = trimmedLocation.split(',').map(Number);
+
+    return {
+      latitude: lat,
+      longitude: long,
+      name: null, 
+    };
+  };
+
+  
   const [selectedLocation, setSelectedLocation] = useState<{
     latitude: number;
     longitude: number;
     name: string | null;
-  } | null>(null);
+  } | null>(pickupLocation ? parseLocation(pickupLocation) : null);
+
+  console.log("Pickup Location:", pickupLocation); // Log the pickup location
+  console.log("Parsed Location:", selectedLocation); // Log the parsed location
 
   const handleMapPress = async (event: any) => {
     const { coordinate } = event.nativeEvent;
     setSelectedLocation(coordinate);
 
-    // Reverse geocode using Nominatim (OpenStreetMap)
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coordinate.latitude}&lon=${coordinate.longitude}`
@@ -32,11 +62,9 @@ const SelectLocation = ({ navigation }: Props) => {
       const data = await response.json();
       const address = data.display_name;
 
-      // Get the first 3 parts of the address
       const addressParts = address.split(", ");
       const shortenedAddress = addressParts.slice(0, 3).join(", ");
 
-      // Update selectedLocation with the address
       setSelectedLocation({
         latitude: coordinate.latitude,
         longitude: coordinate.longitude,
@@ -53,8 +81,14 @@ const SelectLocation = ({ navigation }: Props) => {
   };
 
   const handleSelect = () => {
-    if (selectedLocation) {
-      navigation.navigate("BusSetup", { location: selectedLocation });
+    if (pickupLocation) {
+      if (selectedLocation) {
+        navigation.navigate("UpdateTransport", { location: selectedLocation,transportOptions });
+      }
+    } else {
+      if (selectedLocation) {
+        navigation.navigate("BusSetup", { location: selectedLocation });
+      }
     }
   };
 
@@ -63,8 +97,8 @@ const SelectLocation = ({ navigation }: Props) => {
       <MapView
         style={styles.map}
         initialRegion={{
-          latitude: 6.9271,
-          longitude: 79.8612,
+          latitude: selectedLocation?.latitude || 6.9271,
+          longitude: selectedLocation?.longitude || 79.8612,
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         }}
@@ -83,8 +117,8 @@ const SelectLocation = ({ navigation }: Props) => {
           Location Name: {selectedLocation.name}
         </Text>
       )}
-      <TouchableOpacity onPress={handleSelect}>
-        <Text>Select</Text>
+      <TouchableOpacity onPress={handleSelect} style={styles.selectButton}>
+        <Text>{pickupLocation ? "Update" : "Select"}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -103,6 +137,12 @@ const styles = StyleSheet.create({
   locationText: {
     marginTop: 10,
     fontSize: 16,
+  },
+  selectButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: "#00acf0",
+    borderRadius: 5,
   },
 });
 

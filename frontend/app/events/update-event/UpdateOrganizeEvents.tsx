@@ -423,12 +423,20 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
         )}
 
         <Text style={styles.sectionTitle}>Transport Options</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter transport options"
-          value={transportOptions}
-          onChangeText={setTransportOptions}
-        />
+        {transportOptions ? (
+  <TouchableOpacity onPress={()=>{
+    navigation.navigate('UpdateTransport', {reportId: reportId, transportOptions: transportOptions})
+  }}>
+    <Text style={styles.sectionDescription}>
+      Update Transport
+    </Text>
+  </TouchableOpacity>
+) : (
+  <Text style={styles.sectionDescription}>
+    Transport not available
+  </Text>
+)}
+       
 
         <Text style={styles.sectionTitle}>Volunteer Guidelines</Text>
         {volunteerGuidelines.map((guideline, index) => (
