@@ -183,8 +183,8 @@ const MyEventsMainView = ({ navigation }: Props) => {
             initialRegion={{
               latitude: 7.8731,
               longitude: 80.7718,
-              latitudeDelta: 0.5,
-              longitudeDelta: 0.5,
+              latitudeDelta: 5,
+              longitudeDelta: 5,
             }}
           >
             {filteredEvents.map((event) => (

@@ -37,6 +37,7 @@ interface RouteParams {
   locationName?: string;
   report?: {
     id: string;
+    contactNumber: string;
     organizerName: string;
     date: string;
     time: { from: string; to: string };
@@ -48,7 +49,7 @@ interface RouteParams {
       locationName: string;
     };
   };
-  busId: string
+  busId: string;
 }
 
 type Props = {
@@ -86,6 +87,23 @@ const OrganizeEvents = ({ navigation }: Props) => {
   const [showTimeToPicker, setShowTimeToPicker] = useState(false);
   const addressParts = reportLocationName.split(", ");
   const shortenedAddress = addressParts.slice(0, 1).join(", ");
+  const [contactNumber, setContactNumber] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const validateContactNumber = (number: string) => {
+    const isValid = /^\d{10}$/.test(number); // Check if the number has exactly 10 digits
+    if (!isValid) {
+      setErrorMessage("Contact number must be exactly 10 digits.");
+    } else {
+      setErrorMessage("");
+    }
+  };
+  const handleContactNumberChange = (text: string) => {
+    if (text.length <= 10) {
+      setContactNumber(text);
+      validateContactNumber(text);
+    }
+  };
 
   const { buses } = useContext(BusContext);
 
@@ -98,8 +116,6 @@ const OrganizeEvents = ({ navigation }: Props) => {
     }
   }, [busId]);
 
-
-
   useEffect(() => {
     const fetchReportDetails = async () => {
       if (report) {
@@ -111,6 +127,7 @@ const OrganizeEvents = ({ navigation }: Props) => {
           setDate(new Date(data.date));
           setTimeFrom(new Date(data.time.from));
           setTimeTo(new Date(data.time.to));
+          setContactNumber(data.contactNumber);
           setTransportOptions(data.transportOptions);
           setVolunteerGuidelines(data.volunteerGuidelines || [""]);
           setReportLocationName(data.location.locationName);
@@ -158,19 +175,20 @@ const OrganizeEvents = ({ navigation }: Props) => {
     longitude: number,
     selectedDate: Date
   ) => {
-    setLoadingTide(true);
-    const url = `https://www.worldtides.info/api/v2/tides?lat=${latitude}&lon=${longitude}&date=${selectedDate.toISOString().split("T")[0]
-      }&key=${tideApiKey}`;
+    // setLoadingTide(true);
+    // const url = `https://www.worldtides.info/api/v2/tides?lat=${latitude}&lon=${longitude}&date=${
+    //   selectedDate.toISOString().split("T")[0]
+    // }&key=${tideApiKey}`;
 
-    try {
-      const response = await axios.get(url);
-      setTideDetails(response.data);
-    } catch (error) {
-      console.error("Error fetching tide data: ", error);
-      Alert.alert("Error", "Unable to fetch tide data.");
-    } finally {
-      setLoadingTide(false);
-    }
+    // try {
+    //   const response = await axios.get(url);
+    //   setTideDetails(response.data);
+    // } catch (error) {
+    //   console.error("Error fetching tide data: ", error);
+    //   Alert.alert("Error", "Unable to fetch tide data.");
+    // } finally {
+    //   setLoadingTide(false);
+    // }
   };
 
   const handlePickLocation = () => {
@@ -204,7 +222,6 @@ const OrganizeEvents = ({ navigation }: Props) => {
     setUploading(true);
 
     try {
-
       const manipResult = await ImageManipulator.manipulateAsync(
         uri,
         [{ resize: { width: 800 } }],
@@ -265,6 +282,7 @@ const OrganizeEvents = ({ navigation }: Props) => {
       time: { from: timeFrom.toISOString(), to: timeTo.toISOString() },
       transportOptions: busId ? busId : null,
       volunteerGuidelines,
+      contactNumber,
       location: {
         latitude: reportLocation?.latitude || null,
         longitude: reportLocation?.longitude || null,
@@ -297,6 +315,7 @@ const OrganizeEvents = ({ navigation }: Props) => {
       setVolunteerGuidelines([""]);
       setWeatherDetails(null);
       setTideDetails(null);
+      setContactNumber("");
       setImages([]);
     } catch (error) {
       Alert.alert("Error", "An error occurred while submitting the report.");
@@ -459,6 +478,17 @@ const OrganizeEvents = ({ navigation }: Props) => {
             />
           )}
         </View>
+        <View style={styles.inputContainer}>
+          <Icon name="call" size={20} color="#000" style={styles.icon} />
+          <TextInput
+            style={styles.inputn}
+            placeholder="Enter Contact Number"
+            keyboardType="numeric"
+            value={contactNumber}
+            onChangeText={handleContactNumberChange}
+            placeholderTextColor="#666"
+          />
+        </View>
 
         <Text style={styles.sectionTitle}>Transport Options</Text>
         <TouchableOpacity
@@ -581,6 +611,11 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 12,
   },
+  inputn: {
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+  },
   locationButton: {
     backgroundColor: "#007AFF",
     padding: 10,
@@ -678,6 +713,29 @@ const styles = StyleSheet.create({
     width: 170,
     height: 100,
     borderRadius: 8,
+  },
+  inputContainer: {
+    height: 50,
+    flexDirection: "row",
+    alignItems: "center",
+    alignContent: "center",
+    marginVertical: 15,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    borderColor: "#ccc",
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  icon: {
+    marginRight: 10,
+  },
+  errorText: {
+    color: "red",
+    marginHorizontal: 10,
   },
   removeIcon: {
     position: "absolute",

@@ -32,6 +32,7 @@ const PastEventDetails = () => {
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [tideDetails, setTideDetails] = useState<any | null>(null);
   const [loadingTide, setLoadingTide] = useState(false);
+  const [contactNumber, setContactNumber] = useState<string>("");
     const [currentIndex, setCurrentIndex] = useState(0);
   // Weather state
   const [weather, setWeather] = useState<string | null>(null);
@@ -56,6 +57,7 @@ const PastEventDetails = () => {
           setLatitude(data.location.latitude);
           setLongitude(data.location.longitude);
           setGuidelines(data.volunteerGuidelines);
+          setContactNumber(data.contactNumber);
           setImage(data.images);
           if(image?.length === 0){
             setImage([coralImage]);
@@ -149,6 +151,17 @@ const PastEventDetails = () => {
               <Text
                 style={styles.detailText}
               >{`${timeFrom.toLocaleTimeString()} - ${timeTo.toLocaleTimeString()}`}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <MaterialIcons
+                name="phone"
+                size={24}
+                color="#007AFF"
+                style={styles.icon}
+              />
+              <Text
+                style={styles.detailText}
+              >{contactNumber}</Text>
             </View>
             <TouchableOpacity
               style={styles.detailRow}

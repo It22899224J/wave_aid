@@ -151,8 +151,8 @@ const MainScreen = ({ navigation }: Props) => {
             initialRegion={{
               latitude: 7.8731,
               longitude: 80.7718,
-              latitudeDelta: 0.5,
-              longitudeDelta: 0.5,
+              latitudeDelta: 5,
+              longitudeDelta: 5,
             }}
           >
             {filteredEvents.map((event) => (
@@ -179,12 +179,12 @@ const MainScreen = ({ navigation }: Props) => {
             ))}
           </MapView>
         </View>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.organizeButton}
           onPress={() => navigation.navigate("OrganizeEvents")}
         >
           <Text style={styles.buttonText}>Organize Event</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         {activeTab == "upcoming" && (
           <View style={styles.cardsContainer}>
             <UpcommingEvents navigation={navigation} />

@@ -70,6 +70,7 @@ const EventDetails = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const [transportOptions, setTransportOptions] = useState<any>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [contactNumber, setContactNumber] = useState("");
   const carouselRef = useRef(null);
 
   const { user } = useAuth();
@@ -90,6 +91,7 @@ const EventDetails = () => {
           setLatitude(data.location.latitude);
           setLongitude(data.location.longitude);
           setGuidelines(data.volunteerGuidelines);
+          setContactNumber(data.contactNumber);
           setImage(data.images);
           setTransportOptions(data.transportOptions);
           fetchWeatherData(data.location.latitude, data.location.longitude);
@@ -264,6 +266,15 @@ const EventDetails = () => {
               <Text
                 style={styles.detailText}
               >{`${timeFrom.toLocaleTimeString()} - ${timeTo.toLocaleTimeString()}`}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <MaterialIcons
+                name="phone"
+                size={24}
+                color="#007AFF"
+                style={styles.icon}
+              />
+              <Text style={styles.detailText}>{contactNumber}</Text>
             </View>
             <TouchableOpacity
               style={styles.detailRow}
