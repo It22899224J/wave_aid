@@ -28,6 +28,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/Ionicons";
 
+
 interface RouteParams {
   location?: {
     latitude: number;
@@ -38,6 +39,7 @@ interface RouteParams {
     id: string;
     organizerName: string;
     date: string;
+    contactNumber: string;
     time: { from: string; to: string };
     transportOptions: string;
     volunteerGuidelines: string[];
@@ -78,7 +80,9 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [weatherDetails, setWeatherDetails] = useState<any | null>(null);
   const [reportId, setReportId] = useState<string | null>(null);
-    const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>([]);
+    const [contactNumber, setContactNumber] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
     const [uploading, setUploading] = useState(false);
   useEffect(() => {
     const fetchReportDetails = async () => {
@@ -95,6 +99,7 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
           setTimeTo(new Date(data.time.to));
           setTransportOptions(data.transportOptions);
           setWeatherDetails(data.weatherDetails);
+          setContactNumber(data.contactNumber);
           setVolunteerGuidelines(data.volunteerGuidelines || [""]);
           setReportLocationName(data.location.locationName);
           setImages(data.images || []);
@@ -163,6 +168,7 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
       weatherDetails,
       transportOptions,
       volunteerGuidelines,
+      contactNumber,
       images,
       location: {
         latitude: reportLocation?.latitude || null,
@@ -271,6 +277,22 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
     const minutes = currentDate.getMinutes();
     const combinedDate = new Date(staticDate.setHours(hours, minutes));
     setTimeTo(combinedDate);
+  };
+
+  
+  const validateContactNumber = (number: string) => {
+    const isValid = /^\d{10}$/.test(number); // Check if the number has exactly 10 digits
+    if (!isValid) {
+      setErrorMessage("Contact number must be exactly 10 digits.");
+    } else {
+      setErrorMessage("");
+    }
+  };
+  const handleContactNumberChange = (text: string) => {
+    if (text.length <= 10) {
+      setContactNumber(text);
+      validateContactNumber(text);
+    }
   };
 
   return (
@@ -391,7 +413,17 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
             />
           )}
         </View>
-        
+        <View style={styles.inputContainer}>
+          <Icon name="call" size={20} color="#000" style={styles.icon} />
+          <TextInput
+            style={styles.inputn}
+            placeholder="Enter Contact Number"
+            keyboardType="numeric"
+            value={contactNumber}
+            onChangeText={handleContactNumberChange}
+            placeholderTextColor="#666"
+          />
+        </View>
         {/* Image Upload */}
         <Text style={styles.sectionTitle}>Images</Text>
         <Text style={styles.sectionDescription}>
@@ -424,19 +456,19 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
 
         <Text style={styles.sectionTitle}>Transport Options</Text>
         {transportOptions ? (
-  <TouchableOpacity onPress={()=>{
-    navigation.navigate('UpdateTransport', {reportId: reportId, transportOptions: transportOptions})
-  }}>
-    <Text style={styles.sectionDescription}>
-      Update Transport
-    </Text>
-  </TouchableOpacity>
-) : (
-  <Text style={styles.sectionDescription}>
-    Transport not available
-  </Text>
-)}
-       
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("UpdateTransport", {
+                reportId: reportId,
+                transportOptions: transportOptions,
+              });
+            }}
+          >
+            <Text style={styles.sectionDescription}>Update Transport</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text style={styles.sectionDescription}>Transport not available</Text>
+        )}
 
         <Text style={styles.sectionTitle}>Volunteer Guidelines</Text>
         {volunteerGuidelines.map((guideline, index) => (
@@ -480,6 +512,11 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 8,
   },
+  inputn: {
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+  },
   map: {
     height: 200,
     borderRadius: 8,
@@ -502,6 +539,9 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  icon: {
+    marginRight: 10,
   },
   addGuidelineText: {
     color: "#007BFF",
@@ -570,6 +610,22 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 12,
     padding: 2,
+  },
+  inputContainer: {
+    height: 50,
+    flexDirection: "row",
+    alignItems: "center",
+    alignContent: "center",
+    marginVertical: 15,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    borderColor: "#ccc",
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 5,
   },
 });
 

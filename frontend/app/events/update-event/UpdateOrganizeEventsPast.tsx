@@ -29,26 +29,6 @@ import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useReportContext } from "@/context/ReportContext";
 
-interface RouteParams {
-  location?: {
-    latitude: number;
-    longitude: number;
-  };
-  locationName?: string;
-  report?: {
-    id: string;
-    organizerName: string;
-    date: string;
-    time: { from: string; to: string };
-    transportOptions: string;
-    volunteerGuidelines: string[];
-    location: {
-      latitude: number;
-      longitude: number;
-      locationName: string;
-    };
-  };
-}
 
 interface RouteParams {
   location?: {
@@ -61,6 +41,7 @@ interface RouteParams {
     organizerName: string;
     date: string;
     time: { from: string; to: string };
+    contactNumber: string;
     transportOptions: string;
     volunteerGuidelines: string[];
     location: {
@@ -103,6 +84,7 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
   const [weatherDetails, setWeatherDetails] = useState<any | null>(null);
   const [weight, setWeight] = useState<string>("");
   const [totalParticipants, setTotalParticipants] = useState<string>("");
+  const [contactNumber, setContactNumber] = useState<string>("");
 
   const { reportId } = useReportContext();
       const fetchReportDetails = async () => {
@@ -123,6 +105,7 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
             setTransportOptions(data.transportOptions);
             setImages(data.images || []);
             setVolunteerGuidelines(data.volunteerGuidelines || [""]);
+            setContactNumber(data.contactNumber || "");
             setReportLocationName(locationName || data.location.locationName);
             setReportLocation({
               latitude: location?.latitude || data.location.latitude,
@@ -423,6 +406,17 @@ const UpdateOrganizeEventsPast = ({ navigation }: Props) => {
             />
           )}
         </View>
+                <View style={styles.inputContainer}>
+          <Icon name="call" size={20} color="#000" style={styles.icon} />
+          <TextInput
+            style={styles.inputn}
+            placeholder="Enter Contact Number"
+            keyboardType="numeric"
+            value={contactNumber}
+            readOnly
+            placeholderTextColor="#666"
+          />
+        </View>
         {/* Image Upload */}
         <Text style={styles.sectionTitle}>Images</Text>
         <Text style={styles.sectionDescription}>
@@ -500,6 +494,30 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     marginVertical: 8,
+  },
+  inputContainer: {
+    height: 50,
+    flexDirection: "row",
+    alignItems: "center",
+    alignContent: "center",
+    marginVertical: 15,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    borderColor: "#ccc",
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  icon: {
+    marginRight: 10,
+  },
+  inputn: {
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
   },
   submitButton: {
     backgroundColor: "#28a745",
