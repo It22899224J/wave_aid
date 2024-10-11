@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
 import MapView, { Marker } from 'react-native-maps'; // Install react-native-maps
 import * as ImagePicker from 'expo-image-picker';
 import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
-import { addDoc, collection, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection } from 'firebase/firestore';
 import { db, storage } from "./../../../service/firebase";
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { useAuth } from '@/context/AuthContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as ImageManipulator from "expo-image-manipulator";
@@ -44,9 +44,7 @@ type Props = {
 };
 
 const ReportAreaPage = ({ navigation }: Props) => {
-
   const { user } = useAuth();
-
   const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
   const { location, locationName, report } = route.params || {};
 
@@ -56,17 +54,31 @@ const ReportAreaPage = ({ navigation }: Props) => {
   const [contactNumber, setContactNumber] = useState('');
   const [email, setEmail] = useState('');
   const [description, setDescription] = useState('');
-
   const [reportLocation, setReportLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [reportLocationName, setReportLocationName] = useState<string>('');
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const addressParts = reportLocationName.split(", ");
   const shortenedAddress = addressParts.slice(0, 1).join(", ");
- 
-  // Update reportLocation when location changes
+
+  const validateForm = useCallback(() => {
+    const isValid = 
+      fullName.trim() !== '' &&
+      contactNumber.trim() !== '' &&
+      email.trim() !== '' &&
+      reportLocation !== null &&
+      images.length > 0 &&
+      images.length <= 4;
+    setIsFormValid(isValid);
+  }, [fullName, contactNumber, email, reportLocation, images]);
+
+  useEffect(() => {
+    validateForm();
+  }, [fullName, contactNumber, email, reportLocation, images, validateForm]);
+
   useEffect(() => {
     if (location && location.latitude && location.longitude) {
       setReportLocation({ latitude: location.latitude, longitude: location.longitude });
@@ -75,6 +87,11 @@ const ReportAreaPage = ({ navigation }: Props) => {
   }, [location, locationName]);
 
   const pickImage = async () => {
+    if (images.length >= 4) {
+      Alert.alert('Maximum Images', 'You can only upload up to 4 images.');
+      return;
+    }
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -92,7 +109,6 @@ const ReportAreaPage = ({ navigation }: Props) => {
     setUploading(true);
 
     try {
-
       const manipResult = await ImageManipulator.manipulateAsync(
         uri,
         [{ resize: { width: 800 } }],
@@ -131,8 +147,8 @@ const ReportAreaPage = ({ navigation }: Props) => {
   };
 
   const handleSubmitReport = async () => {
-    if (!fullName || !contactNumber || !email || !description) {
-      Alert.alert('Error', 'Please fill in all the fields.');
+    if (!isFormValid) {
+      Alert.alert('Error', 'Please fill in all required fields and upload at least one image (maximum 4).');
       return;
     }
 
@@ -147,8 +163,8 @@ const ReportAreaPage = ({ navigation }: Props) => {
       pollutionLevel,
       priorityLevel,
       location: {
-        latitude: location?.latitude || null,
-        longitude: location?.longitude || null,
+        latitude: reportLocation?.latitude || null,
+        longitude: reportLocation?.longitude || null,
         locationName: reportLocationName,
       },
       images,
@@ -159,8 +175,6 @@ const ReportAreaPage = ({ navigation }: Props) => {
     try {
       await addDoc(collection(db, 'reports'), reportData);
       Alert.alert('Success', 'Your report has been submitted.');
-
-      // navigate to the previous screen
       navigation.goBack();
     } catch (error) {
       Alert.alert('Error', 'An error occurred while submitting the report.');
@@ -172,7 +186,7 @@ const ReportAreaPage = ({ navigation }: Props) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      {loading && ( // Show loading indicator when loading is true
+      {loading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
           <Text style={styles.loadingText}>Submitting your report...</Text>
@@ -180,7 +194,7 @@ const ReportAreaPage = ({ navigation }: Props) => {
       )}
       
       <ScrollView style={styles.container}>
-        <Text style={styles.sectionTitle}>Location</Text>
+        <Text style={styles.sectionTitle}>Location *</Text>
         <Text style={styles.sectionDescription}>Select the reporting area from the map</Text>
         <MapView
           style={styles.map}
@@ -237,8 +251,7 @@ const ReportAreaPage = ({ navigation }: Props) => {
           ))}
         </View>
 
-        {/* Full name, Contact, and Email inputs */}
-        <Text style={styles.sectionTitle}>Enter Full Name</Text>
+        <Text style={styles.sectionTitle}>Enter Full Name *</Text>
         <TextInput 
           style={styles.input} 
           placeholder="Enter your full name" 
@@ -246,7 +259,7 @@ const ReportAreaPage = ({ navigation }: Props) => {
           onChangeText={setFullName}
         />
 
-        <Text style={styles.sectionTitle}>Contact Number</Text>
+        <Text style={styles.sectionTitle}>Contact Number *</Text>
         <TextInput 
           style={styles.input} 
           placeholder="Enter your contact number" 
@@ -255,7 +268,7 @@ const ReportAreaPage = ({ navigation }: Props) => {
           onChangeText={setContactNumber}
         />
 
-        <Text style={styles.sectionTitle}>Email Address</Text>
+        <Text style={styles.sectionTitle}>Email Address *</Text>
         <TextInput 
           style={styles.input} 
           placeholder="Enter your email address" 
@@ -264,13 +277,14 @@ const ReportAreaPage = ({ navigation }: Props) => {
           onChangeText={setEmail}
         />
 
-        {/* Image Upload */}
-        <Text style={styles.sectionTitle}>Images</Text>
-        <Text style={styles.sectionDescription}>Upload Images of the reporting area</Text>
+        <Text style={styles.sectionTitle}>Images *</Text>
+        <Text style={styles.sectionDescription}>Upload Images of the reporting area (1-4 images)</Text>
         <View style={styles.imagesContainer}>
-          <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
-            <Text style={styles.addImageText}>+</Text>
-          </TouchableOpacity>
+          {images.length < 4 && (
+            <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
+              <Text style={styles.addImageText}>+</Text>
+            </TouchableOpacity>
+          )}
           {images.map((imageUrl, index) => (
             <View key={index} style={styles.imageWrapper}>
               <Image source={{ uri: imageUrl }} style={styles.uploadedImage} />
@@ -296,7 +310,11 @@ const ReportAreaPage = ({ navigation }: Props) => {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.locationButton} onPress={handleSubmitReport}>
+        <TouchableOpacity 
+          style={[styles.submitButton, !isFormValid && styles.disabledButton]} 
+          onPress={handleSubmitReport}
+          disabled={!isFormValid}
+        >
           <Text style={styles.submitButtonText}>Submit Report</Text>
         </TouchableOpacity>
 
@@ -328,6 +346,9 @@ const styles = StyleSheet.create({
     height: 300,
     borderRadius: 10,
     marginBottom: 20,
+  },
+  disabledButton: {
+    backgroundColor: '#A0A0A0',
   },
   input: {
     backgroundColor: '#f0f0f0',
