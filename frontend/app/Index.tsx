@@ -15,6 +15,9 @@ import { AdminMainStack } from "./events/admin-screens/AdminMainStack";
 import { Booking } from "./events/book-a-seat/BookingNav";
 import MyEvents from "./events/my-events/MyEvents";
 import AdminReportMain from "./admin/admin-report/admin-report-main/AdminReportMain";
+import { MyEventStack } from "./events/my-events/MyEventStack";
+
+
 import { AdminProfileStack } from "./admin/admin-profile/AdminProfileStack";
 import SplashScreen from "@/components/splash-screen/SplashScreen";
 import { AdminReportStack } from "./admin/admin-report/AdminReportStack";
@@ -75,7 +78,7 @@ const Index = () => {
 
           <Tab.Screen
             name="Events"
-            component={Booking}
+            component={MyEventStack}
             options={{
               headerShown: false,
               tabBarIcon: ({ color, size }) => (

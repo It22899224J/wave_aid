@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { BlurView } from "expo-blur";
 import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "@/context/AuthContext";
+import { useAllUser, User } from "@/context/AllUserContext";
 
 interface EventCard {
   item: {
@@ -21,15 +23,26 @@ interface EventCard {
 export const EventCard: React.FC<EventCard> = ({ item, onRemove }) => {
 
   const navigate = useNavigation()
-  const markAsComplete= () => {
+   const { signOut, user, loading: authLoading } = useAuth();
+   const { users, loading: allUserLoading } = useAllUser();
+   const [loading, setLoading] = useState(false);
+  const [userDetails, setUserDetails] = useState<User | undefined>(undefined);
+  
+  const markAsComplete = () => {
     navigate.navigate("EventCompleteForm" as never)
   }
 
+    const initializeUserDetails = useCallback(() => {
+      if (!allUserLoading && !authLoading && users && user) {
+        return users.find((userDoc) => userDoc.userId === user.uid);
+      }
+      return undefined;
+    }, [allUserLoading, authLoading, users, user]);
+  
+
   return (
-    <BlurView
+    <View
       style={[styles.card, { borderRadius: 10 }]}
-      intensity={90}
-      tint="light"
     >
       <View style={styles.cardInfo}>
         <Text style={styles.beachName}>{item.beachName}</Text>
@@ -48,32 +61,30 @@ export const EventCard: React.FC<EventCard> = ({ item, onRemove }) => {
       </View>
 
       <Image source={{ uri: item.image }} style={styles.cardImage} />
-      <TouchableOpacity
+ { userDetails?.role === "Admin" &&  <TouchableOpacity
         style={styles.removeButton}
         onPress={() => onRemove(item.id)}
       >
         <Icon name="trash" size={24} color="#FF0000" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.completeButton}
-        onPress={() => markAsComplete()}
-      >
-        <Icon name="checkmark-circle" size={35} color="#11DD11" />
-      </TouchableOpacity>
-    </BlurView>
+      </TouchableOpacity>}
+     
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 15,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    backgroundColor: "#fff",
     borderRadius: 10,
-    elevation: 10,
-    overflow: "hidden",
-    borderColor: "#fff", // White border
+    marginHorizontal: 5,
+    marginTop: 10,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 30,
+    flexDirection: "row",
   },
   cardInfo: {
     flex: 1,
@@ -126,7 +137,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 5,
   },
-  completeButton:{
+  completeButton: {
     position: "absolute",
     bottom: 5,
     right: 45,
