@@ -5,6 +5,11 @@ import React, { useState } from "react";
 import { Image, SafeAreaView, Text, View, StyleSheet, TouchableOpacity, ScrollView} from "react-native";
 import MapView, { Callout, Marker } from "react-native-maps";
 
+interface RootStackParamList {
+    AdminReportMain: undefined;
+    AdminReportManage: undefined;
+}
+
 interface Props {
     navigation: NavigationProp<any>;
 }
@@ -70,7 +75,7 @@ const AdminReportMain = ({navigation} : Props) => {
                 </Text>
                 <TouchableOpacity 
                     style={styles.button}
-                    // onPress={() => navigation.navigate('ReportAreaPage')}
+                    onPress={() => navigation.navigate('AdminReportManage')}
                 >
                     <Text style={styles.buttonText}>Manage</Text>
                 </TouchableOpacity>

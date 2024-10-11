@@ -17,6 +17,7 @@ import MyEvents from "./events/my-events/MyEvents";
 import AdminReportMain from "./admin/admin-report/admin-report-main/AdminReportMain";
 import { AdminProfileStack } from "./admin/admin-profile/AdminProfileStack";
 import SplashScreen from "@/components/splash-screen/SplashScreen";
+import { AdminReportStack } from "./admin/admin-report/AdminReportStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -147,11 +148,9 @@ const Index = () => {
 
           <Tab.Screen
             name="Report"
-            component={AdminReportMain as never}
+            component={AdminReportStack}
             options={{
-              // headerShown: false,
-              headerTitle: "Report",
-              headerTitleAlign: "center",
+              headerShown: false,
               tabBarIcon: ({ color, size }) => (
                 <Icon name="document" color={color} size={size} />
               ),
