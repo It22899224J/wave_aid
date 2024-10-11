@@ -15,49 +15,53 @@ interface Props {
 }
 
 interface Report {
-    id: string;
-    location: {
-      latitude: number;
-      longitude: number;
-      locationName: string;
-    };
-    fullName: string;
-  }
+  id: string;
+  location: {
+    latitude: number;
+    longitude: number;
+    locationName: string;
+  };
+  fullName: string;
+  status: string; 
+}
 
 const AdminReportMain = ({navigation} : Props) => {
     const [reports, setReports] = useState<Report[]>([]);
 
     const fetchReports = () => {
-        const unsubscribe = onSnapshot(collection(db, 'reports'), (querySnapshot) => {
-          const fetchedReports: Report[] = [];
-          
-          querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            if (data.location) {
-              fetchedReports.push({
-                id: doc.id,
-                location: {
-                  latitude: data.location.latitude,
-                  longitude: data.location.longitude,
-                  locationName: data.location.locationName,
-                },
-                fullName: data.fullName,
-              });
-            }
-          });
-    
-          setReports(fetchedReports);
+      const unsubscribe = onSnapshot(collection(db, 'reports'), (querySnapshot) => {
+        const fetchedReports: Report[] = [];
+        
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.location) {
+            fetchedReports.push({
+              id: doc.id,
+              location: {
+                latitude: data.location.latitude,
+                longitude: data.location.longitude,
+                locationName: data.location.locationName,
+              },
+              fullName: data.fullName,
+              status: data.status,
+            });
+          }
         });
-    
-        return unsubscribe;
-      };
-    
-      useFocusEffect(
-        React.useCallback(() => {
-          const unsubscribe = fetchReports();
-          return () => unsubscribe();
-        }, [])
-      );
+  
+        setReports(fetchedReports);
+      });
+  
+      return unsubscribe;
+    };
+  
+  useFocusEffect(
+    React.useCallback(() => {
+      const unsubscribe = fetchReports();
+      
+      // Cleanup function to unsubscribe when leaving the page
+      return () => unsubscribe();
+    }, [])
+  );
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
@@ -83,40 +87,80 @@ const AdminReportMain = ({navigation} : Props) => {
                 <Text style={styles.sectionTitle}>All Reported Areas</Text>
                 <Text style={styles.sectionDescription}>Tap on a marker to view detailed report information.</Text>
                 <MapView
-                style={styles.map}
-                initialRegion={{
+                  style={styles.map}
+                  initialRegion={{
                     latitude: 7.8731,
                     longitude: 80.7718,
                     latitudeDelta: 5,
                     longitudeDelta: 5,
-                }}
+                  }}
                 >
-                {reports.map((report) => (
-                    <Marker
-                    key={report.id}
-                    coordinate={{
-                        latitude: report.location.latitude,
-                        longitude: report.location.longitude,
-                    }}
-                    title={report.location.locationName}
-                    description={`Reported by ${report.fullName}`}
-                    >
-                    <Callout 
-                        // onPress={() => navigation.navigate('ReportDetailsPage', { reportId: report.id })}
-                    >
-                        <View style={styles.calloutContainer}>
-                        <Text style={styles.calloutTitle}>{report.location.locationName}</Text>
-                        <Text style={styles.calloutDescription}>Reported by {report.fullName}</Text>
-                        <TouchableOpacity
-                            style={styles.dialogButton}
+                  {reports.map((report) => {
+                    // Define colors for different statuses
+                    let markerColor;
+                    switch (report.status) {
+                      case 'pending':
+                        markerColor = 'orange';
+                        break;
+                      case 'accepted':
+                        markerColor = 'green';
+                        break;
+                      case 'rejected':
+                        markerColor = 'red';
+                        break;
+                      case 'completed':
+                        markerColor = '#0D92F4';
+                        break;
+                      default:
+                        markerColor = 'gray';
+                    }
+
+                    return (
+                      <Marker
+                        key={report.id}
+                        coordinate={{
+                          latitude: report.location.latitude,
+                          longitude: report.location.longitude,
+                        }}
+                        title={report.location.locationName}
+                        description={`Reported by ${report.fullName}`}
+                        pinColor={markerColor}
+                      >
+                        <Callout
+                          onPress={() => navigation.navigate('AdminReportDetails', { reportId: report.id })}
                         >
-                            <Text style={styles.dialogButtonText}>View Details</Text>
-                        </TouchableOpacity>
-                        </View>
-                    </Callout>
-                    </Marker>
-                ))}
+                          <View style={styles.calloutContainer}>
+                            <Text style={styles.calloutTitle}>{report.location.locationName}</Text>
+                            <Text style={styles.calloutDescription}>Reported by {report.fullName}</Text>
+                            <TouchableOpacity style={styles.dialogButton}>
+                              <Text style={styles.dialogButtonText}>View Details</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </Callout>
+                      </Marker>
+                    );
+                  })}
                 </MapView>
+
+                <View style={styles.legendContainer}>
+                  <View style={styles.legendItem}>
+                      <View style={[styles.legendColor, { backgroundColor: 'orange' }]} />
+                      <Text style={styles.legendLabel}>Pending</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                      <View style={[styles.legendColor, { backgroundColor: 'green' }]} />
+                      <Text style={styles.legendLabel}>Accepted</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                      <View style={[styles.legendColor, { backgroundColor: 'red' }]} />
+                      <Text style={styles.legendLabel}>Rejected</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                      <View style={[styles.legendColor, { backgroundColor: '#0D92F4' }]} />
+                      <Text style={styles.legendLabel}>Completed</Text>
+                  </View>
+                </View>
+
             </ScrollView>
         </SafeAreaView>
     );
@@ -226,6 +270,29 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         textAlign: 'center',
       },
+      legendContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        paddingVertical: 10,
+        backgroundColor: '#f5f5f5',
+        marginBottom: 20,
+        marginHorizontal: 10,
+        borderRadius: 10,
+    },
+    legendItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    legendColor: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        marginRight: 8,
+    },
+    legendLabel: {
+        fontSize: 14,
+        color: '#333',
+    },
   });
   
 

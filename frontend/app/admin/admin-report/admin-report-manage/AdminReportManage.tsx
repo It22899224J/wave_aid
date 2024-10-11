@@ -4,6 +4,7 @@ import { db } from '@/service/firebase';
 import { SafeAreaView, ScrollView, Text, View, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Ensure you have this package installed
+import { NavigationProp } from '@react-navigation/native';
 
 interface Report {
   id: string;
@@ -23,7 +24,11 @@ interface Report {
   timestamp: string;
 }
 
-const ManageReportsPage = () => {
+interface Props {
+    navigation: NavigationProp<any>;
+}
+
+const ManageReportsPage = ({navigation} : Props) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [activeTab, setActiveTab] = useState<string>('pending');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
