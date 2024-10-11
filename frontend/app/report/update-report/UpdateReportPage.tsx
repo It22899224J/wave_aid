@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
-import MapView, { Marker } from 'react-native-maps'; // Install react-native-maps
+import MapView, { Marker } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import { addDoc, collection, doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -36,7 +36,7 @@ interface RouteParams {
 type RootStackParamList = {
   UpdateReportLocation: {
     currentLocation: { latitude: number; longitude: number } | undefined;
-    reportId:string
+    reportId: string
   };
 };
 
@@ -45,12 +45,9 @@ type Props = {
 };
 
 const UpdateReportPage = ({ navigation }: Props) => {
-
   const { user } = useAuth();
-  
-
   const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
-  const { location, locationName,reportId} = route.params || {};
+  const { location, locationName, reportId } = route.params || {};
 
   const [pollutionLevel, setPollutionLevel] = useState('Low');
   const [priorityLevel, setPriorityLevel] = useState('Low');
@@ -58,21 +55,30 @@ const UpdateReportPage = ({ navigation }: Props) => {
   const [contactNumber, setContactNumber] = useState('');
   const [email, setEmail] = useState('');
   const [description, setDescription] = useState('');
-
   const [reportLocation, setReportLocation] = useState<{ latitude: number; longitude: number } | undefined>(undefined);
   const [reportLocationName, setReportLocationName] = useState<string>('');
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const addressParts = reportLocationName.split(", ");
   const shortenedAddress = addressParts.slice(0, 1).join(", ");
- 
 
-  
-  useEffect(()=>{
-    console.log(reportLocationName,reportLocation,reportId)
-  })
+  const validateForm = useCallback(() => {
+    const isValid = 
+      fullName.trim() !== '' &&
+      contactNumber.trim() !== '' &&
+      email.trim() !== '' &&
+      reportLocation !== undefined &&
+      images.length > 0 &&
+      images.length <= 4;
+    setIsFormValid(isValid);
+  }, [fullName, contactNumber, email, reportLocation, images]);
+
+  useEffect(() => {
+    validateForm();
+  }, [fullName, contactNumber, email, reportLocation, images, validateForm]);
 
   useEffect(() => {
     const fetchReportDetails = async () => {
@@ -105,6 +111,11 @@ const UpdateReportPage = ({ navigation }: Props) => {
   }, [location, locationName]);
 
   const pickImage = async () => {
+    if (images.length >= 4) {
+      Alert.alert('Maximum Images', 'You can only upload up to 4 images.');
+      return;
+    }
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -153,13 +164,13 @@ const UpdateReportPage = ({ navigation }: Props) => {
     if (reportId) {
       navigation.navigate('UpdateReportLocation', { currentLocation: reportLocation, reportId: reportId });
     } else {
-      Alert.alert('Error', 'Report data not foun.');
+      Alert.alert('Error', 'Report data not found.');
     }
   };
 
   const handleUpdateReport = async () => {
-    if (!fullName || !contactNumber || !email || !description) {
-      Alert.alert('Error', 'Please fill in all the fields.');
+    if (!isFormValid) {
+      Alert.alert('Error', 'Please fill in all required fields and upload at least one image (maximum 4).');
       return;
     }
 
@@ -175,7 +186,7 @@ const UpdateReportPage = ({ navigation }: Props) => {
       location: {
         latitude: reportLocation?.latitude || null,
         longitude: reportLocation?.longitude || null,
-        locationName:reportLocationName,
+        locationName: reportLocationName,
       },
       images,
       status: 'pending',
@@ -183,17 +194,13 @@ const UpdateReportPage = ({ navigation }: Props) => {
     };
 
     try {
-      console.log(reportData)
-        if (reportData) {
-          console.log(reportId)
-          if (reportId) {
-            await updateDoc(doc(db, 'reports', reportId), reportData);
-          } else {
-            Alert.alert('Error', 'Report ID is missing.');
-          }
-        } else {
-          Alert.alert('Error', 'Report data is missing.');
-        }
+      if (reportId) {
+        await updateDoc(doc(db, 'reports', reportId), reportData);
+        Alert.alert('Success', 'Your report has been updated.');
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', 'Report ID is missing.');
+      }
     } catch (error) {
       Alert.alert('Error', 'An error occurred while updating the report.');
       console.error('Error updating document: ', error);
@@ -204,15 +211,15 @@ const UpdateReportPage = ({ navigation }: Props) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      {loading && ( // Show loading indicator when loading is true
+      {loading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Submitting your report...</Text>
+          <Text style={styles.loadingText}>Updating your report...</Text>
         </View>
       )}
       
       <ScrollView style={styles.container}>
-        <Text style={styles.sectionTitle}>Location</Text>
+        <Text style={styles.sectionTitle}>Location *</Text>
         <Text style={styles.sectionDescription}>Select the reporting area from the map</Text>
         <MapView
           style={styles.map}
@@ -269,8 +276,7 @@ const UpdateReportPage = ({ navigation }: Props) => {
           ))}
         </View>
 
-        {/* Full name, Contact, and Email inputs */}
-        <Text style={styles.sectionTitle}>Enter Full Name</Text>
+        <Text style={styles.sectionTitle}>Enter Full Name *</Text>
         <TextInput 
           style={styles.input} 
           placeholder="Enter your full name" 
@@ -278,7 +284,7 @@ const UpdateReportPage = ({ navigation }: Props) => {
           onChangeText={setFullName}
         />
 
-        <Text style={styles.sectionTitle}>Contact Number</Text>
+        <Text style={styles.sectionTitle}>Contact Number *</Text>
         <TextInput 
           style={styles.input} 
           placeholder="Enter your contact number" 
@@ -287,7 +293,7 @@ const UpdateReportPage = ({ navigation }: Props) => {
           onChangeText={setContactNumber}
         />
 
-        <Text style={styles.sectionTitle}>Email Address</Text>
+        <Text style={styles.sectionTitle}>Email Address *</Text>
         <TextInput 
           style={styles.input} 
           placeholder="Enter your email address" 
@@ -296,13 +302,14 @@ const UpdateReportPage = ({ navigation }: Props) => {
           onChangeText={setEmail}
         />
 
-        {/* Image Upload */}
-        <Text style={styles.sectionTitle}>Images</Text>
-        <Text style={styles.sectionDescription}>Upload Images of the reporting area</Text>
+        <Text style={styles.sectionTitle}>Images *</Text>
+        <Text style={styles.sectionDescription}>Upload Images of the reporting area (1-4 images)</Text>
         <View style={styles.imagesContainer}>
-          <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
-            <Text style={styles.addImageText}>+</Text>
-          </TouchableOpacity>
+          {images.length < 4 && (
+            <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
+              <Text style={styles.addImageText}>+</Text>
+            </TouchableOpacity>
+          )}
           {images.map((imageUrl, index) => (
             <View key={index} style={styles.imageWrapper}>
               <Image source={{ uri: imageUrl }} style={styles.uploadedImage} />
@@ -328,8 +335,12 @@ const UpdateReportPage = ({ navigation }: Props) => {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.locationButton} onPress={handleUpdateReport}>
-            <Text style={styles.submitButtonText}>Update Report</Text>
+        <TouchableOpacity 
+          style={[styles.submitButton, !isFormValid && styles.disabledButton]} 
+          onPress={handleUpdateReport}
+          disabled={!isFormValid}
+        >
+          <Text style={styles.submitButtonText}>Update Report</Text>
         </TouchableOpacity>
 
         <View style={{ height: 30 }}></View>
@@ -396,6 +407,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginVertical: 20,
+  },
+  disabledButton: {
+    backgroundColor: '#A0A0A0',
   },
   submitButtonText: {
     color: '#ffffff',

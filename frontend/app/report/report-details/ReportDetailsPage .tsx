@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, Modal, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, Modal, TouchableOpacity, Dimensions, SafeAreaView } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/service/firebase';
@@ -85,131 +85,172 @@ const ReportDetailsPage = () => {
     </TouchableOpacity>
   );
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return '#FF3B30';
+      case 'medium':
+        return '#FF9500';
+      case 'low':
+        return '#34C759';
+      default:
+        return '#4A90E2';
+    }
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.section}>
-        {report.images && report.images.length > 0 ? (
-          <View style={styles.carouselContainer}>
-            <ReanimatedCarousel
-              loop
-              width={screenWidth}
-              height={260}
-              mode="parallax"
-              data={report.images}
-              scrollAnimationDuration={1000}
-              onSnapToItem={(index) => setCurrentIndex(index)}
-              renderItem={renderCarouselItem}
-            />
-            <View style={styles.pagination}>
-              {report.images.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.dot,
-                    currentIndex === index ? styles.activeDot : styles.inactiveDot,
-                  ]}
-                />
-              ))}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>{report.location.locationName}</Text>
+          <Text style={styles.subtitle}>Reported by {report.fullName}</Text>
+        </View>
+
+        <View style={styles.section}>
+          {report.images && report.images.length > 0 ? (
+            <View style={styles.carouselContainer}>
+              <ReanimatedCarousel
+                loop
+                width={screenWidth}
+                height={260}
+                mode="parallax"
+                data={report.images}
+                scrollAnimationDuration={1000}
+                onSnapToItem={(index) => setCurrentIndex(index)}
+                renderItem={renderCarouselItem}
+              />
+              <View style={styles.pagination}>
+                {report.images.map((_, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.dot,
+                      currentIndex === index ? styles.activeDot : styles.inactiveDot,
+                    ]}
+                  />
+                ))}
+              </View>
             </View>
+          ) : null}
+        </View>
+
+        <View style={styles.infoContainer}>
+          <View style={styles.infoItem}>
+            <Icon name="warning" size={24} color={getPriorityColor(report.priorityLevel)} />
+            <Text style={styles.infoLabel}>Priority</Text>
+            <Text style={[styles.infoValue, { color: getPriorityColor(report.priorityLevel) }]}>
+              {report.priorityLevel}
+            </Text>
           </View>
-        ) : null}
-      </View>
+          <View style={styles.infoItem}>
+            <Icon name="eco" size={24} color="#4A90E2" />
+            <Text style={styles.infoLabel}>Pollution</Text>
+            <Text style={styles.infoValue}>{report.pollutionLevel}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Icon name="event" size={24} color="#4A90E2" />
+            <Text style={styles.infoLabel}>Date</Text>
+            <Text style={styles.infoValue}>
+              {new Date(report.timestamp.seconds * 1000).toLocaleDateString()}
+            </Text>
+          </View>
+        </View>
 
-      <Text style={styles.title}>{report.location.locationName}</Text>
-      <Text style={styles.subtitle}>Reported by {report.fullName}</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.description}>{report.description}</Text>
+        </View>
 
-      <View style={styles.section}>
-        <Text style={styles.label}>Description</Text>
-        <Text style={styles.value}>{report.description}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>Pollution Level</Text>
-        <Text style={styles.value}>{report.pollutionLevel}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>Priority Level</Text>
-        <Text style={styles.value}>{report.priorityLevel}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>Location</Text>
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: report.location.latitude,
-            longitude: report.location.longitude,
-            latitudeDelta: 0.5,
-            longitudeDelta: 0.5,
-          }}
-        >
-          <Marker
-            coordinate={{
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Location</Text>
+          <MapView
+            style={styles.map}
+            initialRegion={{
               latitude: report.location.latitude,
               longitude: report.location.longitude,
+              latitudeDelta: 0.02,
+              longitudeDelta: 0.02,
             }}
-            title={report.location.locationName}
-          />
-        </MapView>
-      </View>
-
-      <Text style={styles.timestamp}>
-        Reported on: {new Date(report.timestamp.seconds * 1000).toLocaleString()}
-      </Text>
-
-      {/* Modal to view the selected image */}
-      <Modal visible={modalVisible} transparent={true} animationType="fade">
-        <View style={styles.modalContainer}>
-          <TouchableOpacity style={styles.modalCloseButton} onPress={() => setModalVisible(false)}>
-            <Icon name="close" size={24} color="black" />
-          </TouchableOpacity>
-          <Image source={{ uri: selectedImage }} style={styles.modalImage} />
+          >
+            <Marker
+              coordinate={{
+                latitude: report.location.latitude,
+                longitude: report.location.longitude,
+              }}
+              title={report.location.locationName}
+            >
+              {/* <View style={styles.customMarker}>
+                <Icon name="place" size={24} color="#FFFFFF" />
+              </View> */}
+            </Marker>
+          </MapView>
         </View>
-      </Modal>
-    </ScrollView>
+
+        {/* Modal to view the selected image */}
+        <Modal visible={modalVisible} transparent={true} animationType="fade">
+          <View style={styles.modalContainer}>
+            <TouchableOpacity style={styles.modalCloseButton} onPress={() => setModalVisible(false)}>
+              <Icon name="close" size={24} color="white" />
+            </TouchableOpacity>
+            <Image source={{ uri: selectedImage }} style={styles.modalImage} />
+          </View>
+        </Modal>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
   container: {
     flex: 1,
-    padding: 15,
-    backgroundColor: '#fff',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F0F5F9',
+  },
+  header: {
+    padding: 20,
+    backgroundColor: '#4A90E2',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#34495e',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#7f8c8d',
-    marginBottom: 20,
-  },
-  section: {
-    marginBottom: 25,
-  },
-  label: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#2980b9',
+    color: '#FFFFFF',
     marginBottom: 5,
   },
-  value: {
+  subtitle: {
     fontSize: 16,
-    color: '#2c3e50',
-    paddingLeft: 5,
-    lineHeight: 22,
+    color: '#E0E0E0',
+  },
+  section: {
+    marginBottom: 10,
+    borderRadius: 10,
+    padding: 15,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#4A90E2',
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 16,
+    color: '#333',
+    lineHeight: 24,
   },
   carouselContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   carouselImage: {
     width: '100%',
     height: 260,
-    borderRadius: 12,
+    borderRadius: 10,
     resizeMode: 'cover',
   },
   pagination: {
@@ -218,56 +259,73 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#bdc3c7',
-    marginHorizontal: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
   },
   activeDot: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#4A90E2',
   },
   inactiveDot: {
-    backgroundColor: '#bdc3c7',
+    backgroundColor: '#BDC3C7',
+  },
+  infoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 20,
+  },
+  infoItem: {
+    alignItems: 'center',
+  },
+  infoLabel: {
+    fontSize: 12,
+    color: '#7F8C8D',
+    marginTop: 5,
+  },
+  infoValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4A90E2',
+    marginTop: 2,
   },
   map: {
     width: '100%',
-    height: 250,
-    borderRadius: 12,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: '#bdc3c7',
+    height: 200,
+    borderRadius: 10,
   },
-  timestamp: {
-    fontSize: 14,
-    color: '#7f8c8d',
-    marginBottom: 50,
-    textAlign: 'center',
-  },
-  errorText: {
-    fontSize: 18,
-    color: 'red',
-    textAlign: 'center',
-    marginTop: 20,
+  customMarker: {
+    backgroundColor: '#4A90E2',
+    borderRadius: 20,
+    padding: 5,
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 1)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
   },
   modalCloseButton: {
     position: 'absolute',
     top: 40,
     right: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 50,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
     padding: 10,
   },
   modalImage: {
     width: '100%',
-    height: '80%',
+    height: '70%',
     resizeMode: 'contain',
+  },
+  errorText: {
+    fontSize: 18,
+    color: '#FF3B30',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 

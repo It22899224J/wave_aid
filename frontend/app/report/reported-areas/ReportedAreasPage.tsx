@@ -42,7 +42,7 @@ const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) 
           date: data.timestamp.toDate().toLocaleDateString(),
           wasteLevel: data.pollutionLevel,
           wasteLevelColor,
-          status: data.status,
+          status: formatStatus(data.status), // Format status here
           statusColor,
           image: data.images[0] || 'default-image-url.png',
         } as Report;
@@ -81,6 +81,10 @@ const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) 
       default:
         return 'gray';
     }
+  };
+
+  const formatStatus = (status: string) => {
+    return status.charAt(0).toUpperCase() + status.slice(1); // Capitalizes the first letter of the status
   };
 
   const handleReportPress = (item: Report) => {
@@ -132,7 +136,11 @@ const ReportedAreasPage = ({ navigation }: { navigation: NavigationProp<any> }) 
       ) : (
         <ScrollView style={styles.container}>
           {reportData.map((item) => (
-            <TouchableOpacity key={item.id} onPress={() => handleReportPress(item)}>
+            <TouchableOpacity 
+              key={item.id} 
+              onPress={() => handleReportPress(item)}
+              disabled={item.status !== 'Pending'} 
+            >
               <ReportCard item={item} onRemove={confirmRemoveReport} />
             </TouchableOpacity>
           ))}

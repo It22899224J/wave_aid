@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import MainScreen from "./events/main-screen/EventsMainView";
 import Icon from "react-native-vector-icons/Ionicons";
 import { ProfileStack } from "./profile/ProfileStack";
 import { useAuth } from "@/context/AuthContext";
@@ -9,12 +8,7 @@ import { AnalysisStack } from "./analysis/AnalysisStack";
 import { ReportStack } from "./report/ReportStack";
 import { EventStack } from "./events/main-screen/EventStack";
 import AdminUserManagementStack from "./admin/admin-user-management/AdminUserManagementStack";
-import Loader from "@/components/loader/Loader";
-import BookingConfirmation from "./events/book-a-seat/BookingConfirmation";
 import { AdminMainStack } from "./events/admin-screens/AdminMainStack";
-import { Booking } from "./events/book-a-seat/BookingNav";
-import MyEvents from "./events/my-events/MyEvents";
-import AdminReportMain from "./admin/admin-report/admin-report-main/AdminReportMain";
 import { MyEventStack } from "./events/my-events/MyEventStack";
 
 
