@@ -148,6 +148,7 @@ const UpcommingEvents = ({
         </View>
         {reportData.map((item) => (
           <TouchableOpacity
+            style={{borderRadius: 10}}
             key={item.id}
             onPress={() => handleReportPress(item)}
           >
@@ -163,19 +164,18 @@ const styles = StyleSheet.create({
   container: {
     display: "flex",
     flexDirection: "column",
+    padding: 5,
     gap: 10,
-    paddingTop: 20,
+    backgroundColor: "#F2F2F7",
   },
   topic: {
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
     marginVertical: 20,
-    color: "#333",
   },
   title: {
-    color: "#333",
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "bold",
     marginBottom: 20,
   },

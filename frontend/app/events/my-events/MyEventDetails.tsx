@@ -101,19 +101,6 @@ const MyEventDetails = () => {
     longitude: number,
     selectedDate: Date
   ) => {
-    setLoadingTide(true);
-    const url = `https://www.worldtides.info/api/v2/tides?lat=${latitude}&lon=${longitude}&date=${selectedDate.toISOString().split("T")[0]
-      }&key=${tideApiKey}`;
-
-    try {
-      const response = await axios.get(url);
-      setTideDetails(response.data);
-    } catch (error) {
-      console.error("Error fetching tide data: ", error);
-      Alert.alert("Error", "Unable to fetch tide data.");
-    } finally {
-      setLoadingTide(false);
-    }
   };
 
   const openLocationInMap = () => {
