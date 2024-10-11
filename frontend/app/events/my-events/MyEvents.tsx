@@ -81,7 +81,7 @@ const MyEvents = ({ navigation }: { navigation: NavigationProp<any> }) => {
           time: moment(data.time.from).format("hh:mm A"),
           weather: data.weather,
           tide: data.tide,
-          organizer: data.organizer,
+          organizer: data.organizerName,
           image: data.images[0] || "default-image-url.png",
         } as Event;
       });
