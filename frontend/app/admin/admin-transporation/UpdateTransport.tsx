@@ -1,12 +1,17 @@
 import React, { useContext, useState, useEffect } from 'react';
 
-type Seats = {
-  seatId: string | null;
-  seatNumber: number;
-  status: string;
-  userID: string | null;
-};
-import { View, TextInput, Button, Text, StyleSheet, SafeAreaView, Image, ScrollView } from 'react-native';
+
+import {
+  View,
+  TextInput,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
 import { RouteProp, useRoute, NavigationProp } from '@react-navigation/native';
 import { BusContext } from '@/context/BusContext';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -15,6 +20,14 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Ionicons } from '@expo/vector-icons';
+
+type Seats = {
+  seatId: string | null;
+  seatNumber: number;
+  status: string;
+  userID: string | null;
+};
 
 type RouteParams = {
   transportOptions: string;
@@ -198,55 +211,77 @@ const UpdateTransport = ({ navigation }: Props) => {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView>
         <View style={styles.container}>
-          <Text style={styles.label}>Bus Name:</Text>
-          <TextInput
-            style={styles.input}
-            value={busName}
-            onChangeText={setBusName}
-            placeholder="Enter bus name"
-          />
+          <Text style={styles.title}>Update Bus Details</Text>
 
-          <Text style={styles.label}>Number of Rows:</Text>
-          <TextInput
-            style={styles.input}
-            value={rows}
-            onChangeText={setRows}
-            keyboardType="numeric"
-            placeholder="e.g. 5"
-          />
+          <View style={styles.inputContainer}>
+            <Ionicons name="bus-outline" size={24} color="#00acf0" style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              value={busName}
+              onChangeText={setBusName}
+              placeholder="Enter bus name"
+              placeholderTextColor="#999"
+            />
+          </View>
 
-          <Text style={styles.label}>Seats Per Row:</Text>
-          <Picker
-            selectedValue={seatsPerRow}
-            style={styles.picker}
-            onValueChange={(itemValue) => setSeatsPerRow(itemValue)}
-          >
-            <Picker.Item label="4 (2-2)" value={4} />
-            <Picker.Item label="5 (2-3)" value={5} />
-          </Picker>
+          <View style={styles.inputContainer}>
+            <Ionicons name="grid-outline" size={24} color="#00acf0" style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              value={rows}
+              onChangeText={setRows}
+              keyboardType="numeric"
+              placeholder="Number of rows (e.g. 5)"
+              placeholderTextColor="#999"
+            />
+          </View>
 
-          <Text style={styles.label}>Contact Number:</Text>
-          <TextInput
-            style={styles.input}
-            value={contactNumber}
-            onChangeText={setContactNumber}
-            keyboardType="numeric"
-            placeholder="Enter contact number"
-          />
+          <View style={styles.pickerContainer}>
+            <Ionicons name="people-outline" size={24} color="#00acf0" style={styles.icon} />
+            <Picker
+              selectedValue={seatsPerRow}
+              style={styles.picker}
+              onValueChange={(itemValue) => setSeatsPerRow(itemValue)}
+            >
+              <Picker.Item label="4 seats per row (2-2)" value={4} />
+              <Picker.Item label="5 seats per row (2-3)" value={5} />
+            </Picker>
+          </View>
 
-          <Text style={styles.label}>Pickup Location:</Text>
-          <TextInput
-            style={styles.input}
-            value={pickupLocationName}
-            editable={false}  // Location is non-editable from input field
-          />
-          <Button title="Update Location" onPress={handleSelectLocation} />
+          <View style={styles.inputContainer}>
+            <Ionicons name="call-outline" size={24} color="#00acf0" style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              value={contactNumber}
+              onChangeText={setContactNumber}
+              keyboardType="numeric"
+              placeholder="Enter contact number"
+              placeholderTextColor="#999"
+            />
+          </View>
 
-          <Text style={styles.label}>Departure Time:</Text>
-          <Button title="Select Departure Time" onPress={showTimePickerHandler} />
+          <View style={styles.inputContainer}>
+            <Ionicons name="location-outline" size={24} color="#00acf0" style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              value={pickupLocationName}
+              editable={false}
+              placeholder="Pickup location"
+              placeholderTextColor="#999"
+            />
+          </View>
+          <TouchableOpacity style={styles.button} onPress={handleSelectLocation}>
+            <Ionicons name="map-outline" size={20} color="#fff" style={styles.buttonIcon} />
+            <Text style={styles.buttonText}>Update Location</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={showTimePickerHandler}>
+            <Ionicons name="time-outline" size={20} color="#fff" style={styles.buttonIcon} />
+            <Text style={styles.buttonText}>Select Departure Time</Text>
+          </TouchableOpacity>
           {showTimePicker && (
             <DateTimePicker
               value={departureTime || new Date()}
@@ -255,15 +290,20 @@ const UpdateTransport = ({ navigation }: Props) => {
               onChange={handleTimeChange}
             />
           )}
-          <Text style={styles.label}>
-            Selected Departure Time: {departureTime?.toLocaleTimeString() || "Not set"}
+          <Text style={styles.selectedTime}>
+            Selected Time: {departureTime?.toLocaleTimeString() || "Not set"}
           </Text>
 
           <Text style={styles.label}>Bus Image:</Text>
-          <Button title="Pick an image" onPress={pickImage} />
           {image && <Image source={{ uri: image }} style={styles.image} />}
+          <TouchableOpacity style={styles.button} onPress={pickImage}>
+            <Ionicons name="camera-outline" size={20} color="#fff" style={styles.buttonIcon} />
+            <Text style={styles.buttonText}>Pick an Image</Text>
+          </TouchableOpacity>
 
-          <Button title="Update Bus" onPress={updateBus} />
+          <TouchableOpacity style={styles.submitButton} onPress={updateBus}>
+            <Text style={styles.submitButtonText}>Update Bus</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -271,32 +311,96 @@ const UpdateTransport = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#F4F9FB",
+  },
   container: {
-    justifyContent: "center",
+    flex: 1,
     padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  icon: {
+    padding: 10,
+  },
+  input: {
+    flex: 1,
+    padding: 10,
+    color: '#333',
+  },
+  pickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  picker: {
+    flex: 1,
+  },
+  button: {
+    backgroundColor: "#00acf0",
+    padding: 15,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  buttonIcon: {
+    marginRight: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  selectedTime: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  submitButton: {
+    backgroundColor: "#00C78B",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  submitButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  image: {
+    width: "100%",
+    height: 200,
+    marginBottom: 15,
+    borderRadius: 10,
   },
   label: {
     fontSize: 16,
-    marginVertical: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    marginVertical: 5,
-    fontSize: 16,
-  },
-  picker: {
-    height: 50,
-    width: '100%',
-    borderWidth: 1,
-    borderColor: "#ccc",
-  },
-  image: {
-    width: 200,
-    height: 200,
-    resizeMode: 'contain',
-    marginVertical: 10,
+    marginBottom: 8,
+    color: "#333",
+    fontWeight: 'bold',
   },
 });
 
