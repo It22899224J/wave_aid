@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
-import MapView, { Marker } from 'react-native-maps'; // Install react-native-maps
+import MapView, { Marker } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import { addDoc, collection } from 'firebase/firestore';
@@ -61,23 +61,13 @@ const ReportAreaPage = ({ navigation }: Props) => {
   const [loading, setLoading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
 
+  // New state variables for validation
+  const [fullNameError, setFullNameError] = useState('');
+  const [contactNumberError, setContactNumberError] = useState('');
+  const [emailError, setEmailError] = useState('');
+
   const addressParts = reportLocationName.split(", ");
   const shortenedAddress = addressParts.slice(0, 1).join(", ");
-
-  const validateForm = useCallback(() => {
-    const isValid = 
-      fullName.trim() !== '' &&
-      contactNumber.trim() !== '' &&
-      email.trim() !== '' &&
-      reportLocation !== null &&
-      images.length > 0 &&
-      images.length <= 4;
-    setIsFormValid(isValid);
-  }, [fullName, contactNumber, email, reportLocation, images]);
-
-  useEffect(() => {
-    validateForm();
-  }, [fullName, contactNumber, email, reportLocation, images, validateForm]);
 
   useEffect(() => {
     if (location && location.latitude && location.longitude) {
@@ -85,6 +75,50 @@ const ReportAreaPage = ({ navigation }: Props) => {
       setReportLocationName(locationName || 'Location not selected');
     }
   }, [location, locationName]);
+
+  const validateFullName = (name: string) => {
+    if (name.trim().length < 2) {
+      setFullNameError('Full name must be at least 2 characters long');
+    } else {
+      setFullNameError('');
+    }
+    setFullName(name);
+  };
+
+  const validateContactNumber = (number: string) => {
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(number)) {
+      setContactNumberError('Contact number must be 10 digits');
+    } else {
+      setContactNumberError('');
+    }
+    setContactNumber(number);
+  };
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+    } else {
+      setEmailError('');
+    }
+    setEmail(email);
+  };
+
+  const validateForm = useCallback(() => {
+    const isValid = 
+      fullName.trim() !== '' && fullNameError === '' &&
+      contactNumber.trim() !== '' && contactNumberError === '' &&
+      email.trim() !== '' && emailError === '' &&
+      reportLocation !== null &&
+      images.length > 0 &&
+      images.length <= 4;
+    setIsFormValid(isValid);
+  }, [fullName, fullNameError, contactNumber, contactNumberError, email, emailError, reportLocation, images]);
+
+  useEffect(() => {
+    validateForm();
+  }, [fullName, contactNumber, email, reportLocation, images, validateForm]);
 
   const pickImage = async () => {
     if (images.length >= 4) {
@@ -256,8 +290,9 @@ const ReportAreaPage = ({ navigation }: Props) => {
           style={styles.input} 
           placeholder="Enter your full name" 
           value={fullName}
-          onChangeText={setFullName}
+          onChangeText={validateFullName}
         />
+        {fullNameError !== '' && <Text style={styles.errorText}>{fullNameError}</Text>}
 
         <Text style={styles.sectionTitle}>Contact Number *</Text>
         <TextInput 
@@ -265,8 +300,9 @@ const ReportAreaPage = ({ navigation }: Props) => {
           placeholder="Enter your contact number" 
           keyboardType="phone-pad"
           value={contactNumber}
-          onChangeText={setContactNumber}
+          onChangeText={validateContactNumber}
         />
+        {contactNumberError !== '' && <Text style={styles.errorText}>{contactNumberError}</Text>}
 
         <Text style={styles.sectionTitle}>Email Address *</Text>
         <TextInput 
@@ -274,8 +310,9 @@ const ReportAreaPage = ({ navigation }: Props) => {
           placeholder="Enter your email address" 
           keyboardType="email-address"
           value={email}
-          onChangeText={setEmail}
+          onChangeText={validateEmail}
         />
+        {emailError !== '' && <Text style={styles.errorText}>{emailError}</Text>}
 
         <Text style={styles.sectionTitle}>Images *</Text>
         <Text style={styles.sectionDescription}>Upload Images of the reporting area (1-4 images)</Text>
@@ -449,6 +486,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 12,
     padding: 2,
+  },
+  errorText: {
+    color: '#FF3B30',
+    fontSize: 12,
+    marginTop: -15,
+    marginBottom: 15,
+    paddingLeft: 5,
+    fontWeight: '500',
   },
 });
 
