@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+import Icon2 from "react-native-vector-icons/AntDesign";
 import { BlurView } from "expo-blur";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@/context/AuthContext";
@@ -46,9 +47,7 @@ export const EventCard: React.FC<EventCard> = ({ item, onRemove }) => {
   }, [initializeUserDetails]);
 
   return (
-    <View
-      style={[styles.card, { borderRadius: 10 }]}
-    >
+    <View style={[styles.card, { borderRadius: 10 }]}>
       <View style={styles.cardInfo}>
         <Text style={styles.beachName}>{item.beachName}</Text>
         <View style={styles.row}>
@@ -66,13 +65,22 @@ export const EventCard: React.FC<EventCard> = ({ item, onRemove }) => {
       </View>
 
       <Image source={{ uri: item.image }} style={styles.cardImage} />
- { userDetails?.role === "Admin" &&  <TouchableOpacity
-        style={styles.removeButton}
-        onPress={() => onRemove(item.id)}
-      >
-        <Icon name="trash" size={24} color="#FF0000" />
-      </TouchableOpacity>}
-     
+      {userDetails?.role === "Admin" && (
+        <View>
+          <TouchableOpacity
+            style={styles.completeButton}
+            onPress={() => markAsComplete()}
+          >
+            <Icon2 name="checkcircle" size={24} color="#00ff00" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.removeButton}
+            onPress={() => onRemove(item.id)}
+          >
+            <Icon name="trash" size={24} color="#FF0000" />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -144,7 +152,7 @@ const styles = StyleSheet.create({
   },
   completeButton: {
     position: "absolute",
-    bottom: 5,
+    bottom: 10,
     right: 45,
     // backgroundColor: "rgba(255, 255, 255, 0.8)",
     borderRadius: 12,
