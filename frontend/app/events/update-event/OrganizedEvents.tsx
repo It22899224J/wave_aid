@@ -112,7 +112,7 @@ const OrganizedEvents = ({
   const confirmRemoveReport = (reportId: string) => {
     Alert.alert(
       "Confirm Deletion",
-      "Are you sure you want to delete this report?",
+      "Are you sure you want to delete this Event?",
       [
         {
           text: "Cancel",

@@ -27,6 +27,7 @@ import { CompositeNavigationProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import ReanimatedCarousel from "react-native-reanimated-carousel";
+import Loader from "@/utilities/Loader";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -71,6 +72,7 @@ const EventDetails = () => {
   const [transportOptions, setTransportOptions] = useState<any>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [contactNumber, setContactNumber] = useState("");
+  const [loading, setLoading] = useState(true);
   const carouselRef = useRef(null);
 
   const { user } = useAuth();
@@ -78,9 +80,13 @@ const EventDetails = () => {
 
   useEffect(() => {
     const fetchReportDetails = async () => {
-      if (report?.id) {
+  setLoading(true);
+  if (report?.id) {
+    setTimeout(async () => {
+      try {
         const reportRef = doc(db, "events", report.id);
         const reportSnap = await getDoc(reportRef);
+
         if (reportSnap.exists()) {
           const data = reportSnap.data();
           setOrganizerName(data.organizerName);
@@ -94,13 +100,19 @@ const EventDetails = () => {
           setContactNumber(data.contactNumber);
           setImage(data.images);
           setTransportOptions(data.transportOptions);
-          fetchWeatherData(data.location.latitude, data.location.longitude);
-          fetchTideData(
+
+          // Fetch weather and tide data after setting location and date
+          await fetchWeatherData(
+            data.location.latitude,
+            data.location.longitude
+          );
+          await fetchTideData(
             data.location.latitude,
             data.location.longitude,
             new Date(data.date)
           );
 
+          // Check if the user is registered for the event
           const registrationRef = doc(
             db,
             "registrations",
@@ -111,8 +123,15 @@ const EventDetails = () => {
         } else {
           Alert.alert("Error", "Event not found.");
         }
+      } catch (error) {
+        console.error("Error fetching report details:", error);
+    
       }
-    };
+      setLoading(false);
+    }, 2000); 
+  }
+};
+
 
     fetchReportDetails();
   }, [report, userId]);
@@ -211,211 +230,222 @@ const EventDetails = () => {
 
   return (
     <ScrollView>
-      <View style={styles.content}>
-        <View style={styles.organizer}>
-          <Text style={styles.organizerText}>{organizerName}</Text>
-        </View>
-        {image && image.length > 0 ? (
-          <View style={styles.carouselContainer}>
-            <ReanimatedCarousel
-              loop
-              width={screenWidth}
-              height={260}
-              mode="parallax"
-              data={image}
-              scrollAnimationDuration={1000}
-              onSnapToItem={(index) => setCurrentIndex(index)}
-              renderItem={renderCarouselItem}
-            />
-            <View style={styles.pagination}>
-              {image.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.dot,
-                    currentIndex === index
-                      ? styles.activeDot
-                      : styles.inactiveDot,
-                  ]}
+      {!loading ? (
+        <View style={styles.content}>
+          <View style={styles.organizer}>
+            <Text style={styles.organizerText}>{organizerName}</Text>
+          </View>
+          {image && image.length > 0 ? (
+            <View style={styles.carouselContainer}>
+              <ReanimatedCarousel
+                loop
+                width={screenWidth}
+                height={260}
+                mode="parallax"
+                data={image}
+                scrollAnimationDuration={1000}
+                onSnapToItem={(index) => setCurrentIndex(index)}
+                renderItem={renderCarouselItem}
+              />
+              <View style={styles.pagination}>
+                {image.map((_, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.dot,
+                      currentIndex === index
+                        ? styles.activeDot
+                        : styles.inactiveDot,
+                    ]}
+                  />
+                ))}
+              </View>
+            </View>
+          ) : (
+            <Text>No Images Available</Text>
+          )}
+          <View style={styles.card}>
+            <View style={styles.eventDetails}>
+              <Text style={styles.sectionTitle}>Event Details</Text>
+              <View style={styles.detailRow}>
+                <MaterialIcons
+                  name="event"
+                  size={24}
+                  color="#007AFF"
+                  style={styles.icon}
                 />
-              ))}
-            </View>
-          </View>
-        ) : (
-          <Text>No Images Available</Text>
-        )}
-        <View style={styles.card}>
-          <View style={styles.eventDetails}>
-            <Text style={styles.sectionTitle}>Event Details</Text>
-            <View style={styles.detailRow}>
-              <MaterialIcons
-                name="event"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>{date.toDateString()}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <MaterialIcons
-                name="access-time"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text
-                style={styles.detailText}
-              >{`${timeFrom.toLocaleTimeString()} - ${timeTo.toLocaleTimeString()}`}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <MaterialIcons
-                name="phone"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>{contactNumber}</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.detailRow}
-              onPress={openLocationInMap}
-            >
-              <MaterialIcons
-                name="location-on"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text style={[styles.detailText, styles.clickableText]}>
-                {reportLocationName}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.detailRow}>
-            <MaterialIcons
-              name="directions-bus"
-              size={24}
-              color="#007AFF"
-              style={styles.icon}
-            />
-            <Text style={styles.detailText}>
-              Transport:{" "}
-              {transportOptions === null ? "Not Available" : "Available"}
-            </Text>
-            {isRegistered && transportOptions !== null && (
+                <Text style={styles.detailText}>{date.toDateString()}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <MaterialIcons
+                  name="access-time"
+                  size={24}
+                  color="#007AFF"
+                  style={styles.icon}
+                />
+                <Text style={styles.detailText}>{`${timeFrom.toLocaleTimeString(
+                  [],
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }
+                )} - ${timeTo.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}`}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <MaterialIcons
+                  name="phone"
+                  size={24}
+                  color="#007AFF"
+                  style={styles.icon}
+                />
+                <Text style={styles.detailText}>{contactNumber}</Text>
+              </View>
               <TouchableOpacity
-                style={styles.bookSeatButton}
-                onPress={() =>
-                  navigation.navigate("SelectBus", { eventId: report?.id })
-                }
+                style={styles.detailRow}
+                onPress={openLocationInMap}
               >
-                <Text style={styles.bookSeatButtonText}>Book a Seat</Text>
+                <MaterialIcons
+                  name="location-on"
+                  size={24}
+                  color="#007AFF"
+                  style={styles.icon}
+                />
+                <Text style={[styles.detailText, styles.clickableText]}>
+                  {reportLocationName}
+                </Text>
               </TouchableOpacity>
+            </View>
+
+            <View style={styles.detailRow}>
+              <MaterialIcons
+                name="directions-bus"
+                size={24}
+                color="#007AFF"
+                style={styles.icon}
+              />
+              <Text style={styles.detailText}>
+                Transport:{" "}
+                {transportOptions === null ? "Not Available" : "Available"}
+              </Text>
+              {isRegistered && transportOptions !== null && (
+                <TouchableOpacity
+                  style={styles.bookSeatButton}
+                  onPress={() =>
+                    navigation.navigate("SelectBus", { eventId: report?.id })
+                  }
+                >
+                  <Text style={styles.bookSeatButtonText}>Book a Seat</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+          {loadingWeather && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#007AFF" />
+              <Text style={styles.loadingText}>Loading weather data...</Text>
+            </View>
+          )}
+
+          {weatherDetails && (
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>Weather Details</Text>
+              <View style={styles.detailRow}>
+                <MaterialIcons
+                  name="wb-sunny"
+                  size={24}
+                  color="#007AFF"
+                  style={styles.icon}
+                />
+                <Text style={styles.detailText}>
+                  Temperature: {weatherDetails.main.temp} °C
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <MaterialIcons
+                  name="cloud"
+                  size={24}
+                  color="#007AFF"
+                  style={styles.icon}
+                />
+                <Text style={styles.detailText}>
+                  Condition: {weatherDetails.weather[0].description}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {loadingTide && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#007AFF" />
+              <Text style={styles.loadingText}>Loading tide data...</Text>
+            </View>
+          )}
+
+          {tideDetails && (
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>Tide Details</Text>
+              <View style={styles.detailRow}>
+                <MaterialIcons
+                  name="waves"
+                  size={24}
+                  color="#007AFF"
+                  style={styles.icon}
+                />
+                <Text style={styles.detailText}>
+                  Next High Tide: {tideDetails.extremes[0].date}
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <MaterialIcons
+                  name="waves"
+                  size={24}
+                  color="#007AFF"
+                  style={styles.icon}
+                />
+                <Text style={styles.detailText}>
+                  Next Low Tide: {tideDetails.extremes[1].date}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={[
+              styles.registerButton,
+              { backgroundColor: isRegistered ? "#FF3B30" : "#007AFF" },
+            ]}
+            onPress={handleRegistration}
+          >
+            <Text style={styles.registerButtonText}>
+              {isRegistered ? "Unregister" : "Register"}
+            </Text>
+          </TouchableOpacity>
+
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Guidelines</Text>
+            {guidelines.length > 0 ? (
+              guidelines.map((guideline, index) => (
+                <View key={index} style={styles.guidelineRow}>
+                  <MaterialIcons
+                    name="check-circle"
+                    size={20}
+                    color="#34C759"
+                    style={styles.guidelineIcon}
+                  />
+                  <Text style={styles.guidelineText}>{guideline}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.guidelineText}>No guidelines provided.</Text>
             )}
           </View>
         </View>
-        {loadingWeather && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#007AFF" />
-            <Text style={styles.loadingText}>Loading weather data...</Text>
-          </View>
-        )}
-
-        {weatherDetails && (
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Weather Details</Text>
-            <View style={styles.detailRow}>
-              <MaterialIcons
-                name="wb-sunny"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>
-                Temperature: {weatherDetails.main.temp} °C
-              </Text>
-            </View>
-            <View style={styles.detailRow}>
-              <MaterialIcons
-                name="cloud"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>
-                Condition: {weatherDetails.weather[0].description}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {loadingTide && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#007AFF" />
-            <Text style={styles.loadingText}>Loading tide data...</Text>
-          </View>
-        )}
-
-        {tideDetails && (
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Tide Details</Text>
-            <View style={styles.detailRow}>
-              <MaterialIcons
-                name="waves"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>
-                Next High Tide: {tideDetails.extremes[0].date}
-              </Text>
-            </View>
-            <View style={styles.detailRow}>
-              <MaterialIcons
-                name="waves"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>
-                Next Low Tide: {tideDetails.extremes[1].date}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        <TouchableOpacity
-          style={[
-            styles.registerButton,
-            { backgroundColor: isRegistered ? "#FF3B30" : "#007AFF" },
-          ]}
-          onPress={handleRegistration}
-        >
-          <Text style={styles.registerButtonText}>
-            {isRegistered ? "Unregister" : "Register"}
-          </Text>
-        </TouchableOpacity>
-
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Guidelines</Text>
-          {guidelines.length > 0 ? (
-            guidelines.map((guideline, index) => (
-              <View key={index} style={styles.guidelineRow}>
-                <MaterialIcons
-                  name="check-circle"
-                  size={20}
-                  color="#34C759"
-                  style={styles.guidelineIcon}
-                />
-                <Text style={styles.guidelineText}>{guideline}</Text>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.guidelineText}>No guidelines provided.</Text>
-          )}
-        </View>
-      </View>
+      ) : (
+        <Loader />
+      )}
     </ScrollView>
   );
 };

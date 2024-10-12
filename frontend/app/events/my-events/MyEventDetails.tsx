@@ -19,6 +19,7 @@ import { ImageSlider } from "@/components/Image-slider/ImageSlider";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@/context/AuthContext";
 import { useAllUser, User } from "@/context/AllUserContext";
+import Loader from "@/utilities/Loader";
 
 interface RouteParams {
   report?: {
@@ -69,32 +70,49 @@ const MyEventDetails = () => {
   useEffect(() => {
     const fetchReportDetails = async () => {
       if (report?.id) {
-        const reportRef = doc(db, "events", report.id);
-        const reportSnap = await getDoc(reportRef);
-        if (reportSnap.exists()) {
-          const data = reportSnap.data();
-          console.log(data);
-          setOrganizerName(data.organizerName);
-          setDate(new Date(data.date));
-          setTimeFrom(new Date(data.time.from));
-          setTimeTo(new Date(data.time.to));
-          setReportLocationName(data.location.locationName);
-          setLatitude(data.location.latitude);
-          setLongitude(data.location.longitude);
-          setGuidelines(data.volunteerGuidelines);
-          setImage(data.images);
-          fetchWeatherData(data.location.latitude, data.location.longitude);
-          fetchTideData(
-            data.location.latitude,
-            data.location.longitude,
-            new Date(data.date)
-          );
-        } else {
-          Alert.alert("Error", "Event not found.");
-        }
-      }
-    };
+        setLoading(true);
+        setTimeout(async () => {
+          try {
+            const reportRef = doc(db, "events", report.id);
+            const reportSnap = await getDoc(reportRef);
 
+            if (reportSnap.exists()) {
+              const data = reportSnap.data();
+              console.log(data);
+
+              setOrganizerName(data.organizerName);
+              setDate(new Date(data.date));
+              setTimeFrom(new Date(data.time.from));
+              setTimeTo(new Date(data.time.to));
+              setReportLocationName(data.location.locationName);
+              setLatitude(data.location.latitude);
+              setLongitude(data.location.longitude);
+              setGuidelines(data.volunteerGuidelines);
+              setImage(data.images);
+
+              // Fetch weather and tide data after setting location and date
+              await fetchWeatherData(
+                data.location.latitude,
+                data.location.longitude
+              );
+              await fetchTideData(
+                data.location.latitude,
+                data.location.longitude,
+                new Date(data.date)
+              );
+            } else {
+              Alert.alert("Error", "Event not found.");
+            }
+          } catch (error) {
+            console.error("Error fetching report details:", error);
+            Alert.alert("Error", "An error occurred while fetching event details.");
+          } finally {
+            setLoading(false);
+          }
+        }, 2000);
+
+      }
+    }
     fetchReportDetails();
   }, [report]);
 
@@ -155,7 +173,7 @@ const MyEventDetails = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        <View style={styles.content}>
+        {!loading ?<View style={styles.content}>
           {/* Event Title */}
           <Text style={styles.eventTitle}>Beach Cleanup</Text>
 
@@ -278,7 +296,7 @@ const MyEventDetails = () => {
               <Text>No guidelines available</Text>
             )}
           </View>
-        </View>
+        </View>:<Loader />}
       </ScrollView>
     </SafeAreaView>
   );

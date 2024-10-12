@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { NavigationProp, RouteProp, useRoute } from "@react-navigation/native";
-import { updateDoc, doc, getDoc } from "firebase/firestore";
+import { updateDoc, doc, getDoc, onSnapshot, where, query, collection } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
 import { db, storage } from "@/service/firebase";
 import axios from "axios";
@@ -83,7 +83,35 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
   const [images, setImages] = useState<string[]>([]);
     const [contactNumber, setContactNumber] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
-    const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [participants, setParticipants] = useState();
+  
+
+
+useEffect(() => {
+  const unsubscribe = onSnapshot(
+    query(collection(db, "registrations"), where("eventId", "==", reportId)),
+    (registrationsSnapshot) => {
+      // Get the event IDs from the documents
+      const eventIds = registrationsSnapshot.docs.map(
+        (doc) => doc.data().eventId
+      );
+
+      // Get the document count for the eventId
+      const documentCount = registrationsSnapshot.size; // Number of documents
+      setParticipants(documentCount);
+    },
+    (error) => {
+      console.error("Error fetching registrations: ", error);
+    }
+  );
+
+  // Clean up the listener on component unmount
+  return () => unsubscribe();
+}, [reportId]);
+
+  
+  
   useEffect(() => {
     const fetchReportDetails = async () => {
       if (report) {
@@ -445,6 +473,11 @@ const UpdateOrganizeEvents = ({ navigation }: Props) => {
             </View>
           ))}
         </View>
+
+          <View style={styles.weatherContainer}>
+            <Text style={styles.sectionTitle}>Registration Details</Text>
+            <Text>Current Count {participants} </Text>
+          </View>
 
         {weatherDetails && (
           <View style={styles.weatherContainer}>

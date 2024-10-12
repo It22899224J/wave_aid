@@ -7,6 +7,7 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { MaterialIcons } from "@expo/vector-icons";
 import ReanimatedCarousel from "react-native-reanimated-carousel";
 import coralImage from "../../../assets/images/bg3.jpg";
+import Loader from "@/utilities/Loader";
 
 interface RouteParams {
   report?: {
@@ -19,7 +20,7 @@ const PastEventDetails = () => {
   const { report } = route.params || {};
 
 
-
+const [loading, setLoading] = useState(false);
   const [organizerName, setOrganizerName] = useState("");
   const [date, setDate] = useState(new Date());
   const [timeFrom, setTimeFrom] = useState(new Date());
@@ -27,7 +28,7 @@ const PastEventDetails = () => {
   const [reportLocationName, setReportLocationName] = useState<string>("");
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
-  const [image, setImage] = useState<string[] | null>(null);
+  const [image, setImage] = useState<string[] | null>([coralImage]);
   const [weatherDetails, setWeatherDetails] = useState<any | null>(null);
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [tideDetails, setTideDetails] = useState<any | null>(null);
@@ -43,8 +44,11 @@ const PastEventDetails = () => {
   const [totalParticipants, setTotalParticipants] = useState<string>("");
 
   useEffect(() => {
-    const fetchReportDetails = async () => {
-      if (report?.id) {
+const fetchReportDetails = async () => {
+  setLoading(true); 
+  setTimeout(async () => {
+    if (report?.id) {
+      try {
         const reportRef = doc(db, "events", report.id);
         const reportSnap = await getDoc(reportRef);
         if (reportSnap.exists()) {
@@ -59,18 +63,30 @@ const PastEventDetails = () => {
           setGuidelines(data.volunteerGuidelines);
           setContactNumber(data.contactNumber);
           setImage(data.images);
-          if(image?.length === 0){
+
+          if (image?.length === 0) {
             setImage([coralImage]);
           }
+
           setWeatherDetails(data.weatherDetails);
           setWeight(data.weight || "");
           setTotalParticipants(data.totalParticipants || "");
           // fetchWeatherData(data.location.latitude, data.location.longitude);
+          setLoading(false);
         } else {
           Alert.alert("Error", "Event not found.");
+          setLoading(false);
         }
+      } catch (error) {
+        console.error("Error fetching report details:", error);
+        setLoading(false);
       }
-    };
+    } else {
+      setLoading(false);
+    }
+  }, 2000); // 2-second timeout
+};
+
 
     fetchReportDetails();
   }, [report]);
@@ -96,90 +112,95 @@ const PastEventDetails = () => {
   
   return (
     <ScrollView>
-      <View style={styles.content}>
-        <View style={styles.organizer}>
-          <Text style={styles.organizerText}>{organizerName}</Text>
-        </View>
-        {image && image.length > 0 ? (
-          <View style={styles.carouselContainer}>
-            <ReanimatedCarousel
-              loop
-              width={screenWidth}
-              height={260}
-              mode="parallax"
-              data={image}
-              scrollAnimationDuration={1000}
-              onSnapToItem={(index) => setCurrentIndex(index)}
-              renderItem={renderCarouselItem}
-            />
-            <View style={styles.pagination}>
-              {image.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.dot,
-                    currentIndex === index
-                      ? styles.activeDot
-                      : styles.inactiveDot,
-                  ]}
+      {!loading ? (
+        <View style={styles.content}>
+          <View style={styles.organizer}>
+            <Text style={styles.organizerText}>{organizerName}</Text>
+          </View>
+          {image && image.length > 0 ? (
+            <View style={styles.carouselContainer}>
+              <ReanimatedCarousel
+                loop
+                width={screenWidth}
+                height={260}
+                mode="parallax"
+                data={image}
+                scrollAnimationDuration={1000}
+                onSnapToItem={(index) => setCurrentIndex(index)}
+                renderItem={renderCarouselItem}
+              />
+              <View style={styles.pagination}>
+                {image.map((_, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.dot,
+                      currentIndex === index
+                        ? styles.activeDot
+                        : styles.inactiveDot,
+                    ]}
+                  />
+                ))}
+              </View>
+            </View>
+          ) : (
+            <Loader />
+          )}
+          <View style={styles.card}>
+            <View style={styles.eventDetails}>
+              <Text style={styles.sectionTitle}>Event Details</Text>
+              <View style={styles.detailRow}>
+                <MaterialIcons
+                  name="event"
+                  size={24}
+                  color="#007AFF"
+                  style={styles.icon}
                 />
-              ))}
+                <Text style={styles.detailText}>{date.toDateString()}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <MaterialIcons
+                  name="access-time"
+                  size={24}
+                  color="#007AFF"
+                  style={styles.icon}
+                />
+                <Text style={styles.detailText}>
+                  {`${timeFrom.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })} - ${timeTo.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}`}
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <MaterialIcons
+                  name="phone"
+                  size={24}
+                  color="#007AFF"
+                  style={styles.icon}
+                />
+                <Text style={styles.detailText}>{contactNumber}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.detailRow}
+                onPress={openLocationInMap}
+              >
+                <MaterialIcons
+                  name="location-on"
+                  size={24}
+                  color="#007AFF"
+                  style={styles.icon}
+                />
+                <Text style={[styles.detailText, styles.clickableText]}>
+                  {reportLocationName}
+                </Text>
+              </TouchableOpacity>
             </View>
-          </View>
-        ) : (
-          <Text>No Images Available</Text>
-        )}
-        <View style={styles.card}>
-          <View style={styles.eventDetails}>
-            <Text style={styles.sectionTitle}>Event Details</Text>
-            <View style={styles.detailRow}>
-              <MaterialIcons
-                name="event"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>{date.toDateString()}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <MaterialIcons
-                name="access-time"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text
-                style={styles.detailText}
-              >{`${timeFrom.toLocaleTimeString()} - ${timeTo.toLocaleTimeString()}`}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <MaterialIcons
-                name="phone"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text
-                style={styles.detailText}
-              >{contactNumber}</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.detailRow}
-              onPress={openLocationInMap}
-            >
-              <MaterialIcons
-                name="location-on"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text style={[styles.detailText, styles.clickableText]}>
-                {reportLocationName}
-              </Text>
-            </TouchableOpacity>
-          </View>
 
-          {/* <View style={styles.detailRow}>
+            {/* <View style={styles.detailRow}>
             <MaterialIcons
               name="directions-bus"
               size={24}
@@ -201,83 +222,83 @@ const PastEventDetails = () => {
               </TouchableOpacity>
             )}
           </View> */}
-        </View>
-        {loadingWeather && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#007AFF" />
-            <Text style={styles.loadingText}>Loading weather data...</Text>
           </View>
-        )}
-
-        {weatherDetails && (
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Weather Details</Text>
-            <View style={styles.detailRow}>
-              <MaterialIcons
-                name="wb-sunny"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>
-                Temperature: {weatherDetails.main.temp} °C
-              </Text>
+          {loadingWeather && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#007AFF" />
+              <Text style={styles.loadingText}>Loading weather data...</Text>
             </View>
-            <View style={styles.detailRow}>
-              <MaterialIcons
-                name="cloud"
-                size={24}
-                color="#007AFF"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>
-                Condition: {weatherDetails.weather[0].description}
-              </Text>
-            </View>
-          </View>
-        )}
+          )}
 
-        {
-          <View style={{ display: "flex" }}>
+          {weatherDetails && (
             <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Contribution Details</Text>
+              <Text style={styles.sectionTitle}>Weather Details</Text>
               <View style={styles.detailRow}>
                 <MaterialIcons
-                  name="people"
+                  name="wb-sunny"
                   size={24}
                   color="#007AFF"
                   style={styles.icon}
                 />
                 <Text style={styles.detailText}>
-                  Participants {totalParticipants}
+                  Temperature: {weatherDetails.main.temp} °C
                 </Text>
               </View>
-            </View>
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Environmental Impact</Text>
               <View style={styles.detailRow}>
                 <MaterialIcons
-                  name="eco"
+                  name="cloud"
                   size={24}
-                  color="#00ff00"
+                  color="#007AFF"
                   style={styles.icon}
                 />
                 <Text style={styles.detailText}>
-                  Collected Weight {weight} Kg
+                  Condition: {weatherDetails.weather[0].description}
                 </Text>
               </View>
             </View>
-          </View>
-        }
+          )}
 
-        {loadingTide && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#007AFF" />
-            <Text style={styles.loadingText}>Loading tide data...</Text>
-          </View>
-        )}
+          {
+            <View style={{ display: "flex" }}>
+              <View style={styles.card}>
+                <Text style={styles.sectionTitle}>Contribution Details</Text>
+                <View style={styles.detailRow}>
+                  <MaterialIcons
+                    name="people"
+                    size={24}
+                    color="#007AFF"
+                    style={styles.icon}
+                  />
+                  <Text style={styles.detailText}>
+                    Participants {totalParticipants}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.card}>
+                <Text style={styles.sectionTitle}>Environmental Impact</Text>
+                <View style={styles.detailRow}>
+                  <MaterialIcons
+                    name="eco"
+                    size={24}
+                    color="#34C759"
+                    style={styles.icon}
+                  />
+                  <Text style={styles.detailText}>
+                    Collected Weight {weight} Kg
+                  </Text>
+                </View>
+              </View>
+            </View>
+          }
 
-        {/* {tideDetails && (
+          {loadingTide && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#007AFF" />
+              <Text style={styles.loadingText}>Loading tide data...</Text>
+            </View>
+          )}
+
+          {/* {tideDetails && (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Tide Details</Text>
             <View style={styles.detailRow}>
@@ -305,7 +326,7 @@ const PastEventDetails = () => {
           </View>
         )} */}
 
-        {/* <TouchableOpacity
+          {/* <TouchableOpacity
           style={[
             styles.registerButton,
             { backgroundColor: isRegistered ? "#FF3B30" : "#007AFF" },
@@ -317,25 +338,28 @@ const PastEventDetails = () => {
           </Text>
         </TouchableOpacity> */}
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Guidelines</Text>
-          {guidelines.length > 0 ? (
-            guidelines.map((guideline, index) => (
-              <View key={index} style={styles.guidelineRow}>
-                <MaterialIcons
-                  name="check-circle"
-                  size={20}
-                  color="#34C759"
-                  style={styles.guidelineIcon}
-                />
-                <Text style={styles.guidelineText}>{guideline}</Text>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.guidelineText}>No guidelines provided.</Text>
-          )}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Guidelines</Text>
+            {guidelines.length > 0 ? (
+              guidelines.map((guideline, index) => (
+                <View key={index} style={styles.guidelineRow}>
+                  <MaterialIcons
+                    name="check-circle"
+                    size={20}
+                    color="#34C759"
+                    style={styles.guidelineIcon}
+                  />
+                  <Text style={styles.guidelineText}>{guideline}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.guidelineText}>No guidelines provided.</Text>
+            )}
+          </View>
         </View>
-      </View>
+      ) : (
+        <Loader />
+      )}
     </ScrollView>
   );
 };
@@ -349,7 +373,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
-    padding: 16,
+    padding: 10,
     marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -361,7 +385,6 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 16,
     color: "#1C1C1E",
   },
   carouselContainer: {
@@ -397,7 +420,6 @@ const styles = StyleSheet.create({
   organizer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 5,
     justifyContent: "center",
     paddingTop: 16,
   },

@@ -298,7 +298,7 @@ const OrganizeEvents = ({ navigation }: Props) => {
     try {
       const docRef = await addDoc(collection(db, "events"), reportData);
       const eventId = docRef.id;
-      Alert.alert("Success", "Your report has been submitted.");
+      Alert.alert("Success", "Your event has been created.");
 
       if (busId) {
         const busRef = doc(db, "buses", busId);
@@ -318,8 +318,7 @@ const OrganizeEvents = ({ navigation }: Props) => {
       setContactNumber("");
       setImages([]);
     } catch (error) {
-      Alert.alert("Error", "An error occurred while submitting the report.");
-      console.error("Error adding document: ", error);
+
     }
   };
 

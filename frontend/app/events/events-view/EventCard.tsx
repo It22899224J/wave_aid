@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { BlurView } from "expo-blur";
@@ -39,6 +39,11 @@ export const EventCard: React.FC<EventCard> = ({ item, onRemove }) => {
       return undefined;
     }, [allUserLoading, authLoading, users, user]);
   
+  
+  useEffect(() => {
+    setUserDetails(initializeUserDetails());
+    const randomIndex = Math.floor(Math.random() * 5);
+  }, [initializeUserDetails]);
 
   return (
     <View
