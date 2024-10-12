@@ -1,31 +1,71 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Dimensions, ScrollView } from "react-native";
 import { BarChart, PieChart } from "react-native-chart-kit";
 import { chartConfig } from "../AnalysisDashboard";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/service/firebase";
+import Loader from "@/components/loader/Loader";
 
 const screenWidth = Dimensions.get("window").width;
 
-const locationData = [
-  { location: "Beach A", wasteCollected: 500, cleanups: 5 },
-  { location: "Beach B", wasteCollected: 750, cleanups: 7 },
-  { location: "Beach C", wasteCollected: 600, cleanups: 6 },
-  { location: "Beach D", wasteCollected: 400, cleanups: 4 },
-];
-
-const wasteTypeData = [
-  { name: "Plastics", value: 50, color: "rgba(131, 167, 234, 1)" },
-  { name: "Glass", value: 20, color: "#F00" },
-  { name: "Metal", value: 15, color: "rgb(0, 0, 255)" },
-  { name: "Other", value: 15, color: "rgb(0, 255, 0)" },
-];
-
 const GeographicImpactReport = () => {
+  const [dataList, setDataList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const eventCompletionsRef = collection(db, "eventCompletions");
+
+    const unsubscribe = onSnapshot(
+      eventCompletionsRef,
+      (querySnapshot) => {
+        const newDataList: any[] = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (
+            data.date &&
+            data.eventName &&
+            data.wasteCollected
+          ) {
+            newDataList.push(data);
+          }
+        });
+        setDataList(newDataList);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Error fetching data:", err);
+        setError("Failed to load data. Please try again later.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) return <Loader />;
+  if (error) return <Text style={{ padding: 16 }}>{error}</Text>;
+  if (dataList.length === 0)
+    return <Text style={{ padding: 16 }}>No data available.</Text>;
+
+  // Aggregate data by location
+  const locationDataMap = dataList.reduce((acc, d) => {
+    if (!acc[d.eventName]) {
+      acc[d.eventName] = { wasteCollected: 0, cleanups: 0 };
+    }
+    acc[d.eventName].wasteCollected += d.wasteCollected;
+    acc[d.eventName].cleanups += 1;
+    return acc;
+  }, {});
+
+  const locationData = Object.entries(locationDataMap).map(([location, data]) => ({
+    location,
+    wasteCollected: data.wasteCollected,
+    cleanups: data.cleanups,
+  }));
+
   return (
     <ScrollView style={{ padding: 16 }}>
-      {/* <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>
-        Geographic Impact Report
-      </Text> */}
-
       <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
         Waste Collected per Location
       </Text>

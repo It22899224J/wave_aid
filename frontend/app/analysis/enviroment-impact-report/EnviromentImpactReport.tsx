@@ -1,25 +1,28 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Dimensions, ScrollView, Image } from "react-native";
 import { LineChart, BarChart, ProgressChart } from "react-native-chart-kit";
 import { chartConfig } from "../AnalysisDashboard";
+import Loader from "@/components/loader/Loader";
+import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
+import { db } from "@/service/firebase";
 
 const screenWidth = Dimensions.get("window").width;
 
-const wildlifeData = [
-  { month: "Jan", count: 50 },
-  { month: "Feb", count: 60 },
-  { month: "Mar", count: 75 },
-  { month: "Apr", count: 70 },
-  { month: "May", count: 85 },
-];
+// const wildlifeData = [
+//   { month: "Jan", count: 50 },
+//   { month: "Feb", count: 60 },
+//   { month: "Mar", count: 75 },
+//   { month: "Apr", count: 70 },
+//   { month: "May", count: 85 },
+// ];
 
-const pollutionData = [
-  { month: "Jan", level: 80 },
-  { month: "Feb", level: 75 },
-  { month: "Mar", level: 70 },
-  { month: "Apr", level: 65 },
-  { month: "May", level: 60 },
-];
+// const pollutionData = [
+//   { month: "Jan", level: 80 },
+//   { month: "Feb", level: 75 },
+//   { month: "Mar", level: 70 },
+//   { month: "Apr", level: 65 },
+//   { month: "May", level: 60 },
+// ];
 
 const ecosystemImpact = [
   { category: "Biodiversity", score: 0.7 },
@@ -30,8 +33,57 @@ const ecosystemImpact = [
 ];
 
 const EnvironmentalImpactReport = () => {
+  const [loading, setLoading] = useState(true);
+  const [dataList, setDataList] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const eventCompletionsRef = collection(db, "eventCompletions");
+
+    const unsubscribe = onSnapshot(
+      eventCompletionsRef,
+      (querySnapshot) => {
+        const newDataList: any[] = [];
+        querySnapshot.forEach((doc) => {
+          const { eventName, wildlifeCount, pollutionLevel } = doc.data();
+          newDataList.push({ eventName, wildlifeCount, pollutionLevel });
+        });
+        setDataList(newDataList);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Error fetching data:", err);
+        setError("Failed to load data. Please try again later.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) return <Loader />;
+  if (error) return <Text style={{ padding: 16 }}>{error}</Text>;
+  if (dataList.length === 0)
+    return <Text style={{ padding: 16 }}>No data available.</Text>;
+
+  const wildlifeData = dataList.map((d) => ({
+    month: d.eventName,
+    count: d.wildlifeCount,
+  }));
+
+  const pollutionData = dataList.map((d) => ({
+    month: d.eventName,
+    level: d.pollutionLevel,
+  }));
+
   return (
-    <ScrollView style={{ padding: 16, backgroundColor: "#f0f0f0" }}>
+    <ScrollView
+      style={{
+        paddingHorizontal: 16,
+        marginVertical: 16,
+        backgroundColor: "#f0f0f0",
+      }}
+    >
       {/* <Text
         style={{
           fontSize: 24,
@@ -161,7 +213,7 @@ const EnvironmentalImpactReport = () => {
         </Text>
       </View>
 
-      <View
+      {/* <View
         style={{
           backgroundColor: "white",
           borderRadius: 10,
@@ -208,7 +260,7 @@ const EnvironmentalImpactReport = () => {
           before and after our cleanup efforts. The transformation highlights
           the tangible impact of our work on the local environment.
         </Text>
-      </View>
+      </View> */}
 
       <View style={{ backgroundColor: "white", borderRadius: 10, padding: 16 }}>
         <Text

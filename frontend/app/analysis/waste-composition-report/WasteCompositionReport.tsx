@@ -1,52 +1,109 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Dimensions, ScrollView } from "react-native";
-import { PieChart, BarChart, LineChart } from "react-native-chart-kit";
+import { PieChart } from "react-native-chart-kit";
 import { chartConfig } from "../AnalysisDashboard";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/service/firebase";
+import Loader from "@/components/loader/Loader";
 
 const screenWidth = Dimensions.get("window").width;
 
-const wasteCompositionData = [
-  { type: "Plastics", percentage: 60, color: "rgba(255, 99, 132, 1)" },
-  { type: "Glass", percentage: 15, color: "rgba(54, 162, 235, 1)" },
-  { type: "Metal", percentage: 10, color: "rgba(255, 206, 86, 1)" },
-  { type: "Paper", percentage: 10, color: "rgba(75, 192, 192, 1)" },
-  { type: "Other", percentage: 5, color: "rgba(153, 102, 255, 1)" },
-];
-
-const wasteCompositionOverTime = [
-  { month: "Jan", plastics: 58, glass: 16, metal: 11, paper: 10, other: 5 },
-  { month: "Feb", plastics: 59, glass: 15, metal: 11, paper: 10, other: 5 },
-  { month: "Mar", plastics: 60, glass: 15, metal: 10, paper: 10, other: 5 },
-  { month: "Apr", plastics: 61, glass: 14, metal: 10, paper: 10, other: 5 },
-  { month: "May", plastics: 62, glass: 14, metal: 9, paper: 10, other: 5 },
-];
-
-const commonWasteItems = [
-  { item: "Plastic bottles", count: 500 },
-  { item: "Cigarette butts", count: 450 },
-  { item: "Food wrappers", count: 400 },
-  { item: "Plastic bags", count: 350 },
-  { item: "Bottle caps", count: 300 },
-];
+const wasteColors = {
+  Plastics: "rgba(255, 99, 132, 1)",
+  Glass: "rgba(54, 162, 235, 1)",
+  Metal: "rgba(255, 206, 86, 1)",
+  Paper: "rgba(75, 192, 192, 1)",
+  Other: "rgba(153, 102, 255, 1)",
+};
 
 const WasteCompositionReport = () => {
+  const [dataList, setDataList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const eventCompletionsRef = collection(db, "eventCompletions");
+
+    const unsubscribe = onSnapshot(
+      eventCompletionsRef,
+      (querySnapshot) => {
+        const newDataList: any[] = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.date && data.wasteTypes) {
+            newDataList.push(data);
+          }
+        });
+        console.log("Fetched data:", newDataList);
+        setDataList(newDataList);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Error fetching data:", err);
+        setError("Failed to load data. Please try again later.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) return <Loader />;
+  if (error) return <Text style={{ padding: 16 }}>{error}</Text>;
+  if (dataList.length === 0)
+    return <Text style={{ padding: 16 }}>No data available.</Text>;
+
+  // Group waste composition data by waste type
+  let wasteCompositionData;
+  try {
+    wasteCompositionData = dataList.reduce((acc, item) => {
+      if (Array.isArray(item.wasteTypes)) {
+        item.wasteTypes.forEach((wasteType) => {
+          const type = wasteType.type || wasteType.name;
+          const percentage = parseFloat(wasteType.percentage || wasteType.value);
+          if (!isNaN(percentage)) {
+            if (!acc[type]) {
+              acc[type] = 0;
+            }
+            acc[type] += percentage;
+          }
+        });
+      }
+      return acc;
+    }, {});
+    console.log("Grouped waste composition data:", wasteCompositionData);
+  } catch (err) {
+    console.error("Error grouping waste composition data:", err);
+    return <Text style={{ padding: 16 }}>Error processing data. Please try again later.</Text>;
+  }
+
+  let wasteCompositionChartData;
+  try {
+    const totalPercentage = Object.values(wasteCompositionData).reduce((sum: number, value: number) => sum + value, 0);
+    wasteCompositionChartData = Object.entries(wasteCompositionData).map(([type, percentage]) => ({
+      name: "% " + type,
+      population: Number(((percentage as number / totalPercentage) * 100).toFixed(2)),
+      color: wasteColors[type] || `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`,
+      legendFontColor: "#7F7F7F",
+      legendFontSize: 12,
+    }));
+    console.log("Chart data:", wasteCompositionChartData);
+  } catch (err) {
+    console.error("Error creating chart data:", err);
+    return <Text style={{ padding: 16 }}>Error creating chart. Please try again later.</Text>;
+  }
+
+  if (wasteCompositionChartData.length === 0) {
+    return <Text style={{ padding: 16 }}>No waste composition data available.</Text>;
+  }
+
   return (
     <ScrollView style={{ padding: 16 }}>
-      {/* <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>
-        Waste Composition Report
-      </Text> */}
-
       <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
         Overall Waste Composition
       </Text>
       <PieChart
-        data={wasteCompositionData.map((item) => ({
-          name: item.type,
-          population: item.percentage,
-          color: item.color,
-          legendFontColor: "#7F7F7F",
-          legendFontSize: 12,
-        }))}
+        data={wasteCompositionChartData}
         width={screenWidth - 32}
         height={220}
         chartConfig={chartConfig}
@@ -54,70 +111,6 @@ const WasteCompositionReport = () => {
         backgroundColor="transparent"
         paddingLeft="15"
         absolute
-      />
-
-      <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
-        Waste Composition Changes Over Time
-      </Text>
-      <LineChart
-        data={{
-          labels: wasteCompositionOverTime.map((d) => d.month),
-          datasets: [
-            {
-              data: wasteCompositionOverTime.map((d) => d.plastics),
-              color: () => "rgba(255, 99, 132, 1)",
-              strokeWidth: 2,
-            },
-            {
-              data: wasteCompositionOverTime.map((d) => d.glass),
-              color: () => "rgba(54, 162, 235, 1)",
-              strokeWidth: 2,
-            },
-            {
-              data: wasteCompositionOverTime.map((d) => d.metal),
-              color: () => "rgba(255, 206, 86, 1)",
-              strokeWidth: 2,
-            },
-            {
-              data: wasteCompositionOverTime.map((d) => d.paper),
-              color: () => "rgba(75, 192, 192, 1)",
-              strokeWidth: 2,
-            },
-            {
-              data: wasteCompositionOverTime.map((d) => d.other),
-              color: () => "rgba(153, 102, 255, 1)",
-              strokeWidth: 2,
-            },
-          ],
-        }}
-        width={screenWidth - 32}
-        height={220}
-        chartConfig={chartConfig}
-        bezier
-        style={{ marginVertical: 8, borderRadius: 16 }}
-      />
-
-      <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>
-        Most Common Waste Items
-      </Text>
-      <BarChart
-        data={{
-          labels: commonWasteItems.map((item) => item.item),
-          datasets: [
-            {
-              data: commonWasteItems.map((item) => item.count),
-            },
-          ],
-        }}
-        yAxisLabel=""
-        yAxisSuffix=""
-        fromZero={true}
-        
-        width={screenWidth - 32}
-        height={220}
-        chartConfig={chartConfig}
-        // verticalLabelRotation={30}
-        style={{ marginVertical: 8, borderRadius: 16 }}
       />
     </ScrollView>
   );

@@ -171,6 +171,7 @@ const AdminProfile = () => {
               <Text style={styles.roleText}>{userDetails?.role}</Text>
             </View>
             <Text style={styles.userEmail}>{userDetails?.email}</Text>
+            <Text style={styles.userContact}>{userDetails?.contactNo}</Text>
           </View>
 
           <View style={styles.adminStatsContainer}>
@@ -179,11 +180,11 @@ const AdminProfile = () => {
               value={users?.length || 0}
               icon="people-outline"
             />
-            <AdminCard
+            {/* <AdminCard
               title="Active Sessions"
               value="24"
               icon="pulse-outline"
-            />
+            /> */}
             <AdminCard
               title="Last Login"
               value={lastLogin ? lastLogin : ""}
@@ -197,7 +198,7 @@ const AdminProfile = () => {
               <Pressable
                 style={styles.actionButton}
                 onPress={() =>
-                  navigation.navigate("Admin All User Dashboard" as never)
+                  navigation.navigate("EventCompleteForm" as never)
                 }
               >
                 <Ionicons name="people" size={24} color="#FFF" />
@@ -335,6 +336,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     marginTop: 5,
+  },
+  userContact: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 0,
   },
   adminStatsContainer: {
     marginTop: 20,

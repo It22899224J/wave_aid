@@ -30,9 +30,10 @@ import {
 } from "react-native-chart-kit";
 import ScrollViewCard, { ScrollCardProps } from "./components/ScrollViewCard";
 import { useNavigation } from "@react-navigation/native";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Loader from "@/components/loader/Loader";
-
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/service/firebase";
 
 export const chartConfig = {
   backgroundColor: "#ffffff",
@@ -47,7 +48,6 @@ export const chartConfig = {
     fontSize: 10,
   },
 };
-
 
 // //orange background config
 // const chartConfig = {
@@ -64,39 +64,94 @@ export const chartConfig = {
 //   },
 // };
 
-const DashboardHeaderChart = () => (
-  <>
-    <LineChart
-      data={{
-        labels: ["January", "February", "March", "April", "May", "June"],
-        datasets: [
-          {
-            data: [
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-            ],
-          },
-        ],
-      }}
-      width={
-        Dimensions.get("window").width -
-        Math.round((Dimensions.get("window").width * 10) / 100)
-      } // from react-native
-      height={275}
-        // yAxisLabel="$"
-      yAxisSuffix="k "
-      yAxisInterval={1} // optional, defaults to 1
-      chartConfig={chartConfig}
-      bezier
-      style={styles.chart}
-    />
-    <Text style={styles.chartCaption}>Volunteer Interation</Text>
-  </>
-);
+const DashboardHeaderChart = () => {
+  const [dataList, setDataList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const eventCompletionsRef = collection(db, "eventCompletions");
+
+    const unsubscribe = onSnapshot(
+      eventCompletionsRef,
+      (querySnapshot) => {
+        const newDataList: any[] = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (
+            data.date &&
+            data.eventName &&
+            data.totalParticipants &&
+            data.wasteCollected &&
+            data.wasteTypes
+          ) {
+            newDataList.push(data);
+          }
+        });
+        setDataList(newDataList);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Error fetching data:", err);
+        setError("Failed to load data. Please try again later.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) return <Loader />;
+  if (error) return <Text>{error}</Text>;
+
+  // Group data by month and sum totalParticipants
+  const groupedData = dataList.reduce((acc, event) => {
+    const date = new Date(event.date);
+    const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    
+    if (!acc[monthYear]) {
+      acc[monthYear] = 0;
+    }
+    acc[monthYear] += Number(event.totalParticipants);
+    return acc;
+  }, {});
+
+  // Sort the months and get the last 6 months
+  const sortedMonths = Object.keys(groupedData).sort().slice(-6);
+  const participantData = sortedMonths.map(month => groupedData[month]);
+
+  // Format month labels
+  const monthLabels = sortedMonths.map(month => {
+    const [year, monthNum] = month.split('-');
+    return `${monthNum}/${year.slice(2)}`;
+  });
+
+  return (
+    <>
+      <LineChart
+        data={{
+          labels: monthLabels,
+          datasets: [
+            {
+              data: participantData,
+            },
+          ],
+        }}
+        width={
+          Dimensions.get("window").width -
+          Math.round((Dimensions.get("window").width * 10) / 100)
+        }
+        height={275}
+        yAxisSuffix=""
+        yAxisInterval={1}
+        chartConfig={chartConfig}
+        bezier
+        style={styles.chart}
+      />
+      <Text style={styles.chartCaption}>Total Participants per Month</Text>
+    </>
+  );
+};
 
 const AnalysisDashboard = () => {
   const navigate = useNavigation();
