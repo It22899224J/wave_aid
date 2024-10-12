@@ -13,8 +13,11 @@ import MyEvents from "../my-events/MyEvents";
 import OrganizedEventsPast from "../update-event/OrganizedEventsPast";
 import PastEvents from "../past-events/PastEvents";
 import PastEventDetails from "../past-events/PastEventDetails";
-import { Booking } from "../book-a-seat/BookingNav";
 import EventCompletionForm from "../events-view/EventCompleteForm";
+import BookingCanceledScreen from "../book-a-seat/BookingCanceled";
+import BookingConfirmation from "../book-a-seat/BookingConfirmation";
+import SeatBooking from "../book-a-seat/BusLayout";
+import SelectBus from "../book-a-seat/SelectBus";
 const Stack = createStackNavigator();
 
 export const EventStack = () => {
@@ -23,7 +26,7 @@ export const EventStack = () => {
       <Stack.Screen
         name="MainScreen"
         component={MainScreen}
-        options={{ headerTitle: "Events", headerTitleAlign: "center" }}
+        options={{ headerShown:false }}
       />
       <Stack.Screen
         name="OrganizeEvents"
@@ -86,6 +89,26 @@ export const EventStack = () => {
         component={MyEvents}
         options={{ headerTitle: "MyEvents", headerTitleAlign: "center" }}
       />
+         <Stack.Screen
+                name="SelectBus"
+                component={SelectBus}
+                options={{ headerTitle: "Select Bus" }}
+            />
+            <Stack.Screen
+                name="BusLayout"
+                component={SeatBooking}
+                options={{ headerTitle: "Bus Layout" }}
+            />
+            <Stack.Screen
+                name="BookingConfirmation"
+                component={BookingConfirmation}
+                options={{ title: "BookingConfirmation" }}
+            />
+            <Stack.Screen
+                name="BookingCanceled"
+                component={BookingCanceledScreen}
+                options={{ title: "BookingCanceled" }}
+            />
       <Stack.Screen
         name="EventCompleteForm"
         component={EventCompletionForm}

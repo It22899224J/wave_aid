@@ -9,12 +9,15 @@ import { ReportStack } from "./report/ReportStack";
 import { EventStack } from "./events/main-screen/EventStack";
 import AdminUserManagementStack from "./admin/admin-user-management/AdminUserManagementStack";
 import { AdminMainStack } from "./events/admin-screens/AdminMainStack";
+import MyEvents from "./events/my-events/MyEvents";
+import AdminReportMain from "./admin/admin-report/admin-report-main/AdminReportMain";
 import { MyEventStack } from "./events/my-events/MyEventStack";
 
 
 import { AdminProfileStack } from "./admin/admin-profile/AdminProfileStack";
 import SplashScreen from "@/components/splash-screen/SplashScreen";
 import { AdminReportStack } from "./admin/admin-report/AdminReportStack";
+import { LinearGradient } from "expo-linear-gradient";
 
 const Tab = createBottomTabNavigator();
 
@@ -44,7 +47,19 @@ const Index = () => {
   if (loading || authLoading || allUserLoading) return <SplashScreen />;
 
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+    // screenOptions={{
+    //   tabBarActiveTintColor: "#00acf0", // Active tab icon/text color
+    //   tabBarInactiveTintColor: "#8e8e93", // Inactive tab icon/text color
+    //   tabBarStyle: {
+    //     backgroundColor: "#192f6a", // Make background transparent
+    //     position: 'absolute', // Ensures the tab bar floats over content
+    //     elevation: 0, // Removes shadow for Android
+    //     borderTopWidth: 0, // Optional: Removes top border for iOS/Android
+    //   },
+      
+    // }}
+  >
       {userRole == "User" ? (
         <>
           {/* USER TAB SCREENS HERE */}
@@ -163,6 +178,7 @@ const Index = () => {
               tabBarIcon: ({ color, size }) => (
                 <Icon name="person" color={color} size={size} />
               ),
+             
             }}
           />
         </>

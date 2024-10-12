@@ -11,17 +11,11 @@ import {
 } from "react-native";
 import { NavigationProp } from "@react-navigation/native";
 import { useAuth } from "@/context/AuthContext";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/service/firebase";
 import { EventCard } from "./EventCard";
 import moment from "moment";
+import { LinearGradient } from "expo-linear-gradient"; // Import LinearGradient
 
 interface Event {
   id: string;
@@ -34,11 +28,7 @@ interface Event {
   image: string;
 }
 
-const UpcommingEvents = ({
-  navigation,
-}: {
-  navigation: NavigationProp<any>;
-}) => {
+const UpcommingEvents = ({ navigation }: { navigation: NavigationProp<any> }) => {
   const [reportData, setReportData] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -46,14 +36,13 @@ const UpcommingEvents = ({
 
   useEffect(() => {
     const fetchReportedAreas = async () => {
-      const today = new Date().toISOString(); 
-
+      const today = new Date().toISOString();
       const q = query(collection(db, "events"), where("date", ">", today));
       const querySnapshot = await getDocs(q);
 
       const events = querySnapshot.docs.map((doc) => {
         const data = doc.data();
-        const beachName = data.location.locationName.split(",")[0]; 
+        const beachName = data.location.locationName.split(",")[0];
         const wasteLevelColor = getWasteLevelColor(data.pollutionLevel);
         const statusColor = getStatusColor(data.status);
 
@@ -136,27 +125,25 @@ const UpcommingEvents = ({
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      {loading && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0000ff" />
-        </View>
-      )}
-      <ScrollView style={styles.container}>
-        <View>
-          <Text style={styles.title}>Upcoming Events</Text>
-        </View>
-        {reportData.map((item) => (
-          <TouchableOpacity
-            style={{borderRadius: 10}}
-            key={item.id}
-            onPress={() => handleReportPress(item)}
-          >
-            <EventCard item={item} onRemove={confirmRemoveReport} />
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </SafeAreaView>
+   
+      <SafeAreaView style={{ flex: 1 }}>
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        )}
+        <ScrollView style={styles.container}>
+          <View>
+            <Text style={styles.title}>Upcoming Events</Text>
+          </View>
+          {reportData.map((item) => (
+            <TouchableOpacity style={{ borderRadius: 10 }} key={item.id} onPress={() => handleReportPress(item)}>
+              <EventCard item={item} onRemove={confirmRemoveReport} />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </SafeAreaView>
+  
   );
 };
 
@@ -166,7 +153,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     padding: 5,
     gap: 10,
-    backgroundColor: "#F2F2F7",
+    backgroundColor: "transparent", // Set to transparent to allow gradient background
   },
   topic: {
     fontSize: 16,
@@ -178,6 +165,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 20,
+    color: "white", // Adjust text color for better visibility on gradient background
   },
   loadingContainer: {
     ...StyleSheet.absoluteFillObject,
