@@ -48,17 +48,17 @@ const Index = () => {
 
   return (
     <Tab.Navigator
-    // screenOptions={{
-    //   tabBarActiveTintColor: "#00acf0", // Active tab icon/text color
-    //   tabBarInactiveTintColor: "#8e8e93", // Inactive tab icon/text color
-    //   tabBarStyle: {
-    //     backgroundColor: "#192f6a", // Make background transparent
-    //     position: 'absolute', // Ensures the tab bar floats over content
-    //     elevation: 0, // Removes shadow for Android
-    //     borderTopWidth: 0, // Optional: Removes top border for iOS/Android
-    //   },
+    screenOptions={{
+      tabBarActiveTintColor: "#77CDFF", 
+      tabBarInactiveTintColor: "#fff", 
+      tabBarStyle: {
+        backgroundColor: "#192f6a", 
+        position: 'absolute', 
+        elevation: 0, 
+        borderTopWidth: 0, 
+      },
       
-    // }}
+    }}
   >
       {userRole == "User" ? (
         <>
