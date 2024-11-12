@@ -31,6 +31,11 @@ const SelectReportLocation: React.FC<Props> = ({ navigation }) => {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coordinate.latitude}&lon=${coordinate.longitude}`
       );
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+
       const data = await response.json();
 
       const address = data.display_name;
@@ -144,6 +149,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     margin: 10,
+    marginBottom: 80,
   },
   disabledButton: {
     backgroundColor: '#A0A0A0',

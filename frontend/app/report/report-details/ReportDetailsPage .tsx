@@ -296,6 +296,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     borderRadius: 10,
+    marginBottom: 50,
   },
   customMarker: {
     backgroundColor: '#4A90E2',

@@ -407,6 +407,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginVertical: 20,
+    marginBottom: 60,
   },
   disabledButton: {
     backgroundColor: '#A0A0A0',
